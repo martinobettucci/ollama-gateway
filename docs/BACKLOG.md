@@ -19,12 +19,14 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 
 - [x] Dockerisation dev/staging/prod + lanceurs + entrypoint (rôle par env).
 - [x] Dev self-contained/self-seeded (faux upstream Ollama, seeds déterministes).
-- [x] Caddy + module DNS Scaleway (Dockerfile.caddy) ; Caddyfile prod + staging (`tls internal`).
+- [x] Caddy + module DNS Scaleway (Dockerfile.caddy, Caddy 2.11) ; Caddyfile prod + staging.
 - [x] Import de clé existante par valeur (migration) — *test_keys (import), CLI bootstrap*.
-- [~] **Build des images sur la hôte self-hosted (aarch64)** — à valider `docker compose build` sur la box
-  (Docker Desktop indisponible côté dev WSL ; app pur Python → build attendu OK). Reste à exécuter.
-- [~] **Déploiement prod hôte self-hosted** : import clé client-exemple, retrait nginx, `runProd`, cert DNS-01, preuves
-  live — bloqué sur `SCW_SECRET_KEY` + fenêtre de cutover (cf. DAT §6). Non commencé.
+- [x] **Build des images sur la hôte self-hosted (aarch64)** — gateway + Caddy buildés OK ; `dns.providers.scaleway`
+  présent dans le binaire. *Note : le plugin scaleway v0.2.2 impose Caddy 2.11 + `GOTOOLCHAIN=auto`.*
+- [x] **Smoke non-disruptif sur la hôte self-hosted** : proxy (port libre) → **vrai Ollama** avec la clé client-exemple
+  → 200 / 16 modèles ; sans clé → 401 ; health 200. Sans toucher nginx/11435/client-exemple. Nettoyé.
+- [~] **Cutover prod hôte self-hosted** : retrait nginx, `runProd`, cert DNS-01, bascule client-exemple http→https,
+  preuves live — bloqué sur `SCW_SECRET_KEY` + fenêtre de cutover (cf. DAT §6). Non commencé.
 - [~] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
 ## Idées ultérieures (non planifiées)
