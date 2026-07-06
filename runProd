@@ -6,7 +6,8 @@ if [ ! -f .env.prod ]; then
   echo "ERREUR : .env.prod manquant. Copier .env.prod.example et le renseigner." >&2
   exit 1
 fi
-C="docker compose -f docker-compose.prod.yml"
+# --env-file : compose interpole ${ADMIN_BIND_IP} depuis .env.prod (pas seulement env_file interne).
+C="docker compose --env-file .env.prod -f docker-compose.prod.yml"
 $C up -d --build
 $C ps
 echo

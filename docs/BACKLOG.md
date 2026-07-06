@@ -25,8 +25,13 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   présent dans le binaire. *Note : le plugin scaleway v0.2.2 impose Caddy 2.11 + `GOTOOLCHAIN=auto`.*
 - [x] **Smoke non-disruptif sur la Jetson** : proxy (port libre) → **vrai Ollama** avec la clé Gram
   → 200 / 16 modèles ; sans clé → 401 ; health 200. Sans toucher nginx/11435/Gram. Nettoyé.
-- [~] **Cutover prod Jetson** : retrait nginx, `runProd`, cert DNS-01, bascule Gram http→https,
-  preuves live — bloqué sur `SCW_SECRET_KEY` + fenêtre de cutover (cf. DAT §6). Non commencé.
+- [x] **Émission TLS DNS-01 validée** (port temporaire 11436, non-disruptif) : cert Let's Encrypt
+  `llm.lelabs.tech` obtenu via Scaleway ; chaîne HTTPS complète 200 (clé Gram) / 401 (sans) /
+  404 (`/admin`). *Config requise : bloc `dns scaleway {secret_key; organization_id}`, `dns_ttl 3600s`
+  (l'API Scaleway exige un TTL), `auto_https disable_redirects`, `handle` (pas `respond` nu).*
+- [~] **Cutover prod Jetson** : proxy+admin déjà UP en prod (loopback/LAN) + clé Gram importée +
+  cert émis. Reste : retrait nginx (:11435), bascule Caddy sur 11435, **switch Gram http→https**
+  (atomique — casse Gram sinon) → nécessite accès/fenêtre. Cf. DAT §6.
 - [~] **Cutover Gram** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
 ## Idées ultérieures (non planifiées)
