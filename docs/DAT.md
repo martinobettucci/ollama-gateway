@@ -88,9 +88,14 @@ Pré-requis : `.env.prod` renseigné (dont `SCW_SECRET_KEY`, `ADMIN_BIND_IP`, `A
    proxy en loopback ; admin sur `ADMIN_BIND_IP:8788`).
 5. **Vérifier** : `curl https://llm.lelabs.tech:21434/_proxy_health` (TLS valide, 200) ; un appel
    `/api/chat` avec la clé importée ; l'admin en LAN.
-6. **Cutover Gram** : passer `OLLAMA_BASE_URL` de Gram (prod Scaleway) de `http://…:21434` à
-   `https://llm.lelabs.tech:21434`, puis vérifier un cycle agent réel.
-7. **Rollback** : réactiver le vhost nginx sauvegardé + repointer Gram sur http.
+6. **Cutover Gram** : passer `OLLAMA_BASE_URL` (et `OLLAMA_EMBED_BASE_URL`) de Gram (prod Scaleway)
+   de `http://…:21434` à `https://llm.lelabs.tech:21434`, recréer agent+api, vérifier un cycle réel.
+   ⚠️ `llm.lelabs.tech` a un AAAA (Freebox) **non routé par le forward** → épingler l'IPv4 côté Gram
+   dans `/etc/hosts` (`91.169.197.1 llm.lelabs.tech`) pour éviter les timeouts IPv6 ; le cert reste
+   valide (SNI = hostname).
+7. **Rollback** : `docker compose stop caddy` sur la Jetson + `systemctl start nginx` (config
+   sauvegardée `~/ollama-auth.nginx.bak`) + repointer Gram sur `http://91.169.197.1:21434`
+   (`.env.bak.pre-tls`).
 
 ## 7. Sécurité / invariants
 
