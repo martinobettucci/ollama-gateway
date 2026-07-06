@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# PROD (Jetson) : build + up sans purge du volume (données/clés persistantes). Requiert .env.prod.
+set -euo pipefail
+cd "$(dirname "$0")"
+if [ ! -f .env.prod ]; then
+  echo "ERREUR : .env.prod manquant. Copier .env.prod.example et le renseigner." >&2
+  exit 1
+fi
+C="docker compose -f docker-compose.prod.yml"
+$C up -d --build
+$C ps
+echo
+echo "  Proxy (loopback)  : http://127.0.0.1:8787/_proxy_health"
+echo "  Admin (LAN)       : http://<ADMIN_BIND_IP>:8788/admin"
+echo "  Public via Caddy  : https://llm.lelabs.tech:21434/_proxy_health (forward 21434→11435)"

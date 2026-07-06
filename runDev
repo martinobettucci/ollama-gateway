@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# DEV : teardown (avec purge du volume → base re-seedée) + build + up. Self-contained.
+set -euo pipefail
+cd "$(dirname "$0")"
+C="docker compose -f docker-compose.dev.yml"
+$C down -v --remove-orphans 2>/dev/null || true
+$C up -d --build
+echo
+echo "  Admin : http://localhost:8788/admin   (mdp: adminpass)"
+echo "  Proxy : http://localhost:8787/_proxy_health"
+echo "  Clé de démo : sk-ollama-devdemokey000000000000000000000000000000000000000000000000"

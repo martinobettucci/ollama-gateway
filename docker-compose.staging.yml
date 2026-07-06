@@ -1,0 +1,64 @@
+# STAGING — chaîne complète TLS → Caddy → proxy → (faux) Ollama, self-contained (CA interne Caddy).
+# Prouve le routage/TLS localement sans Scaleway. Admin exposé LAN, proxy derrière Caddy uniquement.
+name: ollama-gateway-staging
+
+services:
+  fake-ollama:
+    build: .
+    image: ollama-gateway:staging
+    entrypoint: []
+    command: uvicorn devfixtures.fake_ollama:app --host 0.0.0.0 --port 11434
+
+  proxy:
+    build: .
+    image: ollama-gateway:staging
+    environment:
+      APP_ENV: staging
+      GATEWAY_ROLE: proxy
+      OLLAMA_UPSTREAM: http://fake-ollama:11434
+      PROXY_HOST: 0.0.0.0
+      PROXY_PORT: "8787"
+      GATEWAY_DB_PATH: /data/gateway.db
+      # Caddy est sur le réseau bridge Docker (172.16/12) → XFF de confiance depuis cette plage.
+      TRUSTED_PROXY_IPS: 172.16.0.0/12,127.0.0.1
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-stagingpass}
+    volumes:
+      - gw_data:/data
+    depends_on:
+      - fake-ollama
+
+  admin:
+    build: .
+    image: ollama-gateway:staging
+    environment:
+      APP_ENV: staging
+      GATEWAY_ROLE: admin
+      ADMIN_HOST: 0.0.0.0
+      ADMIN_PORT: "8788"
+      GATEWAY_DB_PATH: /data/gateway.db
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-staging-session-secret}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-stagingpass}
+    volumes:
+      - gw_data:/data
+    ports:
+      - "8788:8788"
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    image: ollama-gateway-caddy:staging
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    volumes:
+      - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "8443:8443"
+    depends_on:
+      - proxy
+
+volumes:
+  gw_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,7 @@
+# Caddy custom avec le module DNS Scaleway (challenge ACME DNS-01 : aucun port entrant requis).
+# Build multi-arch (aarch64 sur la Jetson) via xcaddy.
+FROM caddy:2.9-builder AS build
+RUN xcaddy build --with github.com/caddy-dns/scaleway
+
+FROM caddy:2.9
+COPY --from=build /usr/bin/caddy /usr/bin/caddy

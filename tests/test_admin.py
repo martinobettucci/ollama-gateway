@@ -1,0 +1,68 @@
+"""Tests d'intégration du panel admin : setup, login/guard, CRUD clés, flash secret unique."""
+from app import keys
+
+
+async def test_first_run_redirects_to_setup(admin_client):
+    async with admin_client as c:
+        r = await c.get("/admin")
+    assert r.status_code == 303 and r.headers["location"] == "/admin/setup"
+
+
+async def test_setup_then_dashboard(admin_client):
+    async with admin_client as c:
+        r = await c.post("/admin/setup",
+                         data={"password": "supersecret", "confirm": "supersecret"})
+        assert r.status_code == 303 and r.headers["location"] == "/admin"
+        r = await c.get("/admin")
+        assert r.status_code == 200 and "Tableau de bord" in r.text
+
+
+async def test_requires_login_when_admin_set(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.get("/admin")
+        assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+        bad = await c.post("/admin/login", data={"password": "faux"})
+        assert bad.status_code == 401
+        ok = await c.post("/admin/login", data={"password": "admin-mdp"})
+        assert ok.status_code == 303 and ok.headers["location"] == "/admin"
+        dash = await c.get("/admin")
+        assert dash.status_code == 200
+
+
+async def test_create_key_shows_secret_once(admin_client):
+    async with admin_client as c:
+        await c.post("/admin/setup", data={"password": "supersecret", "confirm": "supersecret"})
+        r = await c.post("/admin/keys", data={
+            "label": "client-acme", "origins": "163.172.156.76\n192.168.0.0/24",
+            "monthly_token_cap": "100000", "rpm_limit": "", "note": "prod"})
+        assert r.status_code == 303
+        dash = await c.get("/admin")
+        assert "client-acme" in dash.text and "created-secret" in dash.text
+        # le secret ne s'affiche qu'UNE fois (flash consommé)
+        dash2 = await c.get("/admin")
+        assert "created-secret" not in dash2.text
+    # persistance + restriction d'origine enregistrée
+    rec = keys.list_keys()[0]
+    assert rec.label == "client-acme"
+    assert rec.origins == ["163.172.156.76", "192.168.0.0/24"]
+    assert rec.monthly_token_cap == 100000
+
+
+async def test_toggle_and_delete_key(admin_client):
+    async with admin_client as c:
+        await c.post("/admin/setup", data={"password": "supersecret", "confirm": "supersecret"})
+        await c.post("/admin/keys", data={"label": "k", "origins": "", "note": ""})
+        kid = keys.list_keys()[0].id
+        await c.post(f"/admin/keys/{kid}/toggle")
+        assert not keys.get_key(kid).enabled
+        await c.post(f"/admin/keys/{kid}/delete")
+    assert keys.get_key(kid) is None
+
+
+async def test_guard_blocks_key_creation_without_session(admin_client):
+    keys.set_admin_password("x")
+    async with admin_client as c:
+        r = await c.post("/admin/keys", data={"label": "hack", "origins": ""})
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+    assert keys.list_keys() == []

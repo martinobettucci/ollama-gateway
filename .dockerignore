@@ -1,0 +1,16 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.prod
+.env.staging
+e2e/node_modules
+e2e/output
+e2e/test-results
+e2e/playwright-report
+docs
+*.md

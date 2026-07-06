@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ key.label }} — Passerelle Ollama{% endblock %}
+{% block body %}
+<p><a href="/admin">← Tableau de bord</a></p>
+<h1>{{ key.label }}
+  {% if key.enabled %}<span class="pill on">active</span>{% else %}<span class="pill off">désactivée</span>{% endif %}
+</h1>
+<p class="muted mono">{{ key.key_prefix }}…  ·  créée le {{ key.created_at }}  ·  dernier usage : {{ key.last_used_at or 'jamais' }}</p>
+
+<div class="panel">
+  <div class="stat">
+    <div><div class="n" data-testid="detail-reqs">{{ summary.requests }}</div><div class="l">requêtes</div></div>
+    <div><div class="n">{{ summary.tokens }}</div><div class="l">tokens (total)</div></div>
+    <div><div class="n">{{ summary.month_tokens }}</div><div class="l">tokens ce mois</div></div>
+    <div><div class="n">{{ summary.errors }}</div><div class="l">erreurs</div></div>
+  </div>
+</div>
+
+<h2>Modifier</h2>
+<div class="panel">
+  <form method="post" action="/admin/keys/{{ key.id }}" data-testid="edit-form">
+    <div class="row">
+      <div><label for="label">Label</label>
+        <input id="label" name="label" value="{{ key.label }}" required></div>
+      <div><label for="monthly_token_cap">Plafond tokens / mois</label>
+        <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"
+               value="{{ key.monthly_token_cap or '' }}"></div>
+      <div><label for="rpm_limit">Rate-limit req/min</label>
+        <input id="rpm_limit" name="rpm_limit" type="number" min="1" value="{{ key.rpm_limit or '' }}"></div>
+    </div>
+    <label for="origins">Origines autorisées (IP/CIDR, une par ligne ; vide = toutes)</label>
+    <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>
+    <label for="note">Note</label>
+    <input id="note" name="note" value="{{ key.note }}">
+    <p style="margin-top:1rem"><button type="submit">Enregistrer</button></p>
+  </form>
+</div>
+
+<h2>Usage (30 derniers jours)</h2>
+<div class="panel">
+  {% if summary.per_day %}
+  <table>
+    <thead><tr><th>Jour</th><th>Requêtes</th><th>Tokens</th></tr></thead>
+    <tbody>{% for d in summary.per_day %}
+      <tr><td class="mono">{{ d.day }}</td><td>{{ d.reqs }}</td><td>{{ d.tokens }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+  {% else %}<p class="muted">Aucune requête sur la période.</p>{% endif %}
+</div>
+
+{% if summary.recent_errors %}
+<h2>Dernières erreurs</h2>
+<div class="panel">
+  <table>
+    <thead><tr><th>Horodatage</th><th>IP</th><th>Chemin</th><th>Statut</th></tr></thead>
+    <tbody>{% for e in summary.recent_errors %}
+      <tr><td class="mono">{{ e.ts }}</td><td class="mono">{{ e.client_ip }}</td>
+          <td class="mono">{{ e.path }}</td><td>{{ e.status }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

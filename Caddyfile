@@ -1,0 +1,28 @@
+# PROD (Jetson) — termine le TLS de llm.lelabs.tech et route vers le proxy local.
+# Écoute sur 11435 (cible du forward Freebox 21434 → 11435). Certificat Let's Encrypt obtenu
+# par challenge DNS-01 Scaleway (100 % sortant : ni 80 ni 443 requis en entrée).
+#
+# Secrets : SCW_SECRET_KEY (token API Scaleway, perms Domains/DNS) fourni via .env.prod — jamais
+# committé. Aucune valeur secrète ni topologie réelle dans ce fichier.
+
+{
+	# email ACME optionnel : posé via variable si besoin (sinon Caddy fonctionne sans).
+	# email {env.ACME_EMAIL}
+}
+
+llm.lelabs.tech:11435 {
+	tls {
+		dns scaleway {env.SCW_SECRET_KEY}
+	}
+
+	# Seuls les chemins d'inférence sont proxifiés ; le reste (dont /admin) → 404.
+	@infer path /api/* /v1/* /_proxy_health
+	reverse_proxy @infer 127.0.0.1:8787 {
+		flush_interval -1        # pas de buffering : streaming NDJSON/SSE en temps réel
+		transport http {
+			read_timeout 3600s
+			write_timeout 3600s
+		}
+	}
+	respond 404
+}
