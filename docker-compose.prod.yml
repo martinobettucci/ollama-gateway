@@ -1,0 +1,57 @@
+# PROD (hôte self-hosted) — Caddy (TLS DNS-01 Scaleway) + proxy (loopback) + admin (LAN) en network_mode host,
+# car l'Ollama réel écoute sur 127.0.0.1:11434 (systemd, hors Docker). Variables dans .env.prod.
+name: ollama-gateway
+
+services:
+  proxy:
+    build: .
+    image: ollama-gateway:prod
+    network_mode: host
+    environment:
+      APP_ENV: prod
+      GATEWAY_ROLE: proxy
+      OLLAMA_UPSTREAM: http://127.0.0.1:11434
+      PROXY_HOST: 127.0.0.1        # seul Caddy (loopback) l'atteint
+      PROXY_PORT: "8787"
+      TRUSTED_PROXY_IPS: 127.0.0.1,::1
+      GATEWAY_DB_PATH: /data/gateway.db
+    env_file: [.env.prod]
+    volumes:
+      - gw_data:/data
+    restart: unless-stopped
+
+  admin:
+    build: .
+    image: ollama-gateway:prod
+    network_mode: host
+    environment:
+      APP_ENV: prod
+      GATEWAY_ROLE: admin
+      ADMIN_HOST: ${ADMIN_BIND_IP}   # IP LAN de la box (jamais forwardée) — cf. .env.prod
+      ADMIN_PORT: "8788"
+      GATEWAY_DB_PATH: /data/gateway.db
+    env_file: [.env.prod]
+    volumes:
+      - gw_data:/data
+    restart: unless-stopped
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    image: ollama-gateway-caddy:prod
+    network_mode: host
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    env_file: [.env.prod]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - proxy
+
+volumes:
+  gw_data:
+  caddy_data:
+  caddy_config:

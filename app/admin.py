@@ -1,0 +1,177 @@
+"""Panel d'admin LAN-only : login + gestion des clés (CRUD, origines, quotas) + dashboard d'usage.
+
+Rendu serveur (Jinja2), formulaires HTML classiques (POST → redirect) : aucun build front, aucun
+CDN, entièrement pilotable en E2E. Bind sur l'IP LAN uniquement, jamais forwardé à l'extérieur.
+"""
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+
+from . import auth, config, db, keys, usage
+
+TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(SessionMiddleware, secret_key=config.ADMIN_SESSION_SECRET,
+                   session_cookie="ollama_gw_admin", same_site="lax", https_only=False)
+
+
+def _guard(request: Request) -> RedirectResponse | None:
+    """Renvoie une redirection si non authentifié / non initialisé, sinon None."""
+    if keys.get_admin_hash() is None:
+        return RedirectResponse("/admin/setup", status_code=303)
+    if not request.session.get("admin"):
+        return RedirectResponse("/admin/login", status_code=303)
+    return None
+
+
+def _parse_int(v: str | None) -> int | None:
+    v = (v or "").strip()
+    if not v:
+        return None
+    try:
+        n = int(v)
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _parse_origins(raw: str) -> list[str]:
+    """Découpe une saisie multi-lignes/virgules en liste de CIDR/IP nettoyés."""
+    out: list[str] = []
+    for chunk in (raw or "").replace(",", "\n").splitlines():
+        c = chunk.strip()
+        if c:
+            out.append(c)
+    return out
+
+
+# --- Initialisation / login -------------------------------------------------------------------
+
+@app.get("/", response_class=RedirectResponse)
+async def root():
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.get("/admin/setup", response_class=HTMLResponse)
+async def setup_form(request: Request):
+    if keys.get_admin_hash() is not None:
+        return RedirectResponse("/admin/login", status_code=303)
+    return TEMPLATES.TemplateResponse(request, "setup.html", {"error": None})
+
+
+@app.post("/admin/setup")
+async def setup_submit(request: Request, password: str = Form(...), confirm: str = Form(...)):
+    if keys.get_admin_hash() is not None:
+        return RedirectResponse("/admin/login", status_code=303)
+    if len(password) < 8 or password != confirm:
+        return TEMPLATES.TemplateResponse(
+            request, "setup.html",
+            {"error": "Mot de passe trop court (min 8) ou non identique."}, status_code=400)
+    keys.set_admin_password(password)
+    request.session["admin"] = True
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def login_form(request: Request):
+    if keys.get_admin_hash() is None:
+        return RedirectResponse("/admin/setup", status_code=303)
+    return TEMPLATES.TemplateResponse(request, "login.html", {"error": None})
+
+
+@app.post("/admin/login")
+async def login_submit(request: Request, password: str = Form(...)):
+    stored = keys.get_admin_hash()
+    if stored and auth.verify_password(password, stored):
+        request.session["admin"] = True
+        return RedirectResponse("/admin", status_code=303)
+    return TEMPLATES.TemplateResponse(
+        request, "login.html", {"error": "Mot de passe incorrect."}, status_code=401)
+
+
+@app.get("/admin/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/admin/login", status_code=303)
+
+
+# --- Dashboard / clés -------------------------------------------------------------------------
+
+@app.get("/admin", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    if (r := _guard(request)):
+        return r
+    return TEMPLATES.TemplateResponse(request, "dashboard.html", {
+        "keys": keys.list_keys(),
+        "totals": usage.global_summary(),
+        "created": request.session.pop("created_key", None),
+    })
+
+
+@app.post("/admin/keys")
+async def create_key(request: Request, label: str = Form(...), origins: str = Form(""),
+                     monthly_token_cap: str = Form(""), rpm_limit: str = Form(""),
+                     note: str = Form("")):
+    if (r := _guard(request)):
+        return r
+    rec, secret = keys.create_key(
+        label=label.strip() or "sans-nom", origins=_parse_origins(origins),
+        monthly_token_cap=_parse_int(monthly_token_cap), rpm_limit=_parse_int(rpm_limit),
+        note=note.strip())
+    # Le secret n'est montré qu'ici, une seule fois (via un flash de session).
+    request.session["created_key"] = {"label": rec.label, "secret": secret}
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.get("/admin/keys/{key_id}", response_class=HTMLResponse)
+async def key_detail(request: Request, key_id: int):
+    if (r := _guard(request)):
+        return r
+    rec = keys.get_key(key_id)
+    if rec is None:
+        return RedirectResponse("/admin", status_code=303)
+    return TEMPLATES.TemplateResponse(request, "key_detail.html", {
+        "key": rec, "summary": usage.key_summary(key_id),
+    })
+
+
+@app.post("/admin/keys/{key_id}")
+async def key_update(request: Request, key_id: int, label: str = Form(...), origins: str = Form(""),
+                     monthly_token_cap: str = Form(""), rpm_limit: str = Form(""),
+                     note: str = Form("")):
+    if (r := _guard(request)):
+        return r
+    keys.update_key(key_id, label=label.strip() or "sans-nom", origins=_parse_origins(origins),
+                    monthly_token_cap=_parse_int(monthly_token_cap),
+                    rpm_limit=_parse_int(rpm_limit), note=note.strip())
+    return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
+
+
+@app.post("/admin/keys/{key_id}/toggle")
+async def key_toggle(request: Request, key_id: int):
+    if (r := _guard(request)):
+        return r
+    rec = keys.get_key(key_id)
+    if rec:
+        keys.set_enabled(key_id, not rec.enabled)
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.post("/admin/keys/{key_id}/delete")
+async def key_delete(request: Request, key_id: int):
+    if (r := _guard(request)):
+        return r
+    keys.delete_key(key_id)
+    return RedirectResponse("/admin", status_code=303)

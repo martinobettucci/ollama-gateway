@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Passerelle Ollama{% endblock %}</title>
+  <style>
+    :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --fg:#e7eaf0; --muted:#9aa4b2;
+            --acc:#4f9cf9; --ok:#3fb950; --bad:#f85149; --warn:#d29922; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+           background:var(--bg); color:var(--fg); }
+    a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:1rem;
+             padding:.9rem 1.2rem; background:var(--panel); border-bottom:1px solid var(--line); }
+    header .brand { font-weight:700; letter-spacing:.02em; }
+    header .brand small { color:var(--muted); font-weight:400; margin-left:.5rem; }
+    main { max-width:1000px; margin:0 auto; padding:1.4rem 1.2rem 4rem; }
+    h1 { font-size:1.25rem; margin:.2rem 0 1rem; }
+    h2 { font-size:1rem; margin:1.6rem 0 .6rem; color:var(--muted); text-transform:uppercase;
+         letter-spacing:.06em; font-weight:600; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+             padding:1.1rem 1.2rem; margin-bottom:1rem; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:.55rem .5rem; border-bottom:1px solid var(--line);
+            vertical-align:top; }
+    th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; }
+    code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .pill { display:inline-block; padding:.1rem .5rem; border-radius:999px; font-size:.75rem;
+            border:1px solid var(--line); }
+    .pill.on { color:var(--ok); border-color:var(--ok); }
+    .pill.off { color:var(--bad); border-color:var(--bad); }
+    label { display:block; margin:.7rem 0 .25rem; color:var(--muted); font-size:.85rem; }
+    input, textarea { width:100%; padding:.5rem .6rem; background:#0d0f14; color:var(--fg);
+                      border:1px solid var(--line); border-radius:7px; font:inherit; }
+    textarea { min-height:5rem; resize:vertical; }
+    .row { display:flex; gap:1rem; flex-wrap:wrap; } .row > div { flex:1 1 180px; }
+    button, .btn { display:inline-block; padding:.5rem .9rem; border-radius:7px; cursor:pointer;
+                   border:1px solid var(--acc); background:var(--acc); color:#08111f;
+                   font:inherit; font-weight:600; }
+    button.ghost, .btn.ghost { background:transparent; color:var(--fg); border-color:var(--line); }
+    button.danger { background:transparent; color:var(--bad); border-color:var(--bad); }
+    .stat { display:flex; gap:1.4rem; flex-wrap:wrap; }
+    .stat .n { font-size:1.5rem; font-weight:700; } .stat .l { color:var(--muted); font-size:.8rem; }
+    .flash { border:1px solid var(--ok); background:#10261a; border-radius:10px;
+             padding:1rem 1.2rem; margin-bottom:1rem; }
+    .flash code { display:block; margin-top:.5rem; padding:.6rem .7rem; background:#0d0f14;
+                  border-radius:7px; word-break:break-all; color:var(--ok); }
+    .err { color:var(--bad); margin:.4rem 0; }
+    .muted { color:var(--muted); }
+    .inline { display:inline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        style="vertical-align:-2px"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2"/>
+        <path d="m16 5 3 3"/><path d="m14 7 3 3"/></svg>
+      Passerelle Ollama <small>gestion des clés</small></div>
+    <nav>
+      {% if request.session.get('admin') %}
+      <a href="/admin">Tableau de bord</a> &nbsp;·&nbsp;
+      <a href="/admin/logout">Déconnexion</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>{% block body %}{% endblock %}</main>
+</body>
+</html>

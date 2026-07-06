@@ -1,0 +1,11 @@
+# Passerelle de gestion de clés Ollama — dépendances runtime + tests.
+# Épinglées en minor pour un build reproductible (dev host x86 comme hôte self-hosted aarch64 : pur Python).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+jinja2==3.1.5
+python-multipart==0.0.20        # parsing des formulaires HTML (admin)
+itsdangerous==2.2.0             # signature des cookies de session (SessionMiddleware)
+# --- tests ---
+pytest==8.3.4
+pytest-asyncio==0.25.2

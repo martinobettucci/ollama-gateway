@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# STAGING : chaîne complète avec Caddy (TLS interne) + faux upstream. Self-contained.
+set -euo pipefail
+cd "$(dirname "$0")"
+C="docker compose -f docker-compose.staging.yml"
+$C down -v --remove-orphans 2>/dev/null || true
+$C up -d --build
+echo
+echo "  HTTPS (CA interne, utiliser -k) : https://localhost:8443/_proxy_health"
+echo "  Admin : http://localhost:8788/admin"

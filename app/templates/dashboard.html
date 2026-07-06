@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — Passerelle Ollama{% endblock %}
+{% block body %}
+<h1>Tableau de bord</h1>
+
+{% if created %}
+<div class="flash" data-testid="created-flash">
+  Clé « {{ created.label }} » créée. <strong>Copiez-la maintenant</strong> — elle ne sera plus jamais affichée :
+  <code data-testid="created-secret">{{ created.secret }}</code>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="stat">
+    <div><div class="n" data-testid="stat-reqs">{{ totals.requests }}</div><div class="l">requêtes totales</div></div>
+    <div><div class="n">{{ totals.requests_24h }}</div><div class="l">dernières 24 h</div></div>
+    <div><div class="n">{{ totals.tokens }}</div><div class="l">tokens servis</div></div>
+    <div><div class="n">{{ totals.errors }}</div><div class="l">erreurs (≥400)</div></div>
+  </div>
+</div>
+
+<h2>Clés API ({{ keys|length }})</h2>
+<div class="panel">
+  <table data-testid="keys-table">
+    <thead><tr><th>Label</th><th>Préfixe</th><th>État</th><th>Origines</th>
+      <th>Quota</th><th>Dernier usage</th><th></th></tr></thead>
+    <tbody>
+    {% for k in keys %}
+      <tr data-testid="key-row" data-key-id="{{ k.id }}">
+        <td><a href="/admin/keys/{{ k.id }}">{{ k.label }}</a></td>
+        <td class="mono">{{ k.key_prefix }}…</td>
+        <td>{% if k.enabled %}<span class="pill on">active</span>{% else %}<span class="pill off">désactivée</span>{% endif %}</td>
+        <td class="muted">{{ k.origins|join(', ') if k.origins else 'toutes' }}</td>
+        <td class="muted">
+          {% if k.monthly_token_cap %}{{ k.monthly_token_cap }} tok/mois{% endif %}
+          {% if k.rpm_limit %}{% if k.monthly_token_cap %} · {% endif %}{{ k.rpm_limit }} req/min{% endif %}
+          {% if not k.monthly_token_cap and not k.rpm_limit %}—{% endif %}
+        </td>
+        <td class="muted">{{ k.last_used_at or 'jamais' }}</td>
+        <td style="white-space:nowrap">
+          <form class="inline" method="post" action="/admin/keys/{{ k.id }}/toggle">
+            <button class="ghost" type="submit">{{ 'désactiver' if k.enabled else 'activer' }}</button>
+          </form>
+          <form class="inline" method="post" action="/admin/keys/{{ k.id }}/delete"
+                onsubmit="return confirm('Supprimer la clé « {{ k.label }} » ?');">
+            <button class="danger" type="submit">suppr.</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="muted">Aucune clé. Créez-en une ci-dessous.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2>Nouvelle clé</h2>
+<div class="panel">
+  <form method="post" action="/admin/keys" data-testid="create-form">
+    <div class="row">
+      <div><label for="label">Label</label>
+        <input id="label" name="label" placeholder="client-acme" required></div>
+      <div><label for="monthly_token_cap">Plafond tokens / mois (vide = illimité)</label>
+        <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"></div>
+      <div><label for="rpm_limit">Rate-limit req/min (vide = illimité)</label>
+        <input id="rpm_limit" name="rpm_limit" type="number" min="1"></div>
+    </div>
+    <label for="origins">Origines autorisées — IP/CIDR, une par ligne (vide = toutes)</label>
+    <textarea id="origins" name="origins" placeholder="203.0.113.10&#10;192.168.0.0/24"></textarea>
+    <label for="note">Note (optionnel)</label>
+    <input id="note" name="note">
+    <p style="margin-top:1rem"><button type="submit">Créer la clé</button></p>
+  </form>
+</div>
+{% endblock %}
