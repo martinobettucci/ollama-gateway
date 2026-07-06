@@ -1,16 +1,24 @@
 # STAGING (self-contained) — prouve la chaîne TLS → Caddy → proxy → (faux) Ollama localement,
 # sans Scaleway ni domaine réel. `tls internal` = CA locale Caddy (tester avec `curl -k`).
 
+{
+	auto_https disable_redirects
+}
+
 :8443 {
 	tls internal
 
 	@infer path /api/* /v1/* /_proxy_health
-	reverse_proxy @infer proxy:8787 {
-		flush_interval -1
-		transport http {
-			read_timeout 3600s
-			write_timeout 3600s
+	handle @infer {
+		reverse_proxy proxy:8787 {
+			flush_interval -1
+			transport http {
+				read_timeout 3600s
+				write_timeout 3600s
+			}
 		}
 	}
-	respond 404
+	handle {
+		respond 404
+	}
 }
