@@ -29,9 +29,10 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   `llm.example.com` obtenu via Scaleway ; chaîne HTTPS complète 200 (clé client-exemple) / 401 (sans) /
   404 (`/admin`). *Config requise : bloc `dns scaleway {secret_key; organization_id}`, `dns_ttl 3600s`
   (l'API Scaleway exige un TTL), `auto_https disable_redirects`, `handle` (pas `respond` nu).*
-- [~] **Cutover prod hôte self-hosted** : proxy+admin déjà UP en prod (loopback/LAN) + clé client-exemple importée +
-  cert émis. Reste : retrait nginx (:11435), bascule Caddy sur 11435, **switch client-exemple http→https**
-  (atomique — casse client-exemple sinon) → nécessite accès/fenêtre. Cf. DAT §6.
+- [x] **Cutover prod hôte self-hosted** — FAIT et vérifié (2026-07-06) : nginx retiré (sauvegardé), Caddy TLS
+  sur :11435, clé client-exemple migrée, agent client-exemple basculé sur `https://llm.example.com:21434` (pin
+  `/etc/hosts`→IPv4 côté client-exemple car l'IPv6 n'est pas routé par le forward). Preuves : HTTPS externe 200,
+  chat streaming + embed réels via l'agent (embed corrigé vs 403 nginx), usage journalisé (tokens).
 - [~] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
 ## Idées ultérieures (non planifiées)

@@ -88,9 +88,14 @@ Pré-requis : `.env.prod` renseigné (dont `SCW_SECRET_KEY`, `ADMIN_BIND_IP`, `A
    proxy en loopback ; admin sur `ADMIN_BIND_IP:8788`).
 5. **Vérifier** : `curl https://llm.example.com:21434/_proxy_health` (TLS valide, 200) ; un appel
    `/api/chat` avec la clé importée ; l'admin en LAN.
-6. **Cutover client-exemple** : passer `OLLAMA_BASE_URL` de client-exemple (prod Scaleway) de `http://…:21434` à
-   `https://llm.example.com:21434`, puis vérifier un cycle agent réel.
-7. **Rollback** : réactiver le vhost nginx sauvegardé + repointer client-exemple sur http.
+6. **Cutover client-exemple** : passer `OLLAMA_BASE_URL` (et `OLLAMA_EMBED_BASE_URL`) de client-exemple (prod Scaleway)
+   de `http://…:21434` à `https://llm.example.com:21434`, recréer agent+api, vérifier un cycle réel.
+   ⚠️ `llm.example.com` a un AAAA (box) **non routé par le forward** → épingler l'IPv4 côté client-exemple
+   dans `/etc/hosts` (`198.51.100.1 llm.example.com`) pour éviter les timeouts IPv6 ; le cert reste
+   valide (SNI = hostname).
+7. **Rollback** : `docker compose stop caddy` sur la hôte self-hosted + `systemctl start nginx` (config
+   sauvegardée `~/ancien-proxy.bak`) + repointer client-exemple sur `http://198.51.100.1:21434`
+   (`.env.bak`).
 
 ## 7. Sécurité / invariants
 
