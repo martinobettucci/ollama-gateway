@@ -33,7 +33,7 @@ test('proxy: désactivation via l\'UI → 401, réactivation, usage visible', as
 
   const row = page.locator('[data-testid=key-row]', { hasText: 'demo (dev)' });
   await row.getByRole('button', { name: 'désactiver' }).click();
-  await expect(row.locator('.pill.off')).toBeVisible();
+  await expect(row.locator('.badge.off')).toBeVisible();
 
   // Clé désactivée → le proxy refuse.
   const disabled = await request.post(`${PROXY}/api/chat`, {
@@ -43,7 +43,7 @@ test('proxy: désactivation via l\'UI → 401, réactivation, usage visible', as
 
   // Réactivation.
   await row.getByRole('button', { name: 'activer' }).click();
-  await expect(row.locator('.pill.on')).toBeVisible();
+  await expect(row.locator('.badge.on')).toBeVisible();
 
   // L'usage a été journalisé (compteur global > 0).
   await page.reload();
