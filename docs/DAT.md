@@ -35,6 +35,15 @@ car Ollama est en loopback natif (hors Docker).
   (lib `markdown`, blocs Mermaid retirés, images remappées) dans une modale ; captures servies
   depuis `app/static/manual/` (montage `/static`), régénérées par l'E2E (`npm run sync-manual`).
   Seul `docs/manual.md` entre dans l'image Docker (`.dockerignore` : `!docs/manual.md`).
+- `servers.py` — **serveurs d'exécution** (« executors ») : registre des upstreams Ollama
+  (local + distants), CRUD, sonde de disponibilité (`GET {base}/api/tags`), reconciler
+  `ensure_default` (crée le serveur local depuis `$OLLAMA_UPSTREAM`, réassigne les clés
+  orphelines). Chaque clé pointe un serveur (`api_keys.server_id`) ; allowlist de modèles par
+  clé (`key_models`). Le proxy route vers `server.base_url`, applique la restriction de modèle
+  (agnostique de l'API : `model` à la racine du corps) et filtre `/api/tags` + `/v1/models`.
+- `crypto.py` — **chiffrement réversible au repos** (Fernet, clé dérivée de `$P2E_MASTER_KEY`)
+  du jeton Bearer d'un serveur distant. Réversible (à réémettre vers l'amont), contrairement aux
+  hachages one-way de `auth.py`.
 
 ## 3. Données (SQLite)
 
@@ -42,9 +51,16 @@ car Ollama est en loopback natif (hors Docker).
   la clé n'est jamais stockée en clair (uniquement son sha-256) ; `key_prefix` = début lisible.
 - `key_origins(key_id, cidr)` — allowlist d'origine par clé ; aucune ligne ⇒ aucune restriction.
 - `key_quotas(key_id, monthly_token_cap, rpm_limit)` — plafonds optionnels (NULL = illimité).
+- `servers(id, name, base_url, auth_token_enc, is_default, enabled, last_checked_at, last_online,
+  last_models)` — serveurs d'exécution ; `auth_token_enc` = jeton Bearer distant **chiffré**
+  (Fernet), jamais en clair ; `last_models` = JSON des modèles détectés au dernier test.
+- `api_keys.server_id` (FK `servers`, ON DELETE SET NULL) — serveur rattaché ; `key_models(key_id,
+  model)` — allowlist de modèles par clé (aucune ligne = tous autorisés).
 - `usage_events(...)` — append-only, une ligne par requête (autorisée ou refusée) : clé, IP,
   méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out.
 - `admin_auth(id=1, password_hash)` — mot de passe admin (pbkdf2).
+- Migrations idempotentes **et concurrent-safe** (verrou `flock` : proxy/admin migrent en
+  parallèle sur le même fichier). `busy_timeout` posé avant `PRAGMA journal_mode=WAL`.
 
 ### Seeds
 - **dev** (`bootstrap seed-dev`, idempotent) : admin `adminpass` + clé de démo déterministe
@@ -58,9 +74,13 @@ car Ollama est en loopback natif (hors Docker).
 1. Caddy termine le TLS et route `/api/*|/v1/*|/_proxy_health` vers le proxy (loopback), en posant
    `X-Forwarded-For`.
 2. Le proxy détermine l'IP source (XFF si le pair est de confiance — `TRUSTED_PROXY_IPS`).
-3. `401` si clé absente/inconnue/désactivée ; `403` si origine hors allowlist ; `429` si quota.
-4. Sinon : relais streaming vers Ollama, **sans** l'en-tête `Authorization` client ; comptage des
-   tokens dans le payload de fin (`prompt_eval_count`/`eval_count` ou `usage`) ; journalisation.
+3. `401` si clé absente/inconnue/désactivée ; `403` si origine hors allowlist ; `429` si quota ;
+   `503` si serveur rattaché désactivé/absent ; `403` si modèle hors allowlist de la clé (le
+   `model` est lu à la racine du corps → même gate pour Ollama, OpenAI chat/responses, Anthropic).
+4. Sinon : relais streaming vers **le serveur rattaché** (`server.base_url`), **sans** l'en-tête
+   `Authorization` client (jeton du serveur distant injecté à la place, déchiffré) ; les listings
+   `/api/tags` et `/v1/models` sont filtrés à l'allowlist ; comptage des tokens dans le payload de
+   fin (`prompt_eval_count`/`eval_count` ou `usage`) ; journalisation.
 
 ## 5. Lancement
 
@@ -70,12 +90,13 @@ car Ollama est en loopback natif (hors Docker).
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
 ```
 
-Tests : `python -m pytest` (31) ; `cd e2e && npm test` (3 E2E + captures `e2e/output/`).
+Tests : `python -m pytest` (56) ; `cd e2e && npm test` (6 E2E + captures `e2e/output/`).
 
 ## 6. Déploiement hôte self-hosted & migration (procédure)
 
 Pré-requis : `.env.prod` renseigné (dont `SCW_SECRET_KEY`, `ADMIN_BIND_IP`, `ADMIN_PASSWORD`,
-`ADMIN_SESSION_SECRET`). **Aucun secret committé.**
+`ADMIN_SESSION_SECRET`, `P2E_MASTER_KEY`). **Aucun secret committé.** `P2E_MASTER_KEY` chiffre les
+jetons des serveurs distants : la changer rend les jetons stockés illisibles (il faut les ressaisir).
 
 1. **Amener le code** sur la hôte self-hosted (clone/rsync du repo).
 2. **Importer la clé historique** (pour ne casser aucun client) — la valeur vient de l'ancien

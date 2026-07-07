@@ -35,6 +35,13 @@ TRUSTED_PROXY_IPS = {
 # Secret de signature des sessions admin (cookie). OBLIGATOIRE en prod ; défaut dev non secret.
 ADMIN_SESSION_SECRET = os.environ.get("ADMIN_SESSION_SECRET", "dev-insecure-session-secret")
 
+# Clé maître de chiffrement au repos (jetons d'auth des serveurs distants, cf. crypto.py).
+# OBLIGATOIRE en prod ; défaut dev non secret. Changer cette clé rend les jetons stockés illisibles.
+P2E_MASTER_KEY = os.environ.get("P2E_MASTER_KEY", "dev-insecure-master-key")
+
+# Délai max d'un test de disponibilité d'un serveur d'exécution (GET /api/tags).
+SERVER_PROBE_TIMEOUT_S = float(os.environ.get("SERVER_PROBE_TIMEOUT_S", "5"))
+
 # Préfixe lisible des clés générées (compat OpenAI : Authorization: Bearer <clé>).
 KEY_PREFIX = os.environ.get("KEY_PREFIX", "sk-ollama-")
 

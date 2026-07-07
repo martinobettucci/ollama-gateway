@@ -4,11 +4,13 @@ __pycache__/
 *.db
 *.db-wal
 *.db-shm
+*.migrate.lock
 .env
 .env.prod
 .env.staging
 e2e/node_modules/
 e2e/output/
+e2e/e2e-data/
 e2e/test-results/
 e2e/playwright-report/
 data/

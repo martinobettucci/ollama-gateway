@@ -5,9 +5,9 @@ comparée en IP/CIDR via le module `ipaddress` (IPv4 et IPv6).
 """
 import ipaddress
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from . import auth, db
+from . import auth, db, servers
 
 
 @dataclass
@@ -22,6 +22,9 @@ class KeyRecord:
     origins: list[str]
     monthly_token_cap: int | None
     rpm_limit: int | None
+    server_id: int | None = None
+    server_name: str | None = None
+    models: list[str] = field(default_factory=list)
 
 
 # --- Lookup / validation (chemin proxy) -------------------------------------------------------
@@ -42,6 +45,12 @@ def find_by_key(key: str, conn: sqlite3.Connection | None = None) -> sqlite3.Row
 def origins_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
     return [r["cidr"] for r in conn.execute(
         "SELECT cidr FROM key_origins WHERE key_id = ? ORDER BY id", (key_id,))]
+
+
+def models_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
+    """Allowlist de modèles de la clé (vide = tous les modèles du serveur autorisés)."""
+    return [r["model"] for r in conn.execute(
+        "SELECT model FROM key_models WHERE key_id = ? ORDER BY id", (key_id,))]
 
 
 def origin_allowed(client_ip: str, cidrs: list[str]) -> bool:
@@ -75,23 +84,32 @@ def touch_last_used(key_id: int, conn: sqlite3.Connection | None = None) -> None
 # --- CRUD (chemin admin) ----------------------------------------------------------------------
 
 def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
-               rpm_limit: int | None, note: str = "",
-               key_value: str | None = None) -> tuple[KeyRecord, str]:
+               rpm_limit: int | None, note: str = "", key_value: str | None = None,
+               server_id: int | None = None,
+               models: list[str] | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
     `key_value` permet d'injecter une clé existante (migration) au lieu d'en générer une neuve.
+    `server_id` = serveur d'exécution rattaché (None → serveur par défaut). `models` = allowlist
+    de modèles (None/vide → tous les modèles du serveur autorisés).
     """
     key = key_value or auth.generate_key()
     conn = db.connect()
     try:
+        sid = server_id if server_id is not None else servers.default_id(conn)
         with conn:
             cur = conn.execute(
-                "INSERT INTO api_keys(label, key_prefix, key_hash, note) VALUES (?,?,?,?)",
-                (label, auth.key_prefix(key), auth.hash_key(key), note),
+                "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id) "
+                "VALUES (?,?,?,?,?)",
+                (label, auth.key_prefix(key), auth.hash_key(key), note, sid),
             )
             kid = cur.lastrowid
             for c in origins:
                 conn.execute("INSERT INTO key_origins(key_id, cidr) VALUES (?,?)", (kid, c.strip()))
+            for m in (models or []):
+                if m.strip():
+                    conn.execute("INSERT INTO key_models(key_id, model) VALUES (?,?)",
+                                 (kid, m.strip()))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(
                     "INSERT INTO key_quotas(key_id, monthly_token_cap, rpm_limit) VALUES (?,?,?)",
@@ -112,12 +130,17 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
         q = conn.execute(
             "SELECT monthly_token_cap, rpm_limit FROM key_quotas WHERE key_id = ?", (key_id,)
         ).fetchone()
+        server_id = row["server_id"]
+        srv = conn.execute(
+            "SELECT name FROM servers WHERE id = ?", (server_id,)).fetchone() if server_id else None
         return KeyRecord(
             id=row["id"], label=row["label"], key_prefix=row["key_prefix"],
             enabled=bool(row["enabled"]), note=row["note"], created_at=row["created_at"],
             last_used_at=row["last_used_at"], origins=origins_for(key_id, conn),
             monthly_token_cap=q["monthly_token_cap"] if q else None,
             rpm_limit=q["rpm_limit"] if q else None,
+            server_id=server_id, server_name=srv["name"] if srv else None,
+            models=models_for(key_id, conn),
         )
     finally:
         if own:
@@ -143,15 +166,28 @@ def set_enabled(key_id: int, enabled: bool) -> None:
 
 
 def update_key(key_id: int, label: str, origins: list[str],
-               monthly_token_cap: int | None, rpm_limit: int | None, note: str) -> None:
+               monthly_token_cap: int | None, rpm_limit: int | None, note: str,
+               server_id: int | None = None, models: list[str] | None = None) -> None:
+    """Met à jour une clé. `server_id`/`models` non fournis (None) → inchangés."""
     conn = db.connect()
     try:
         with conn:
-            conn.execute("UPDATE api_keys SET label = ?, note = ? WHERE id = ?", (label, note, key_id))
+            conn.execute("UPDATE api_keys SET label = ?, note = ? WHERE id = ?",
+                         (label, note, key_id))
+            if server_id is not None:
+                conn.execute("UPDATE api_keys SET server_id = ? WHERE id = ?",
+                             (server_id, key_id))
             conn.execute("DELETE FROM key_origins WHERE key_id = ?", (key_id,))
             for c in origins:
                 if c.strip():
-                    conn.execute("INSERT INTO key_origins(key_id, cidr) VALUES (?,?)", (key_id, c.strip()))
+                    conn.execute("INSERT INTO key_origins(key_id, cidr) VALUES (?,?)",
+                                 (key_id, c.strip()))
+            if models is not None:
+                conn.execute("DELETE FROM key_models WHERE key_id = ?", (key_id,))
+                for m in models:
+                    if m.strip():
+                        conn.execute("INSERT INTO key_models(key_id, model) VALUES (?,?)",
+                                     (key_id, m.strip()))
             conn.execute("DELETE FROM key_quotas WHERE key_id = ?", (key_id,))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(

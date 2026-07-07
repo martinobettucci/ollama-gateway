@@ -40,7 +40,7 @@
   </div>
   <div class="table-wrap">
   <table data-testid="keys-table">
-    <thead><tr><th>Label</th><th>Préfixe</th><th>État</th><th>Origines</th>
+    <thead><tr><th>Label</th><th>Préfixe</th><th>État</th><th>Serveur</th><th>Modèles</th><th>Origines</th>
       <th>Quota</th><th>Dernier usage</th><th>Actions</th></tr></thead>
     <tbody>
     {% for k in keys %}
@@ -48,6 +48,8 @@
         <td><a href="/admin/keys/{{ k.id }}"><strong>{{ k.label }}</strong></a></td>
         <td class="mono">{{ k.key_prefix }}…</td>
         <td>{% if k.enabled %}<span class="badge on">active</span>{% else %}<span class="badge off">désactivée</span>{% endif %}</td>
+        <td>{% if k.server_name %}<span class="badge neutral">{{ icon('server', 12) }} {{ k.server_name }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="muted">{{ (k.models|length ~ ' autorisé(s)') if k.models else 'tous' }}</td>
         <td class="muted">{{ k.origins|join(', ') if k.origins else 'toutes' }}</td>
         <td class="muted">
           {% if k.monthly_token_cap %}{{ k.monthly_token_cap }} tok/mois{% endif %}
@@ -66,7 +68,7 @@
         </td>
       </tr>
     {% else %}
-      <tr><td colspan="7">
+      <tr><td colspan="9">
         <div class="empty">{{ icon('key-round', 22) }}
           <span>Aucune clé pour le moment — créez la première avec le formulaire ci-dessous.</span></div>
       </td></tr>
@@ -85,6 +87,15 @@
     <div class="row">
       <div><label for="label">Label *</label>
         <input id="label" name="label" placeholder="client-acme" required></div>
+      <div><label for="server_id">Serveur d'exécution</label>
+        <select id="server_id" name="server_id">
+          {% for s in servers %}
+          <option value="{{ s.id }}"{{ ' selected' if s.is_default }}{{ ' disabled' if not s.enabled }}>
+            {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
+          {% endfor %}
+        </select></div>
+    </div>
+    <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1">
         <p class="hint">Vide = illimité.</p></div>
@@ -92,6 +103,10 @@
         <input id="rpm_limit" name="rpm_limit" type="number" min="1">
         <p class="hint">Vide = illimité.</p></div>
     </div>
+    <label for="models">Modèles autorisés</label>
+    <textarea id="models" name="models" placeholder="llama3:latest&#10;nomic-embed-text:latest"></textarea>
+    <p class="hint">Un nom de modèle par ligne ; vide = tous les modèles du serveur. (Cases à cocher
+      depuis les modèles détectés : sur la page de détail de la clé, après un test du serveur.)</p>
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins" placeholder="203.0.113.7&#10;192.168.0.0/24"></textarea>
     <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>

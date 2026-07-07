@@ -13,28 +13,51 @@ from contextlib import asynccontextmanager
 
 import httpx
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from starlette.background import BackgroundTask
 
-from . import auth, config, db, keys, quotas, usage
+from . import auth, config, db, keys, quotas, servers, usage
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels.
 _DROP_REQ_HEADERS = {"host", "authorization", "content-length", "connection",
                      "proxy-connection", "keep-alive", "transfer-encoding", "upgrade"}
 _DROP_RESP_HEADERS = {"content-length", "transfer-encoding", "connection", "keep-alive"}
 
+# Endpoints de listing de modèles (toutes APIs) : réponse filtrée sur l'allowlist de la clé.
+# Ollama natif → {"models":[{"name"|"model":…}]} ; OpenAI/Anthropic → {"data":[{"id":…}]}.
+_LISTING_PATHS = {"/api/tags", "/v1/models"}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.init_db()
+    servers.ensure_default()  # serveur local par défaut + réassignation des clés orphelines
+    # Client sans base_url : chaque requête cible l'URL absolue du serveur rattaché à la clé.
     app.state.upstream = httpx.AsyncClient(
-        base_url=config.OLLAMA_UPSTREAM,
         timeout=httpx.Timeout(config.UPSTREAM_TIMEOUT_S, connect=15.0),
     )
     try:
         yield
     finally:
         await app.state.upstream.aclose()
+
+
+def _filter_models(content: bytes, allowed: set[str]) -> bytes:
+    """Filtre une réponse de listing pour ne garder que les modèles autorisés (formes Ollama et
+    OpenAI/Anthropic). Renvoie le corps original si non-JSON ou forme inattendue."""
+    try:
+        obj = json.loads(content)
+    except (ValueError, UnicodeDecodeError):
+        return content
+    if not isinstance(obj, dict):
+        return content
+    if isinstance(obj.get("models"), list):  # Ollama /api/tags
+        obj["models"] = [m for m in obj["models"] if isinstance(m, dict)
+                         and (m.get("name") in allowed or m.get("model") in allowed)]
+    if isinstance(obj.get("data"), list):  # OpenAI/Anthropic /v1/models
+        obj["data"] = [m for m in obj["data"]
+                       if isinstance(m, dict) and m.get("id") in allowed]
+    return json.dumps(obj).encode("utf-8")
 
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
@@ -169,35 +192,68 @@ async def proxy(request: Request, full_path: str):
         _log(rec.id, ip, method, path, "", 403, t0)
         return JSONResponse({"error": "origine non autorisée pour cette clé"}, status_code=403)
 
-    # --- Quotas ---
+    # --- Quotas + résolution du serveur d'exécution rattaché ---
     conn = db.connect()
     try:
         ok, reason = quotas.check(rec, conn)
+        srv = servers.get_server(rec.server_id, conn) if rec.server_id else None
+        srv_auth = servers.auth_header_for(rec.server_id, conn) if srv else {}
     finally:
         conn.close()
     if not ok:
         _log(rec.id, ip, method, path, "", 429, t0)
         return JSONResponse({"error": reason}, status_code=429)
+    if srv is None or not srv.enabled:
+        _log(rec.id, ip, method, path, "", 503, t0)
+        return JSONResponse(
+            {"error": "aucun serveur d'exécution disponible pour cette clé"}, status_code=503)
+
+    # --- Restriction de modèle (agnostique de l'API : le modèle est à la racine du corps pour
+    #     Ollama, OpenAI chat/responses et Anthropic messages) ---
+    body = await request.body()
+    req_model = _model_from_body(body)
+    if rec.models and req_model and req_model not in set(rec.models):
+        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body))
+        return JSONResponse(
+            {"error": f"modèle non autorisé pour cette clé: {req_model}"}, status_code=403)
 
     keys.touch_last_used(rec.id)
 
-    # --- Relais amont (streaming) ---
-    body = await request.body()
+    # --- Relais amont (streaming) vers l'URL absolue du serveur rattaché ---
     fwd_headers = [(k, v) for k, v in request.headers.raw
                    if k.decode("latin-1").lower() not in _DROP_REQ_HEADERS]
-    url = httpx.URL(path=path, query=request.url.query.encode("utf-8"))
+    fwd_headers += [(k.encode("latin-1"), v.encode("latin-1")) for k, v in srv_auth.items()]
+    url = httpx.URL(srv.base_url.rstrip("/") + path)
+    if request.url.query:
+        url = url.copy_with(query=request.url.query.encode("utf-8"))
     upstream: httpx.AsyncClient = request.app.state.upstream
     up_req = upstream.build_request(method, url, headers=fwd_headers, content=body)
+
+    # Listing de modèles pour une clé restreinte : bufferiser + filtrer (petites réponses).
+    if path in _LISTING_PATHS and rec.models:
+        try:
+            up_resp = await upstream.send(up_req)
+        except httpx.HTTPError as exc:
+            _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
+            return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
+                                status_code=502)
+        content = up_resp.content
+        if up_resp.status_code == 200:
+            content = _filter_models(content, set(rec.models))
+        _log(rec.id, ip, method, path, "", up_resp.status_code, t0,
+             bytes_in=len(body), bytes_out=len(content))
+        media = up_resp.headers.get("content-type", "application/json")
+        return Response(content, status_code=up_resp.status_code, media_type=media)
 
     try:
         up_resp = await upstream.send(up_req, stream=True)
     except httpx.HTTPError as exc:
-        _log(rec.id, ip, method, path, _model_from_body(body), 502, t0, bytes_in=len(body))
+        _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
         return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
                             status_code=502)
 
     sniff = _TokenSniffer()
-    sniff.model = _model_from_body(body)
+    sniff.model = req_model
     bytes_out = 0
 
     async def stream_body():
