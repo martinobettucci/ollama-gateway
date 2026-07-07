@@ -18,8 +18,9 @@ from starlette.background import BackgroundTask
 
 from . import auth, config, db, keys, quotas, servers, usage
 
-# En-têtes hop-by-hop / recalculés à ne pas recopier tels quels.
-_DROP_REQ_HEADERS = {"host", "authorization", "content-length", "connection",
+# En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
+# cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
+_DROP_REQ_HEADERS = {"host", "authorization", "x-api-key", "content-length", "connection",
                      "proxy-connection", "keep-alive", "transfer-encoding", "upgrade"}
 _DROP_RESP_HEADERS = {"content-length", "transfer-encoding", "connection", "keep-alive"}
 
@@ -173,8 +174,8 @@ async def proxy(request: Request, full_path: str):
     if not path.startswith(config.ALLOWED_PATH_PREFIXES):
         return JSONResponse({"error": "not found"}, status_code=404)
 
-    # --- Authentification par clé Bearer ---
-    key = auth.extract_bearer(request.headers.get("authorization"))
+    # --- Authentification par clé (Bearer, ou x-api-key pour le SDK Anthropic) ---
+    key = auth.extract_api_key(request.headers)
     if not key:
         _log(None, ip, method, path, "", 401, t0)
         return JSONResponse({"error": "clé API manquante"}, status_code=401)

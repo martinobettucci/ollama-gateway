@@ -45,6 +45,12 @@ SERVER_PROBE_TIMEOUT_S = float(os.environ.get("SERVER_PROBE_TIMEOUT_S", "5"))
 # Préfixe lisible des clés générées (compat OpenAI : Authorization: Bearer <clé>).
 KEY_PREFIX = os.environ.get("KEY_PREFIX", "sk-ollama-")
 
+# URL publique de la passerelle telle que vue par les CLIENTS (celle servie par Caddy),
+# ex. https://passerelle.example.com — sans slash final. Sert à générer les variables
+# d'environnement prêtes à copier dans la modale post-création de clé. Vide = l'admin
+# affiche un placeholder à remplacer à la main.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
 # Chemins amont explicitement proxifiables. Tout le reste → 404 (défense en profondeur ; Caddy
 # filtre déjà, mais le proxy re-vérifie). Préfixes, pas exact-match.
 ALLOWED_PATH_PREFIXES = ("/api/", "/v1/")

@@ -79,6 +79,21 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 - [x] **Robustesse démarrage** : migrations concurrent-safe (`flock`) + `busy_timeout` avant WAL
   (les rôles proxy/admin migrent en parallèle sur le même SQLite).
 
+## Phase 5 — Plein viewport & configuration client (2026-07-07)
+
+- [x] **Layout plein viewport (règle dure du responsable)** : 100 % largeur + hauteur partout
+  (dashboard et détail de clé en 2 colonnes ≥ 1360 px, Serveurs en grille de cartes, login en
+  split hero/formulaire pleine hauteur) — *tests : E2E admin.spec « plein viewport » (main =
+  largeur client, login compris) ; vision : captures 00/01/06 + rendus 1920 px observés.*
+- [x] **Modale « configurer le client » à la création d'une clé** : variables d'env générées
+  selon les API cochées (Ollama `OLLAMA_HOST`/`OLLAMA_API_KEY`, OpenAI `OPENAI_BASE_URL`/
+  `OPENAI_API_KEY`, Anthropic `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY`), copie en un clic
+  (repli execCommand en http), base = `PUBLIC_BASE_URL` (config + composes + .env.prod.example)
+  — *tests : test_admin (modale rendue une seule fois, base injectée), E2E admin.spec « modale
+  de configuration client » ; vision : capture 09-env-modal ; manuel synchronisé.*
+- [x] **Proxy : clé acceptée en `x-api-key`** (SDK Anthropic) en plus du Bearer, en-tête strippé
+  avant l'amont — *tests : test_proxy (x-api-key ok + strip, x-api-key invalide → 401).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

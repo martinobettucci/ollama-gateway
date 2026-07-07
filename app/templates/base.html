@@ -18,7 +18,9 @@
       --radius:14px; --radius-sm:10px;
     }
     * { box-sizing:border-box; }
-    body { margin:0; font:15px/1.55 ui-sans-serif,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+    /* Règle dure : l'app occupe TOUT le viewport (largeur ET hauteur), jamais de colonne centrée. */
+    body { margin:0; min-height:100vh; display:flex; flex-direction:column;
+           font:15px/1.55 ui-sans-serif,system-ui,sans-serif; background:var(--bg); color:var(--text); }
     a { color:var(--color-brand); text-decoration:none; } a:hover { text-decoration:underline; }
     h1 { font-size:26px; font-weight:700; color:var(--color-ink); margin:.2rem 0 1.2rem; }
     h2 { font-size:16px; font-weight:700; color:var(--color-ink); margin:0; }
@@ -40,7 +42,13 @@
     .pill-link:hover { background:#F3F4F6; text-decoration:none; }
     .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
 
-    main { max-width:1040px; margin:0 auto; padding:1.6rem 1.2rem 4rem; }
+    main { width:100%; flex:1; padding:1.4rem 1.6rem 2rem; }
+    /* Composition large : deux colonnes qui se partagent toute la largeur sur grand écran. */
+    .grid-split { display:grid; grid-template-columns:minmax(0,1fr); gap:0 1.1rem; align-items:start; }
+    @media (min-width:1360px) { .grid-split { grid-template-columns:minmax(0,58fr) minmax(0,42fr); } }
+    .grid-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(440px,1fr));
+                  gap:1.1rem; align-items:stretch; margin-bottom:1.1rem; }
+    .grid-cards > .card { margin-bottom:0; }
 
     /* ── Cartes blanches rounded-xl + codage par catégorie (liseré haut) ──────────── */
     .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
@@ -107,7 +115,9 @@
     .checks { display:flex; flex-wrap:wrap; gap:.5rem .9rem; margin:.4rem 0; }
     .checks label { display:inline-flex; align-items:center; gap:.4rem; margin:0; font-weight:500;
                     color:var(--text); cursor:pointer; }
-    .checks input[type=checkbox] { width:auto; min-height:0; }
+    /* Taille FIXE (pas de padding hérité d'input) : sinon la case grossit au focus et la ligne
+       bouge pendant le clic (flaky en E2E, désagréable à l'usage). */
+    .checks input[type=checkbox] { width:16px; height:16px; min-height:0; padding:0; flex:none; }
     .badge.neutral { background:#F3F4F6; color:var(--text-2); }
     .badge.neutral::before { background:var(--text-3); }
     .badge.accent { background:var(--color-accent-soft); color:var(--color-ink); }
@@ -139,20 +149,24 @@
     .page-meta { color:var(--text-3); font-size:13.5px; margin:-.6rem 0 1.2rem; }
     .backlink { display:inline-flex; align-items:center; gap:.35rem; font-weight:600; font-size:14px; margin-bottom:.6rem; }
 
-    /* ── Héros (dégradé navy→vert : réservé au bandeau login/setup) ───────────────── */
-    .auth-wrap { max-width:420px; margin:3rem auto 0; }
+    /* ── Auth (login/setup) : split hero/formulaire sur TOUT le viewport ──────────── */
+    main.auth-main { padding:0; display:flex; }
+    .auth-wrap { flex:1; display:grid; grid-template-columns:minmax(0,11fr) minmax(0,9fr); }
     .hero { background:linear-gradient(135deg,var(--color-brand) 0%,#1E5F6E 55%,var(--color-success) 100%);
-            border-radius:var(--radius) var(--radius) 0 0; padding:1.6rem 1.5rem; color:#fff; }
-    .hero h1 { color:#fff; margin:0.6rem 0 0.15rem; font-size:22px; }
-    .hero p { margin:0; color:rgba(255,255,255,.85); font-size:14px; }
-    .auth-card { background:var(--surface); border:1px solid var(--line); border-top:none;
-                 border-radius:0 0 var(--radius) var(--radius); box-shadow:var(--shadow); padding:1.3rem 1.5rem 1.5rem; }
+            color:#fff; display:flex; flex-direction:column; justify-content:center;
+            padding:3rem clamp(2rem,6vw,6rem); }
+    .hero h1 { color:#fff; margin:0.6rem 0 0.15rem; font-size:clamp(24px,2.4vw,34px); }
+    .hero p { margin:0; color:rgba(255,255,255,.85); font-size:15px; }
+    .auth-card { background:var(--surface); display:flex; flex-direction:column; justify-content:center;
+                 padding:3rem clamp(2rem,7vw,7rem); }
     .auth-card button { width:100%; margin-top:1.2rem; }
+    @media (max-width:860px) { .auth-wrap { grid-template-columns:1fr; }
+      .hero, .auth-card { padding:2.2rem 1.6rem; justify-content:flex-start; } }
 
     /* ── Modale du manuel utilisateur ─────────────────────────────────────────────── */
     button.pill-link { background:transparent; border:0; color:var(--text-2); }
     button.pill-link:hover { background:#F3F4F6; color:var(--text-2); }
-    dialog.manual { width:min(800px,94vw); max-height:88vh; border:1px solid var(--line);
+    dialog.manual { width:min(1200px,96vw); max-height:92vh; border:1px solid var(--line);
                     border-radius:var(--radius); padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }
     dialog.manual::backdrop { background:rgba(13,13,13,.45); }
     .manual-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; gap:.7rem;
@@ -169,6 +183,15 @@
     .manual-body pre { background:#F3F4F6; padding:.7rem .8rem; border-radius:var(--radius-sm); overflow-x:auto; }
     .manual-body table { margin:.5rem 0 1rem; }
     .manual-body a { word-break:break-word; }
+
+    /* ── Modale de configuration client (variables d'env, post-création de clé) ───── */
+    dialog.envmod { width:min(820px,94vw); border:1px solid var(--line); border-radius:var(--radius);
+                    padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }
+    dialog.envmod::backdrop { background:rgba(13,13,13,.45); }
+    .env-body { padding:.9rem 1.4rem 1.4rem; }
+    /* Hauteur réservée pour 6 lignes (3 API cochées) : la modale ne « saute » pas quand on coche. */
+    .env-output { background:var(--color-ink); color:#E5E7EB; padding:.9rem 1rem; margin:.6rem 0 0;
+                  border-radius:var(--radius-sm); overflow-x:auto; min-height:9.5rem; white-space:pre; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition:none !important; animation:none !important; }
@@ -194,7 +217,7 @@
     </nav>
     {% endif %}
   </header>
-  <main>{% block body %}{% endblock %}</main>
+  <main class="{% block main_class %}{% endblock %}">{% block body %}{% endblock %}</main>
   {% if request.session.get('admin') %}
   <dialog class="manual" id="manual-dialog" aria-label="Manuel utilisateur">
     <div class="manual-head">

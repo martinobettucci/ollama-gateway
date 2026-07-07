@@ -39,7 +39,9 @@ export default defineConfig({
       // OLLAMA_UPSTREAM = faux Ollama : le serveur par défaut pointe dessus et la sonde /api/tags
       // réussit (test « serveur en ligne »). Même clé maître Fernet que le proxy.
       env: { ...baseEnv, ADMIN_SESSION_SECRET: 'e2e-secret',
-             OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', P2E_MASTER_KEY: 'e2e-master' },
+             OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', P2E_MASTER_KEY: 'e2e-master',
+             // URL publique vue des clients (modale des variables d'env) = le proxy E2E.
+             PUBLIC_BASE_URL: 'http://127.0.0.1:8791' },
     },
   ],
 });

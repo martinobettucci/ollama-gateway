@@ -163,6 +163,7 @@ async def dashboard(request: Request):
         "totals": usage.global_summary(),
         "servers": servers.list_servers(),
         "created": request.session.pop("created_key", None),
+        "public_base_url": config.PUBLIC_BASE_URL,
     })
 
 

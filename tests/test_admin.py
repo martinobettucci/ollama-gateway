@@ -49,6 +49,23 @@ async def test_create_key_shows_secret_once(admin_client):
     assert rec.monthly_token_cap == 100000
 
 
+async def test_env_modal_shown_once_with_public_base_url(admin_client, monkeypatch):
+    """Modale « configurer le client » : à la création d'une clé, le dashboard embarque la
+    modale des variables d'env (PUBLIC_BASE_URL + secret) ; plus jamais au rendu suivant."""
+    from app import config
+    monkeypatch.setattr(config, "PUBLIC_BASE_URL", "https://gw.test")
+    async with admin_client as c:
+        await c.post("/admin/setup", data={"password": "supersecret", "confirm": "supersecret"})
+        await c.post("/admin/keys", data={"label": "cli", "origins": "", "note": ""})
+        dash = await c.get("/admin")
+        assert 'data-testid="env-dialog"' in dash.text
+        assert '"https://gw.test"' in dash.text          # base publique injectée
+        assert "OLLAMA_HOST" in dash.text and "ANTHROPIC_BASE_URL" in dash.text
+        # le secret n'est rendu que dans CE rendu (flash consommé)
+        dash2 = await c.get("/admin")
+        assert 'data-testid="env-dialog"' not in dash2.text
+
+
 async def test_create_key_merges_checked_and_free_models(admin_client):
     """Spec « rattachement » : l'allowlist = cases cochées (model_check) + saisie libre (models),
     dédupliquées en conservant l'ordre cases → texte."""

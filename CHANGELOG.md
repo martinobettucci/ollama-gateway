@@ -6,6 +6,18 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Layout plein viewport (règle dure).** Le panel occupe désormais **100 % de la largeur et
+  de la hauteur de l'écran** (plus de colonne centrée) : tableau des clés et formulaire côte à
+  côte sur grand écran, page Serveurs en grille de cartes, écran de connexion en split
+  hero/formulaire pleine hauteur.
+- **Modale « configurer le client » à la création d'une clé.** Elle génère les **variables
+  d'environnement prêtes à copier** pour la machine cliente selon les API cochées — Ollama
+  (`OLLAMA_HOST`, `OLLAMA_API_KEY`), OpenAI (`OPENAI_BASE_URL`, `OPENAI_API_KEY`), Anthropic
+  (`ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY`) — avec bouton de copie en un clic. L'URL de base
+  vient de la nouvelle variable d'env `PUBLIC_BASE_URL` de la passerelle.
+- **Le proxy accepte la clé en en-tête `x-api-key`** (comportement du SDK Anthropic configuré
+  via `ANTHROPIC_API_KEY`), en plus de `Authorization: Bearer` ; dans les deux cas l'en-tête
+  est retiré avant l'appel amont.
 - **Serveurs d'exécution (« executors ») multi-Ollama.** La passerelle route désormais vers
   plusieurs serveurs Ollama : le serveur **local** (créé automatiquement, indélébile) et des
   **serveurs distants** ajoutés dans l'admin (nom, URL, jeton Bearer optionnel **chiffré au

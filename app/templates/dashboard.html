@@ -13,6 +13,73 @@
     <code data-testid="created-secret">{{ created.secret }}</code>
   </div>
 </div>
+
+{# Modale « configurer le client » : variables d'environnement prêtes à copier, générées selon
+   les API cochées. Le secret n'existe que dans CE rendu (affiché une seule fois). #}
+<dialog class="envmod" id="env-dialog" data-testid="env-dialog" aria-label="Configurer le client">
+  <div class="manual-head">
+    <span class="chip-ic success">{{ icon('terminal', 18) }}</span>
+    <h2>Clé « {{ created.label }} » créée — configurer le client</h2>
+    <button type="button" class="btn-close" id="env-close" aria-label="Fermer">{{ icon('x') }}</button>
+  </div>
+  <div class="env-body">
+    <p>Copiez ces variables d'environnement sur la machine cliente.
+      <strong>La clé ne sera plus jamais réaffichée.</strong></p>
+    <div class="checks" data-testid="env-apis">
+      <label><input type="checkbox" id="env-api-ollama" checked> API Ollama</label>
+      <label><input type="checkbox" id="env-api-openai"> API OpenAI</label>
+      <label><input type="checkbox" id="env-api-anthropic"> API Anthropic</label>
+    </div>
+    <pre class="env-output" id="env-output" data-testid="env-output"></pre>
+    {% if not public_base_url %}
+    <p class="hint">`PUBLIC_BASE_URL` n'est pas configurée côté passerelle : remplacez le
+      placeholder par l'URL publique réelle avant usage.</p>
+    {% endif %}
+    <p class="actions">
+      <button type="button" id="env-copy" data-testid="env-copy">
+        {{ icon('copy') }} <span id="env-copy-label">Copier les variables</span></button>
+      <button type="button" class="btn-secondary" id="env-done">Fermer</button>
+    </p>
+  </div>
+</dialog>
+<script>
+(function () {
+  const dlg = document.getElementById('env-dialog');
+  const out = document.getElementById('env-output');
+  const base = {{ (public_base_url or '')|tojson }} || 'https://PASSERELLE-A-REMPLACER';
+  const secret = {{ created.secret|tojson }};
+  // Variables standard de chaque SDK ; la passerelle accepte Bearer ET x-api-key (Anthropic).
+  const gen = {
+    ollama:    ['OLLAMA_HOST=' + base, 'OLLAMA_API_KEY=' + secret],
+    openai:    ['OPENAI_BASE_URL=' + base + '/v1', 'OPENAI_API_KEY=' + secret],
+    anthropic: ['ANTHROPIC_BASE_URL=' + base, 'ANTHROPIC_API_KEY=' + secret],
+  };
+  const apis = ['ollama', 'openai', 'anthropic'];
+  function render() {
+    out.textContent = apis
+      .filter(a => document.getElementById('env-api-' + a).checked)
+      .flatMap(a => gen[a]).join('\n');
+  }
+  apis.forEach(a => document.getElementById('env-api-' + a).addEventListener('change', render));
+  document.getElementById('env-copy').addEventListener('click', async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(out.textContent); ok = true; } catch (e) {}
+    if (!ok) {  // admin LAN servi en http : contexte non sécurisé → repli execCommand
+      const ta = document.createElement('textarea');
+      ta.value = out.textContent; document.body.append(ta); ta.select();
+      ok = document.execCommand('copy'); ta.remove();
+    }
+    const lbl = document.getElementById('env-copy-label');
+    lbl.textContent = ok ? 'Copié !' : 'Échec de la copie';
+    setTimeout(() => { lbl.textContent = 'Copier les variables'; }, 2000);
+  });
+  document.getElementById('env-close').addEventListener('click', () => dlg.close());
+  document.getElementById('env-done').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  render();
+  dlg.showModal();
+})();
+</script>
 {% endif %}
 
 <div class="stats">
@@ -34,6 +101,7 @@
   </div>
 </div>
 
+<div class="grid-split">
 <div class="card cat-brand">
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('key-round', 18) }}</span>
@@ -113,5 +181,6 @@
     <input id="note" name="note" placeholder="optionnel">
     <p class="actions"><button type="submit">{{ icon('plus') }} Créer la clé</button></p>
   </form>
+</div>
 </div>
 {% endblock %}

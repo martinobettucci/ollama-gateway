@@ -38,6 +38,8 @@ services:
       GATEWAY_DB_PATH: /data/gateway.db
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-staging-session-secret}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-stagingpass}
+      # URL publique de la passerelle vue des clients (modale des variables d'env).
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://localhost:8443}
     volumes:
       - gw_data:/data
     ports:

@@ -12,8 +12,9 @@ app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 _CHUNKS = ["Bonjour", ", ", "ceci ", "est ", "un ", "faux ", "modèle."]
 
-# Dernier en-tête Authorization vu (les tests vérifient que le proxy le strip avant l'amont).
+# Derniers en-têtes porteurs de clé vus (les tests vérifient que le proxy les strip avant l'amont).
 LAST_AUTH: str | None = "unset"
+LAST_XAPIKEY: str | None = "unset"
 
 
 @app.get("/")
@@ -42,8 +43,9 @@ async def openai_models() -> JSONResponse:
 @app.post("/v1/chat/completions")
 async def openai_chat(request: Request):
     # OpenAI Chat Completions : modèle à la racine du corps (même gating que /api/chat).
-    global LAST_AUTH
+    global LAST_AUTH, LAST_XAPIKEY
     LAST_AUTH = request.headers.get("authorization")
+    LAST_XAPIKEY = request.headers.get("x-api-key")
     body = await request.json()
     model = body.get("model", "demo:latest")
     return JSONResponse({
@@ -72,8 +74,9 @@ async def _ndjson_stream(model: str):
 
 @app.post("/api/chat")
 async def chat(request: Request):
-    global LAST_AUTH
+    global LAST_AUTH, LAST_XAPIKEY
     LAST_AUTH = request.headers.get("authorization")
+    LAST_XAPIKEY = request.headers.get("x-api-key")
     body = await request.json()
     model = body.get("model", "demo:latest")
     if body.get("stream", True):

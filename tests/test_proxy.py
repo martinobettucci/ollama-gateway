@@ -62,6 +62,24 @@ async def test_streaming_chat_ok_and_strips_authorization(fake_upstream):
     assert fake_ollama.LAST_AUTH is None
 
 
+async def test_x_api_key_auth_ok_and_stripped(fake_upstream):
+    """SDK Anthropic (ANTHROPIC_API_KEY → en-tête x-api-key) : la clé authentifie comme un
+    Bearer et n'atteint JAMAIS l'amont."""
+    _, key = keys.create_key("x", [], None, None)
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/v1/chat/completions", headers={"x-api-key": key},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 200
+    assert fake_ollama.LAST_AUTH is None and fake_ollama.LAST_XAPIKEY is None
+
+
+async def test_x_api_key_invalid_401(fake_upstream):
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/v1/chat/completions", headers={"x-api-key": "sk-ollama-nope"},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 401
+
+
 async def test_usage_recorded_with_tokens(fake_upstream):
     _, key = keys.create_key("x", [], None, None)
     async with proxy_client(fake_upstream) as c:

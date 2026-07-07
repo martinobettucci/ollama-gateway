@@ -3,6 +3,29 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-07 (suite 4) — Plein viewport, modale de configuration client, x-api-key
+
+- **Règle dure édictée par le responsable : tout le viewport, toujours.** Le conteneur central
+  `max-width:1040px` est supprimé — `main` fait 100 % de la largeur, `body` 100 vh en colonne
+  flex. Sur grand écran (≥ 1360 px) le contenu se répartit en deux colonnes (`grid-split` :
+  table des clés | formulaire ; édition | usage) et la page Serveurs passe en grille de cartes.
+  Le login devient un split hero/formulaire pleine hauteur. Règle mémorisée durablement (elle
+  vaut pour tous les projets).
+- **Modale « configurer le client ».** À la création d'une clé (seul moment où le secret est
+  connu), une modale génère les variables d'env par API cochée. Choix des noms **standard des
+  SDK** : `OLLAMA_HOST`/`OLLAMA_API_KEY`, `OPENAI_BASE_URL`/`OPENAI_API_KEY` (base suffixée
+  `/v1`), `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY`. La base publique vient de
+  `PUBLIC_BASE_URL` (nouvelle var, l'admin ne peut pas la deviner : le vhost public est
+  terminé par Caddy). Copie via `navigator.clipboard` avec **repli `execCommand`** : l'admin
+  LAN est servi en http (contexte non sécurisé, l'API clipboard y est absente).
+- **`x-api-key` accepté par le proxy.** Le SDK Anthropic configuré par `ANTHROPIC_API_KEY`
+  envoie `x-api-key`, pas un Bearer : sans ce support, les variables générées n'auraient pas
+  fonctionné pour Anthropic. L'en-tête est strippé avant l'amont, comme Authorization.
+- **Flakiness E2E instructif.** Les checkboxes héritaient du `padding` générique des `input`
+  → une case focusée passait de 13 à 31 px et la ligne bougeait pendant le clic (échec
+  `check()` de Playwright, reproductible). Correctif CSS : taille fixe `16px`, `padding:0`
+  sur `.checks input` — supprime aussi le « saut » visuel pour l'utilisateur.
+
 ## 2026-07-07 (suite 3) — Correction : cases de modèles sondées en direct
 
 - **Écart de spec signalé par le responsable.** La 1ʳᵉ version du sélecteur de modèles ne

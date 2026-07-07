@@ -49,6 +49,9 @@ services:
       # L'admin crée/sonde le serveur par défaut : même upstream + même clé maître que le proxy.
       OLLAMA_UPSTREAM: http://fake-ollama:11434
       P2E_MASTER_KEY: dev-insecure-master-key
+      # URL publique de la passerelle vue des clients (modale des variables d'env à la
+      # création de clé). En dev : le proxy publié sur l'hôte.
+      PUBLIC_BASE_URL: http://localhost:8787
     volumes:
       - gw_data:/data
     ports:

@@ -64,3 +64,12 @@ def extract_bearer(authorization_header: str | None) -> str | None:
         return None
     token = parts[1].strip()
     return token or None
+
+
+def extract_api_key(headers) -> str | None:
+    """Extrait la clé cliente : 'Authorization: Bearer' (Ollama/OpenAI) ou, à défaut,
+    'x-api-key' (SDK Anthropic configuré via ANTHROPIC_API_KEY)."""
+    key = extract_bearer(headers.get("authorization"))
+    if key:
+        return key
+    return (headers.get("x-api-key") or "").strip() or None

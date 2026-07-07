@@ -58,8 +58,14 @@ charte n'en définit pas un.
    couleur (état de clé : `active` vert / `désactivée` rouge — jamais la couleur seule).
 7. **Le jaune s'utilise avec parcimonie** : un surlignage par vue au maximum (la tuile
    « tokens ») ; il ne porte **jamais** de texte (fond de pastille avec icône encre, ou liseré).
-8. **Dégradé navy→vert** : réservé aux zones « héros » (bandeau login/setup) ;
+8. **Dégradé navy→vert** : réservé aux zones « héros » (panneau gauche du login/setup) ;
    jamais sur les surfaces de travail.
+9. **Plein viewport, toujours (règle dure).** L'app occupe **100 % de la largeur ET de la
+   hauteur** de l'écran — aucun conteneur centré à `max-width`. Sur grand écran, le contenu
+   se répartit en colonnes (`grid-split` ≥ 1360 px : table | formulaire, édition | usage ;
+   `grid-cards` : grilles de cartes auto-remplies). Le login/setup est un split
+   hero/formulaire pleine hauteur. Ce qui grandit avec l'écran, c'est le contenu, jamais
+   des bandes vides.
 
 ## 4. Interactions & états
 

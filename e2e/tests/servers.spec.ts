@@ -50,6 +50,8 @@ test('restriction de modèle: cases sondées au rattachement → 403 hors allowl
   await expect(createChecks.locator('input[value="autre:latest"]')).not.toBeChecked();
   await page.screenshot({ path: `${OUT}/08-create-model-checks.jpg`, type: 'jpeg', fullPage: true });
   await page.locator('[data-testid=create-form] button[type=submit]').click();
+  await expect(page.locator('[data-testid=env-dialog]')).toBeVisible();
+  await page.locator('#env-done').click();
   const secret = (await page.locator('[data-testid=created-secret]').innerText()).trim();
   expect(secret).toContain('sk-ollama-');
 
@@ -102,6 +104,8 @@ test('picker de modèles: serveur hors ligne → repli en saisie libre', async (
   await page.fill('#models', 'llama3:latest');
   await page.fill('#label', 'cle-offline');
   await page.locator('[data-testid=create-form] button[type=submit]').click();
+  await expect(page.locator('[data-testid=env-dialog]')).toBeVisible();
+  await page.locator('#env-done').click();
   await expect(page.locator('[data-testid=created-secret]')).toBeVisible();
   // L'allowlist saisie librement est bien enregistrée.
   await page.getByRole('link', { name: 'cle-offline' }).click();

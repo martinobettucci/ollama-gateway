@@ -90,12 +90,13 @@ car Ollama est en loopback natif (hors Docker).
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
 ```
 
-Tests : `python -m pytest` (56) ; `cd e2e && npm test` (6 E2E + captures `e2e/output/`).
+Tests : `python -m pytest` (62) ; `cd e2e && npm test` (9 E2E + captures `e2e/output/`).
 
 ## 6. Déploiement hôte self-hosted & migration (procédure)
 
 Pré-requis : `.env.prod` renseigné (dont `SCW_SECRET_KEY`, `ADMIN_BIND_IP`, `ADMIN_PASSWORD`,
-`ADMIN_SESSION_SECRET`, `P2E_MASTER_KEY`). **Aucun secret committé.** `P2E_MASTER_KEY` chiffre les
+`ADMIN_SESSION_SECRET`, `P2E_MASTER_KEY`, `PUBLIC_BASE_URL` — URL publique de la passerelle vue
+des clients, utilisée par la modale de configuration client de l'admin). **Aucun secret committé.** `P2E_MASTER_KEY` chiffre les
 jetons des serveurs distants : la changer rend les jetons stockés illisibles (il faut les ressaisir).
 
 1. **Amener le code** sur la hôte self-hosted (clone/rsync du repo).

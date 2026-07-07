@@ -13,6 +13,7 @@
 </div>
 {% endif %}
 
+<div class="grid-cards">
 {% for s in servers %}
 <div class="card {{ 'cat-success' if s.last_online else ('cat-brand' if s.is_default else 'cat-danger') }}">
   <div class="card-head">
@@ -89,5 +90,6 @@
     <p class="hint">Chiffré au repos ; jamais réaffiché. Utilisé si le serveur distant exige un Bearer.</p>
     <p class="actions"><button type="submit">{{ icon('plus') }} Ajouter le serveur</button></p>
   </form>
+</div>
 </div>
 {% endblock %}

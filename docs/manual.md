@@ -164,6 +164,29 @@ immédiatement, il ne sera plus jamais montré :
 
 ![Clé créée — secret affiché une seule fois](../app/static/manual/02-key-created.jpg)
 
+### Configurer le client distant (variables d'environnement)
+
+À la création d'une clé, une **modale de configuration** s'ouvre automatiquement : elle
+génère les **variables d'environnement prêtes à copier** pour la machine cliente, selon les
+API cochées :
+
+| API cochée | Variables générées |
+|---|---|
+| Ollama | `OLLAMA_HOST`, `OLLAMA_API_KEY` |
+| OpenAI | `OPENAI_BASE_URL` (suffixe `/v1`), `OPENAI_API_KEY` |
+| Anthropic | `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY` |
+
+Le bouton **Copier les variables** met le bloc dans le presse-papiers en un clic. L'URL de
+base provient de la variable d'env `PUBLIC_BASE_URL` de la passerelle (si absente, un
+placeholder à remplacer est affiché). Comme le secret n'est affiché qu'une seule fois, cette
+modale n'apparaît qu'au moment de la création.
+
+Côté authentification, la passerelle accepte la clé en `Authorization: Bearer` (clients
+Ollama et OpenAI) **et** en en-tête `x-api-key` (comportement du SDK Anthropic configuré via
+`ANTHROPIC_API_KEY`) ; dans les deux cas, la clé est retirée avant l'appel au serveur amont.
+
+![Modale de configuration du client — variables d'environnement](../app/static/manual/09-env-modal.jpg)
+
 ### Détail et édition d'une clé
 
 Chaque clé a sa page : statistiques dédiées (requêtes, tokens total et du mois, erreurs),
