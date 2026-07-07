@@ -17,6 +17,13 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 - **Documentation** : nouveau manuel public (`docs/manual.md`, schémas Mermaid), journal des
   décisions (`docs/JOURNAL.md`), design system adapté au projet (`docs/DESIGN_SYSTEM.md`),
   retrait des hôtes/domaines réels des documents publiables.
+- **Manuel utilisateur intégré au panel** : bouton « Manuel » dans la navigation ouvrant une
+  modale qui affiche le manuel (markdown rendu côté serveur) illustré d'une **capture d'écran
+  réelle par fonctionnalité** (connexion, tableau de bord, création de clé, détail/édition,
+  usage). Les captures sont régénérées automatiquement par les tests E2E et synchronisées
+  dans l'application ; règle de repo : manuel + captures mis à jour à chaque évolution.
+- **`runDev` affiche désormais clairement le mot de passe admin de dev** dans son récapitulatif
+  de fin de lancement.
 
 ## [Publié]
 

@@ -66,3 +66,23 @@ async def test_guard_blocks_key_creation_without_session(admin_client):
         r = await c.post("/admin/keys", data={"label": "hack", "origins": ""})
     assert r.status_code == 303 and r.headers["location"] == "/admin/login"
     assert keys.list_keys() == []
+
+
+async def test_manual_requires_login(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.get("/admin/manual")
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+
+
+async def test_manual_rendered_with_screenshots(admin_client):
+    """Le manuel (docs/manual.md) est rendu en HTML : titres, captures remappées vers
+    /static/manual/, blocs Mermaid retirés."""
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.get("/admin/manual")
+    assert r.status_code == 200
+    assert "<h1>Manuel" in r.text and "<h2" in r.text
+    assert 'src="/static/manual/01-dashboard.jpg"' in r.text
+    assert "mermaid" not in r.text and "```" not in r.text

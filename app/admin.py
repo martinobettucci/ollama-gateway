@@ -3,17 +3,21 @@
 Rendu serveur (Jinja2), formulaires HTML classiques (POST → redirect) : aucun build front, aucun
 CDN, entièrement pilotable en E2E. Bind sur l'IP LAN uniquement, jamais forwardé à l'extérieur.
 """
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import markdown
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import auth, config, db, keys, usage
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
 
 
 @asynccontextmanager
@@ -25,6 +29,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(SessionMiddleware, secret_key=config.ADMIN_SESSION_SECRET,
                    session_cookie="ollama_gw_admin", same_site="lax", https_only=False)
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 
 def _guard(request: Request) -> RedirectResponse | None:
@@ -105,6 +110,24 @@ async def login_submit(request: Request, password: str = Form(...)):
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/admin/login", status_code=303)
+
+
+# --- Manuel utilisateur -----------------------------------------------------------------------
+
+@app.get("/admin/manual", response_class=HTMLResponse)
+async def manual(request: Request):
+    """Fragment HTML du manuel (docs/manual.md) pour la modale du panel.
+
+    Les chemins d'images GitHub (`../app/static/manual/`) sont remappés vers `/static/manual/`
+    et les blocs Mermaid sont retirés (les captures d'écran illustrent déjà chaque écran).
+    """
+    if (r := _guard(request)):
+        return r
+    text = MANUAL_PATH.read_text(encoding="utf-8")
+    text = re.sub(r"```mermaid.*?```\n?", "", text, flags=re.DOTALL)
+    text = text.replace("../app/static/manual/", "/static/manual/")
+    html = markdown.markdown(text, extensions=["tables", "fenced_code"])
+    return HTMLResponse(html)
 
 
 # --- Dashboard / clés -------------------------------------------------------------------------

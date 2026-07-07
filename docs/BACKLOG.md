@@ -49,6 +49,12 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 - [ ] Hook `.claude/hooks/session-start.sh` + `settings.json` (démarrage daemon Docker) —
   bloqué par le classifieur de permissions (self-modification) ; à créer/approuver par le
   responsable.
+- [x] **Manuel utilisateur en modale** (`GET /admin/manual`, markdown rendu serveur, captures
+  par fonctionnalité servies depuis `app/static/manual/`, sync `npm run sync-manual`) —
+  *tests : test_admin (test_manual_requires_login, test_manual_rendered_with_screenshots),
+  E2E admin.spec « manuel utilisateur affiché en modale », capture 05-manual observée en
+  vision, validé aussi dans le conteneur Docker.*
+- [x] **`runDev` affiche le mot de passe admin dev** dans le récapitulatif de lancement.
 
 ## Idées ultérieures (non planifiées)
 

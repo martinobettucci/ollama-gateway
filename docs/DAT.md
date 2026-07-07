@@ -31,6 +31,10 @@ car Ollama est en loopback natif (hors Docker).
 - `usage.py` — écriture des événements + agrégats (mensuel, rpm, par jour, globaux).
 - `quotas.py` — décision d'autorisation (plafond mensuel + rate-limit).
 - `bootstrap.py` — CLI : `init`, `ensure-admin`, `seed-dev`, `import-key`.
+- `admin.py` sert aussi le **manuel utilisateur** : `GET /admin/manual` rend `docs/manual.md`
+  (lib `markdown`, blocs Mermaid retirés, images remappées) dans une modale ; captures servies
+  depuis `app/static/manual/` (montage `/static`), régénérées par l'E2E (`npm run sync-manual`).
+  Seul `docs/manual.md` entre dans l'image Docker (`.dockerignore` : `!docs/manual.md`).
 
 ## 3. Données (SQLite)
 
