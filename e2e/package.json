@@ -2,7 +2,8 @@
   "name": "ollama-gateway-e2e",
   "private": true,
   "scripts": {
-    "test": "rm -rf e2e-data output && playwright test"
+    "test": "rm -rf e2e-data output && playwright test",
+    "sync-manual": "cp output/00-login.jpg output/01-dashboard.jpg output/02-key-created.jpg output/03-key-detail.jpg output/04-usage.jpg ../app/static/manual/"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0"

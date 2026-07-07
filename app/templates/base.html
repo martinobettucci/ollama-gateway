@@ -133,6 +133,27 @@
                  border-radius:0 0 var(--radius) var(--radius); box-shadow:var(--shadow); padding:1.3rem 1.5rem 1.5rem; }
     .auth-card button { width:100%; margin-top:1.2rem; }
 
+    /* ── Modale du manuel utilisateur ─────────────────────────────────────────────── */
+    button.pill-link { background:transparent; border:0; color:var(--text-2); }
+    button.pill-link:hover { background:#F3F4F6; color:var(--text-2); }
+    dialog.manual { width:min(800px,94vw); max-height:88vh; border:1px solid var(--line);
+                    border-radius:var(--radius); padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }
+    dialog.manual::backdrop { background:rgba(13,13,13,.45); }
+    .manual-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; gap:.7rem;
+                   padding:.85rem 1.2rem; background:var(--surface); border-bottom:1px solid var(--line); }
+    .manual-head h2 { flex:1; }
+    .btn-close { min-height:36px; padding:.3rem .6rem; background:var(--surface); color:var(--text-2);
+                 border-color:var(--line); }
+    .btn-close:hover { background:#F3F4F6; border-color:var(--line); }
+    .manual-body { padding:.4rem 1.5rem 1.6rem; font-size:14.5px; }
+    .manual-body h1 { font-size:21px; margin:1.2rem 0 .6rem; }
+    .manual-body h2 { font-size:17px; margin:1.5rem 0 .5rem; }
+    .manual-body img { max-width:100%; border:1px solid var(--line); border-radius:var(--radius-sm);
+                       box-shadow:var(--shadow); margin:.35rem 0; }
+    .manual-body pre { background:#F3F4F6; padding:.7rem .8rem; border-radius:var(--radius-sm); overflow-x:auto; }
+    .manual-body table { margin:.5rem 0 1rem; }
+    .manual-body a { word-break:break-word; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition:none !important; animation:none !important; }
     }
@@ -149,10 +170,45 @@
     <nav class="pills" aria-label="Navigation principale">
       <a class="pill-link{% if not request.url.path.startswith('/admin/logout') %} active{% endif %}"
          href="/admin">{{ icon('layout-dashboard') }} Tableau de bord</a>
+      <button type="button" class="pill-link" id="manual-open" data-testid="manual-open"
+              aria-haspopup="dialog">{{ icon('book-open') }} Manuel</button>
       <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} Déconnexion</a>
     </nav>
     {% endif %}
   </header>
   <main>{% block body %}{% endblock %}</main>
+  {% if request.session.get('admin') %}
+  <dialog class="manual" id="manual-dialog" aria-label="Manuel utilisateur">
+    <div class="manual-head">
+      <span class="chip-ic brand">{{ icon('book-open', 18) }}</span>
+      <h2>Manuel utilisateur</h2>
+      <button type="button" class="btn-close" id="manual-close" aria-label="Fermer le manuel">
+        {{ icon('x') }}</button>
+    </div>
+    <div class="manual-body" id="manual-content" data-testid="manual-content">
+      <p class="muted">Chargement du manuel…</p>
+    </div>
+  </dialog>
+  <script>
+    (function () {
+      const dlg = document.getElementById('manual-dialog');
+      const body = document.getElementById('manual-content');
+      document.getElementById('manual-open').addEventListener('click', async () => {
+        dlg.showModal();
+        if (!body.dataset.loaded) {
+          try {
+            const r = await fetch('/admin/manual');
+            body.innerHTML = await r.text();
+            body.dataset.loaded = '1';
+          } catch {
+            body.innerHTML = '<p class="err">Impossible de charger le manuel.</p>';
+          }
+        }
+      });
+      document.getElementById('manual-close').addEventListener('click', () => dlg.close());
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>

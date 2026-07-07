@@ -131,6 +131,12 @@ mensuel de tokens + rate-limit req/min), journalisation d'usage, panel d'admin w
   convention React + Vite, justifié dans `docs/DESIGN_SYSTEM.md` § 6. La charte P2Enjoy
   s'applique intégralement (tokens dans `app/templates/base.html`, icônes lucide via la
   macro `app/templates/_icons.html`).
+- **Manuel utilisateur intégré, synchrone avec captures (règle dure).** `docs/manual.md` est
+  affiché dans le panel via la modale « Manuel » (`GET /admin/manual`, images servies depuis
+  `app/static/manual/`). Le manuel illustre **chaque fonctionnalité par une capture réelle**
+  de l'application. À **tout** changement d'UI ou de comportement : mettre à jour le texte du
+  manuel ET régénérer les captures dans le même chunk (`cd e2e && npm test && npm run
+  sync-manual`), puis vérifier en vision. Un manuel ou des captures périmés = tâche non finie.
 - **Prod = `network_mode: host`** (Ollama écoute en loopback natif hors Docker) ; le proxy
   binde loopback, l'admin binde l'IP LAN. Ne jamais publier l'admin sur autre chose.
 

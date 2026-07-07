@@ -14,3 +14,6 @@ e2e/test-results
 e2e/playwright-report
 docs
 *.md
+# Seul le manuel public entre dans l'image (affiché dans le panel via /admin/manual) —
+# les autres docs (DAT, journal…) restent hors image.
+!docs/manual.md

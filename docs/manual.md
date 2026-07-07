@@ -2,7 +2,10 @@
 
 Document **public** : il explique le fonctionnement de l'application, sans détail
 d'infrastructure (aucun hôte, aucune IP, aucun secret). Il est synchrone avec le code —
-tout changement de comportement du backend met à jour ce manuel dans le même chunk.
+tout changement de comportement ou d'interface met à jour ce manuel **et ses captures**
+dans le même chunk (captures régénérées par l'E2E : `npm test` puis `npm run sync-manual`
+dans `e2e/`). Il est consultable dans le panel d'admin via le bouton **Manuel** de la
+navigation (modale).
 
 ## À quoi sert la passerelle ?
 
@@ -76,17 +79,55 @@ Points de comportement :
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
 
-## Le panel d'admin
-
-- **Première utilisation** : l'écran d'initialisation définit le mot de passe admin
-  (8 caractères minimum), ensuite écran de connexion classique.
-- **Tableau de bord** : totaux (requêtes, 24 h, tokens servis, erreurs), table des clés
-  (état, origines, quotas, dernier usage) avec activation/désactivation et suppression
-  (confirmation exigée), formulaire de création.
-- **Détail d'une clé** : statistiques dédiées, édition (label, quotas, origines, note),
-  usage des 30 derniers jours, dernières erreurs.
+## Le panel d'admin, fonctionnalité par fonctionnalité
 
 L'interface applique la charte graphique P2Enjoy (voir `docs/DESIGN_SYSTEM.md`).
+
+### Connexion (et première utilisation)
+
+À la toute première utilisation, un écran d'initialisation demande de définir le mot de
+passe admin (8 caractères minimum). Ensuite, l'accès passe par l'écran de connexion :
+
+![Écran de connexion](../app/static/manual/00-login.jpg)
+
+### Tableau de bord
+
+Vue d'ensemble : les quatre compteurs globaux (requêtes totales, dernières 24 h, tokens
+servis, erreurs ≥ 400), la table des clés (état, origines, quotas, dernier usage) avec les
+actions **désactiver/activer** et **supprimer** (confirmation exigée), et le formulaire de
+création en bas de page :
+
+![Tableau de bord](../app/static/manual/01-dashboard.jpg)
+
+### Création d'une clé
+
+Le formulaire demande un label (obligatoire), un plafond mensuel de tokens et un rate-limit
+optionnels, les origines autorisées (une IP/CIDR par ligne, vide = toutes) et une note. À la
+création, le **secret est affiché une seule fois** dans un bandeau vert — il faut le copier
+immédiatement, il ne sera plus jamais montré :
+
+![Clé créée — secret affiché une seule fois](../app/static/manual/02-key-created.jpg)
+
+### Détail et édition d'une clé
+
+Chaque clé a sa page : statistiques dédiées (requêtes, tokens total et du mois, erreurs),
+formulaire d'édition (label, quotas, origines, note), usage des 30 derniers jours et
+dernières erreurs :
+
+![Détail d'une clé](../app/static/manual/03-key-detail.jpg)
+
+### Suivi de l'usage
+
+Dès qu'une clé sert des requêtes, les compteurs du tableau de bord et le dernier usage par
+clé se mettent à jour (les tokens sont comptés y compris en streaming) :
+
+![Usage visible sur le tableau de bord](../app/static/manual/04-usage.jpg)
+
+### Manuel intégré
+
+Ce manuel est accessible à tout moment via le bouton **Manuel** de la navigation, affiché
+dans une fenêtre modale (fermeture par la croix, la touche Échap ou un clic hors de la
+fenêtre).
 
 ## Journal des changements
 

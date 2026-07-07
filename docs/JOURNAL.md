@@ -3,6 +3,22 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-07 (suite) — Manuel utilisateur intégré
+
+- **Manuel en modale dans le panel** : `docs/manual.md` (source unique, publiable) est rendu
+  côté serveur (`GET /admin/manual`, lib `markdown` — pas de lib JS de rendu côté client,
+  cohérent avec le « zéro build front »). Les blocs Mermaid sont retirés au rendu in-app
+  (pas de moteur Mermaid embarqué) : les **captures d'écran réelles** illustrent chaque
+  fonctionnalité à la place. Chemins d'images doubles : `../app/static/manual/…` pour GitHub,
+  remappés vers `/static/manual/…` par la route.
+- **Captures = sous-produit des E2E** : les mêmes screenshots Playwright servent de preuve
+  vision ET d'illustrations du manuel (`npm run sync-manual` copie `e2e/output/*.jpg` vers
+  `app/static/manual/`). Règle dure ajoutée à `CLAUDE.md` : manuel + captures synchrones à
+  tout changement.
+- **`.dockerignore`** : ré-inclusion ciblée `!docs/manual.md` — le manuel entre dans l'image,
+  le DAT (détails d'infra) reste dehors.
+- `runDev` affiche désormais le mot de passe admin dev en clair dans son récapitulatif.
+
 ## 2026-07-07 — Mise en conformité charte P2Enjoy + règles de repo
 
 - **UI admin restylée intégralement** selon `docs/DESIGN_SYSTEM.md` (charte P2Enjoy SAS) :

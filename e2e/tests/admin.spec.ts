@@ -34,3 +34,23 @@ test('admin: login, création de clé (secret unique), détail + édition', asyn
   await expect(page.locator('[data-testid=edit-form] #rpm_limit')).toHaveValue('30');
   await page.screenshot({ path: `${OUT}/03-key-detail.jpg`, type: 'jpeg', fullPage: true });
 });
+
+test('admin: manuel utilisateur affiché en modale (markdown + captures)', async ({ page }) => {
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+
+  await page.locator('[data-testid=manual-open]').click();
+  const dialog = page.locator('#manual-dialog');
+  await expect(dialog).toBeVisible();
+  // Contenu markdown rendu (titre + capture d'écran servie par /static/manual/).
+  await expect(dialog.locator('h1').first()).toContainText('Manuel');
+  const img = dialog.locator('img[src="/static/manual/01-dashboard.jpg"]');
+  await expect(img).toBeVisible();
+  expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  await page.screenshot({ path: `${OUT}/05-manual.jpg`, type: 'jpeg' });
+
+  // Fermeture par la croix.
+  await page.locator('#manual-close').click();
+  await expect(dialog).toBeHidden();
+});
