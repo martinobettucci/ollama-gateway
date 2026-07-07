@@ -1,63 +1,93 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% block title %}{{ key.label }} — Passerelle Ollama{% endblock %}
 {% block body %}
-<p><a href="/admin">← Tableau de bord</a></p>
+<p><a class="backlink" href="/admin">{{ icon('arrow-left') }} Tableau de bord</a></p>
 <h1>{{ key.label }}
-  {% if key.enabled %}<span class="pill on">active</span>{% else %}<span class="pill off">désactivée</span>{% endif %}
+  {% if key.enabled %}<span class="badge on">active</span>{% else %}<span class="badge off">désactivée</span>{% endif %}
 </h1>
-<p class="muted mono">{{ key.key_prefix }}…  ·  créée le {{ key.created_at }}  ·  dernier usage : {{ key.last_used_at or 'jamais' }}</p>
+<p class="page-meta mono">{{ key.key_prefix }}… · créée le {{ key.created_at }} · dernier usage : {{ key.last_used_at or 'jamais' }}</p>
 
-<div class="panel">
-  <div class="stat">
+<div class="stats">
+  <div class="card stat cat-brand">
+    <span class="chip-ic brand">{{ icon('activity', 18) }}</span>
     <div><div class="n" data-testid="detail-reqs">{{ summary.requests }}</div><div class="l">requêtes</div></div>
+  </div>
+  <div class="card stat cat-accent">
+    <span class="chip-ic accent">{{ icon('coins', 18) }}</span>
     <div><div class="n">{{ summary.tokens }}</div><div class="l">tokens (total)</div></div>
+  </div>
+  <div class="card stat cat-success">
+    <span class="chip-ic success">{{ icon('gauge', 18) }}</span>
     <div><div class="n">{{ summary.month_tokens }}</div><div class="l">tokens ce mois</div></div>
+  </div>
+  <div class="card stat cat-danger">
+    <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
     <div><div class="n">{{ summary.errors }}</div><div class="l">erreurs</div></div>
   </div>
 </div>
 
-<h2>Modifier</h2>
-<div class="panel">
+<div class="card cat-brand">
+  <div class="card-head">
+    <span class="chip-ic brand">{{ icon('pencil', 18) }}</span>
+    <h2>Modifier</h2>
+  </div>
   <form method="post" action="/admin/keys/{{ key.id }}" data-testid="edit-form">
     <div class="row">
-      <div><label for="label">Label</label>
+      <div><label for="label">Label *</label>
         <input id="label" name="label" value="{{ key.label }}" required></div>
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"
-               value="{{ key.monthly_token_cap or '' }}"></div>
-      <div><label for="rpm_limit">Rate-limit req/min</label>
-        <input id="rpm_limit" name="rpm_limit" type="number" min="1" value="{{ key.rpm_limit or '' }}"></div>
+               value="{{ key.monthly_token_cap or '' }}">
+        <p class="hint">Vide = illimité.</p></div>
+      <div><label for="rpm_limit">Rate-limit (req/min)</label>
+        <input id="rpm_limit" name="rpm_limit" type="number" min="1" value="{{ key.rpm_limit or '' }}">
+        <p class="hint">Vide = illimité.</p></div>
     </div>
-    <label for="origins">Origines autorisées (IP/CIDR, une par ligne ; vide = toutes)</label>
+    <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>
+    <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>
     <label for="note">Note</label>
     <input id="note" name="note" value="{{ key.note }}">
-    <p style="margin-top:1rem"><button type="submit">Enregistrer</button></p>
+    <p class="actions"><button type="submit">{{ icon('check') }} Enregistrer</button></p>
   </form>
 </div>
 
-<h2>Usage (30 derniers jours)</h2>
-<div class="panel">
+<div class="card cat-success">
+  <div class="card-head">
+    <span class="chip-ic success">{{ icon('bar-chart', 18) }}</span>
+    <h2>Usage (30 derniers jours)</h2>
+  </div>
   {% if summary.per_day %}
+  <div class="table-wrap">
   <table>
     <thead><tr><th>Jour</th><th>Requêtes</th><th>Tokens</th></tr></thead>
     <tbody>{% for d in summary.per_day %}
-      <tr><td class="mono">{{ d.day }}</td><td>{{ d.reqs }}</td><td>{{ d.tokens }}</td></tr>
+      <tr><td class="mono">{{ d.day }}</td><td class="mono">{{ d.reqs }}</td><td class="mono">{{ d.tokens }}</td></tr>
     {% endfor %}</tbody>
   </table>
-  {% else %}<p class="muted">Aucune requête sur la période.</p>{% endif %}
+  </div>
+  {% else %}
+  <div class="empty">{{ icon('bar-chart', 22) }}
+    <span>Aucune requête sur la période — l'usage apparaîtra ici dès le premier appel.</span></div>
+  {% endif %}
 </div>
 
 {% if summary.recent_errors %}
-<h2>Dernières erreurs</h2>
-<div class="panel">
+<div class="card cat-danger">
+  <div class="card-head">
+    <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
+    <h2>Dernières erreurs</h2>
+  </div>
+  <div class="table-wrap">
   <table>
     <thead><tr><th>Horodatage</th><th>IP</th><th>Chemin</th><th>Statut</th></tr></thead>
     <tbody>{% for e in summary.recent_errors %}
       <tr><td class="mono">{{ e.ts }}</td><td class="mono">{{ e.client_ip }}</td>
-          <td class="mono">{{ e.path }}</td><td>{{ e.status }}</td></tr>
+          <td class="mono">{{ e.path }}</td><td><span class="badge off">{{ e.status }}</span></td></tr>
     {% endfor %}</tbody>
   </table>
+  </div>
 </div>
 {% endif %}
 {% endblock %}

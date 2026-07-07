@@ -5,65 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Passerelle Ollama{% endblock %}</title>
   <style>
-    :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --fg:#e7eaf0; --muted:#9aa4b2;
-            --acc:#4f9cf9; --ok:#3fb950; --bad:#f85149; --warn:#d29922; }
-    * { box-sizing: border-box; }
-    body { margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-           background:var(--bg); color:var(--fg); }
-    a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:1rem;
-             padding:.9rem 1.2rem; background:var(--panel); border-bottom:1px solid var(--line); }
-    header .brand { font-weight:700; letter-spacing:.02em; }
-    header .brand small { color:var(--muted); font-weight:400; margin-left:.5rem; }
-    main { max-width:1000px; margin:0 auto; padding:1.4rem 1.2rem 4rem; }
-    h1 { font-size:1.25rem; margin:.2rem 0 1rem; }
-    h2 { font-size:1rem; margin:1.6rem 0 .6rem; color:var(--muted); text-transform:uppercase;
-         letter-spacing:.06em; font-weight:600; }
-    .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px;
-             padding:1.1rem 1.2rem; margin-bottom:1rem; }
+    /* ── Tokens (docs/DESIGN_SYSTEM.md — charte P2Enjoy SAS, thème clair) ─────────── */
+    :root {
+      --color-brand:#23468C; --color-brand-hover:#1B3670; --color-brand-soft:rgba(35,70,140,.10);
+      --color-success:#238C33; --color-success-soft:rgba(35,140,51,.12);
+      --color-accent:#D9CF4A; --color-accent-soft:rgba(217,207,74,.22);
+      --color-danger:#F24141; --color-danger-hover:#D92E2E; --color-danger-soft:rgba(242,65,65,.10);
+      --color-ink:#0D0D0D;
+      --bg:#F7F8FA; --surface:#FFFFFF; --line:#E5E7EB;
+      --text:#374151; --text-2:#4B5563; --text-3:#6B7280;
+      --shadow:0 1px 3px rgba(0,0,0,.06); --shadow-hover:0 4px 12px rgba(0,0,0,.09);
+      --radius:14px; --radius-sm:10px;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.55 ui-sans-serif,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+    a { color:var(--color-brand); text-decoration:none; } a:hover { text-decoration:underline; }
+    h1 { font-size:26px; font-weight:700; color:var(--color-ink); margin:.2rem 0 1.2rem; }
+    h2 { font-size:16px; font-weight:700; color:var(--color-ink); margin:0; }
+    code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13px; font-variant-numeric:tabular-nums; }
+    .ic { vertical-align:-2px; flex:none; }
+
+    /* ── En-tête & navigation en pilules ──────────────────────────────────────────── */
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+              padding:.7rem 1.4rem; background:var(--surface); border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:.65rem; color:var(--color-ink); font-weight:700; }
+    .brand:hover { text-decoration:none; }
+    .brand small { color:var(--text-3); font-weight:400; }
+    .brand-badge { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px;
+                   border-radius:10px; background:linear-gradient(135deg,var(--color-brand),#3560B8); color:#fff; }
+    .pills { display:flex; gap:.35rem; }
+    .pill-link { display:inline-flex; align-items:center; gap:.45rem; padding:.5rem .95rem; min-height:40px;
+                 border-radius:999px; font-weight:600; font-size:14px; color:var(--text-2); cursor:pointer;
+                 transition:background .15s ease-out,color .15s ease-out; }
+    .pill-link:hover { background:#F3F4F6; text-decoration:none; }
+    .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
+
+    main { max-width:1040px; margin:0 auto; padding:1.6rem 1.2rem 4rem; }
+
+    /* ── Cartes blanches rounded-xl + codage par catégorie (liseré haut) ──────────── */
+    .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+            box-shadow:var(--shadow); padding:1.15rem 1.25rem; margin-bottom:1.1rem;
+            transition:box-shadow .2s ease-out; }
+    .card:hover { box-shadow:var(--shadow-hover); }
+    .cat-brand   { border-top:3px solid var(--color-brand); }
+    .cat-success { border-top:3px solid var(--color-success); }
+    .cat-accent  { border-top:3px solid var(--color-accent); }
+    .cat-danger  { border-top:3px solid var(--color-danger); }
+    .card-head { display:flex; align-items:center; gap:.7rem; margin-bottom:.9rem; }
+    .chip-ic { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px;
+               border-radius:10px; flex:none; }
+    .chip-ic.brand   { background:var(--color-brand-soft);   color:var(--color-brand); }
+    .chip-ic.success { background:var(--color-success-soft); color:var(--color-success); }
+    .chip-ic.accent  { background:var(--color-accent-soft);  color:var(--color-ink); }
+    .chip-ic.danger  { background:var(--color-danger-soft);  color:var(--color-danger); }
+
+    /* ── Tuiles de statistiques ────────────────────────────────────────────────────── */
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.9rem; margin-bottom:1.1rem; }
+    .stat { display:flex; align-items:center; gap:.8rem; padding:1rem 1.1rem; margin:0; }
+    .stat .n { font-size:24px; font-weight:700; color:var(--color-ink); font-variant-numeric:tabular-nums; line-height:1.2; }
+    .stat .l { color:var(--text-3); font-size:13px; }
+
+    /* ── Tableaux ─────────────────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x:auto; }
     table { width:100%; border-collapse:collapse; }
-    th,td { text-align:left; padding:.55rem .5rem; border-bottom:1px solid var(--line);
-            vertical-align:top; }
-    th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; }
-    code, .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-    .pill { display:inline-block; padding:.1rem .5rem; border-radius:999px; font-size:.75rem;
-            border:1px solid var(--line); }
-    .pill.on { color:var(--ok); border-color:var(--ok); }
-    .pill.off { color:var(--bad); border-color:var(--bad); }
-    label { display:block; margin:.7rem 0 .25rem; color:var(--muted); font-size:.85rem; }
-    input, textarea { width:100%; padding:.5rem .6rem; background:#0d0f14; color:var(--fg);
-                      border:1px solid var(--line); border-radius:7px; font:inherit; }
+    th, td { text-align:left; padding:.6rem .55rem; border-bottom:1px solid var(--line); vertical-align:middle; }
+    th { color:var(--text-3); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody tr:hover td { background:#F9FAFB; }
+
+    /* ── Badges/chips rounded-full ────────────────────────────────────────────────── */
+    .badge { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .65rem; border-radius:999px;
+             font-size:12.5px; font-weight:600; white-space:nowrap; }
+    .badge::before { content:""; width:6px; height:6px; border-radius:999px; background:currentColor; }
+    .badge.on  { background:var(--color-success-soft); color:var(--color-success); }
+    .badge.off { background:var(--color-danger-soft);  color:var(--color-danger); }
+
+    /* ── Boutons ──────────────────────────────────────────────────────────────────── */
+    button, .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
+                   min-height:40px; padding:.5rem 1.05rem; border-radius:var(--radius-sm); cursor:pointer;
+                   border:1px solid var(--color-brand); background:var(--color-brand); color:#fff;
+                   font:inherit; font-size:14px; font-weight:600; touch-action:manipulation;
+                   transition:background .15s ease-out,border-color .15s ease-out,color .15s ease-out; }
+    button:hover, .btn:hover { background:var(--color-brand-hover); border-color:var(--color-brand-hover); }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+    .btn-secondary { background:var(--surface); color:var(--text); border-color:var(--line); }
+    .btn-secondary:hover { background:#F3F4F6; border-color:var(--line); }
+    .btn-danger { background:var(--color-danger); border-color:var(--color-danger); }
+    .btn-danger:hover { background:var(--color-danger-hover); border-color:var(--color-danger-hover); }
+    .btn-danger-outline { background:var(--surface); color:var(--color-danger); border-color:var(--color-danger); }
+    .btn-danger-outline:hover { background:var(--color-danger-soft); border-color:var(--color-danger); }
+    .btn-sm { min-height:34px; padding:.3rem .75rem; font-size:13px; }
+    :focus-visible { outline:2px solid var(--color-brand); outline-offset:2px; border-radius:4px; }
+
+    /* ── Formulaires ──────────────────────────────────────────────────────────────── */
+    label { display:block; margin:.85rem 0 .3rem; color:var(--text-2); font-size:13.5px; font-weight:600; }
+    input, textarea { width:100%; min-height:40px; padding:.5rem .7rem; background:var(--surface); color:var(--text);
+                      border:1px solid var(--line); border-radius:var(--radius-sm); font:inherit;
+                      transition:border-color .15s ease-out,box-shadow .15s ease-out; }
+    input:focus, textarea:focus { outline:none; border-color:var(--color-brand); box-shadow:0 0 0 3px var(--color-brand-soft); }
     textarea { min-height:5rem; resize:vertical; }
+    ::placeholder { color:var(--text-3); }
+    .hint { margin:.3rem 0 0; font-size:12.5px; color:var(--text-3); }
     .row { display:flex; gap:1rem; flex-wrap:wrap; } .row > div { flex:1 1 180px; }
-    button, .btn { display:inline-block; padding:.5rem .9rem; border-radius:7px; cursor:pointer;
-                   border:1px solid var(--acc); background:var(--acc); color:#08111f;
-                   font:inherit; font-weight:600; }
-    button.ghost, .btn.ghost { background:transparent; color:var(--fg); border-color:var(--line); }
-    button.danger { background:transparent; color:var(--bad); border-color:var(--bad); }
-    .stat { display:flex; gap:1.4rem; flex-wrap:wrap; }
-    .stat .n { font-size:1.5rem; font-weight:700; } .stat .l { color:var(--muted); font-size:.8rem; }
-    .flash { border:1px solid var(--ok); background:#10261a; border-radius:10px;
-             padding:1rem 1.2rem; margin-bottom:1rem; }
-    .flash code { display:block; margin-top:.5rem; padding:.6rem .7rem; background:#0d0f14;
-                  border-radius:7px; word-break:break-all; color:var(--ok); }
-    .err { color:var(--bad); margin:.4rem 0; }
-    .muted { color:var(--muted); }
+    .actions { margin-top:1.2rem; }
+
+    /* ── Messages & états ─────────────────────────────────────────────────────────── */
+    .flash { display:flex; gap:.7rem; border:1px solid var(--line); border-top:3px solid var(--color-success);
+             background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow);
+             padding:1rem 1.2rem; margin-bottom:1.1rem; }
+    .flash code { display:block; margin-top:.55rem; padding:.6rem .7rem; background:var(--color-success-soft);
+                  border-radius:var(--radius-sm); word-break:break-all; color:var(--color-success); font-weight:600; }
+    .err { display:flex; align-items:center; gap:.4rem; color:var(--color-danger); font-size:14px; margin:.5rem 0; }
+    .muted { color:var(--text-3); }
+    .empty { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:1.6rem 1rem;
+             color:var(--text-3); text-align:center; }
     .inline { display:inline; }
+    .page-meta { color:var(--text-3); font-size:13.5px; margin:-.6rem 0 1.2rem; }
+    .backlink { display:inline-flex; align-items:center; gap:.35rem; font-weight:600; font-size:14px; margin-bottom:.6rem; }
+
+    /* ── Héros (dégradé navy→vert : réservé au bandeau login/setup) ───────────────── */
+    .auth-wrap { max-width:420px; margin:3rem auto 0; }
+    .hero { background:linear-gradient(135deg,var(--color-brand) 0%,#1E5F6E 55%,var(--color-success) 100%);
+            border-radius:var(--radius) var(--radius) 0 0; padding:1.6rem 1.5rem; color:#fff; }
+    .hero h1 { color:#fff; margin:0.6rem 0 0.15rem; font-size:22px; }
+    .hero p { margin:0; color:rgba(255,255,255,.85); font-size:14px; }
+    .auth-card { background:var(--surface); border:1px solid var(--line); border-top:none;
+                 border-radius:0 0 var(--radius) var(--radius); box-shadow:var(--shadow); padding:1.3rem 1.5rem 1.5rem; }
+    .auth-card button { width:100%; margin-top:1.2rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition:none !important; animation:none !important; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="var(--acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        style="vertical-align:-2px"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2"/>
-        <path d="m16 5 3 3"/><path d="m14 7 3 3"/></svg>
-      Passerelle Ollama <small>gestion des clés</small></div>
-    <nav>
-      {% if request.session.get('admin') %}
-      <a href="/admin">Tableau de bord</a> &nbsp;·&nbsp;
-      <a href="/admin/logout">Déconnexion</a>
-      {% endif %}
+  {% from "_icons.html" import icon %}
+  <header class="topbar">
+    <a class="brand" href="/admin">
+      <span class="brand-badge">{{ icon('key-round', 18) }}</span>
+      <span>Passerelle Ollama <small>· gestion des clés</small></span>
+    </a>
+    {% if request.session.get('admin') %}
+    <nav class="pills" aria-label="Navigation principale">
+      <a class="pill-link{% if not request.url.path.startswith('/admin/logout') %} active{% endif %}"
+         href="/admin">{{ icon('layout-dashboard') }} Tableau de bord</a>
+      <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} Déconnexion</a>
     </nav>
+    {% endif %}
   </header>
   <main>{% block body %}{% endblock %}</main>
 </body>

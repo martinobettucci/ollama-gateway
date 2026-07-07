@@ -35,6 +35,21 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   chat streaming + embed réels via l'agent (embed corrigé vs 403 nginx), usage journalisé (tokens).
 - [~] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
+## Phase 3 — Conformité charte P2Enjoy & règles de repo (2026-07-07)
+
+- [x] **UI admin restylée charte P2Enjoy** (thème clair, tokens, cartes `rounded-xl` à liseré de
+  catégorie, nav pilules, icônes lucide inline, héros login/setup) — *tests : E2E admin.spec
+  (login + dashboard + création + détail) & proxy.spec (badges d'état), test_admin (rendu),
+  captures 00–04 observées en vision.*
+- [x] **E2E déterministe** : base `e2e-data/gateway.db` supprimée puis re-seedée à chaque run
+  (`global-setup.ts`) — *preuve : suite E2E verte sur runs consécutifs.*
+- [x] Docs de conformité : `docs/manual.md` (public, Mermaid), `docs/JOURNAL.md`,
+  `DESIGN_SYSTEM.md` adapté au repo (écart Jinja justifié § 6), section « Spécifique à ce
+  repo » de `CLAUDE.md` réécrite, purge hôtes/domaines de `CHANGELOG.md`/`README.md`.
+- [ ] Hook `.claude/hooks/session-start.sh` + `settings.json` (démarrage daemon Docker) —
+  bloqué par le classifieur de permissions (self-modification) ; à créer/approuver par le
+  responsable.
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

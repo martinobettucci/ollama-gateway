@@ -1,22 +1,33 @@
 # Changelog — ollama-gateway
 
 Deux chapitres : **`[Non publié]`** (tampon des changements pas encore déployés en prod) puis
-**`[Publié]`** (ce qui tourne réellement sur la hôte self-hosted). Toute nouvelle entrée va sous `[Non publié]`.
+**`[Publié]`** (ce qui tourne réellement en production). Toute nouvelle entrée va sous `[Non publié]`.
 Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
-_Rien à publier pour le moment…_
+- **Panel d'admin restylé selon la charte graphique P2Enjoy** : thème clair, cartes blanches
+  arrondies avec codage couleur par catégorie (bleu = clés, vert = usage, jaune = tokens,
+  rouge = erreurs), navigation en pilules, icônes vectorielles lucide, écrans de connexion et
+  d'initialisation avec bandeau dégradé. Accessibilité renforcée (focus clavier visible,
+  contrastes AA, états vides explicites, `prefers-reduced-motion`).
+- **Tests E2E déterministes** : la base dédiée aux tests est supprimée puis re-seedée à chaque
+  run (plus de résidus entre exécutions) ; capture de l'écran de connexion ajoutée aux
+  références visuelles.
+- **Documentation** : nouveau manuel public (`docs/manual.md`, schémas Mermaid), journal des
+  décisions (`docs/JOURNAL.md`), design system adapté au projet (`docs/DESIGN_SYSTEM.md`),
+  retrait des hôtes/domaines réels des documents publiables.
 
 ## [Publié]
 
 ### Déployé en production — 2026-07-06 (migrations ≤ 0001)
 
-Bascule effectuée et vérifiée en prod : nginx mono-clé retiré (sauvegardé), **Caddy termine le TLS
-`llm.example.com`** (cert Let's Encrypt via DNS-01 Scaleway) sur `:11435`, la clé client-exemple historique
-a été migrée (origine `client.example.com`), et l'agent client-exemple bascule sur `https://llm.example.com:21434`.
-Preuves live : chaîne HTTPS externe 200, chat streaming + embed réels via l'agent (embed qui
-échouait en 403 avec l'ancien nginx fonctionne désormais), usage journalisé (tokens comptés).
+Bascule effectuée et vérifiée en prod : reverse-proxy nginx mono-clé retiré (sauvegardé),
+**Caddy termine le TLS du domaine public** (cert Let's Encrypt via DNS-01 Scaleway), la clé
+historique du client existant a été migrée (avec son origine), et l'agent client bascule sur
+la nouvelle chaîne HTTPS. Preuves live : chaîne HTTPS externe 200, chat streaming + embed réels
+via l'agent (l'embed qui échouait en 403 avec l'ancien nginx fonctionne désormais), usage
+journalisé (tokens comptés).
 
 - **Passerelle complète de gestion de clés Ollama** (première version).
   - Proxy d'inférence : auth par clé `Authorization: Bearer`, restriction d'origine par clé

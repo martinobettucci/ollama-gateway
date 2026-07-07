@@ -8,6 +8,7 @@ test('admin: login, création de clé (secret unique), détail + édition', asyn
   // Accès protégé → redirigé vers le login.
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/admin\/login/);
+  await page.screenshot({ path: `${OUT}/00-login.jpg`, type: 'jpeg', fullPage: true });
   await page.fill('#password', 'adminpass');
   await page.click('button[type=submit]');
   await expect(page.locator('h1')).toContainText('Tableau de bord');

@@ -2,7 +2,7 @@
 
 Passerelle d'authentification devant un Ollama local : **clés API par client**, **restriction
 d'origine** (IP/CIDR), **quotas** (plafond mensuel de tokens + rate-limit), **journalisation
-d'usage**, et **panel d'admin web LAN-only**. Le TLS public (`llm.example.com`) est terminé par
+d'usage**, et **panel d'admin web LAN-only**. Le TLS du domaine public est terminé par
 **Caddy** (challenge ACME DNS-01 Scaleway — aucun port entrant requis hormis celui déjà forwardé).
 
 Elle remplace l'ancien reverse-proxy nginx mono-clé et proxifie **tous** les endpoints Ollama
@@ -21,7 +21,8 @@ Admin (LAN) ──http──► admin (login) ── SQLite (WAL) ──┘
 - **admin** (`app/admin.py`) — bind IP LAN uniquement, login mot de passe, CRUD des clés + dashboard.
 - **SQLite** partagé (WAL) entre les deux rôles.
 
-Voir [docs/DAT.md](docs/DAT.md) pour le détail (services, données, lancement, déploiement hôte self-hosted).
+Voir [docs/DAT.md](docs/DAT.md) pour le détail (services, données, lancement, déploiement) et
+[docs/manual.md](docs/manual.md) pour le manuel public du fonctionnement.
 
 ## Lancer en dev (self-contained, self-seeded)
 
@@ -54,7 +55,7 @@ cd e2e && npm install && npm test
 
 - `./runStaging` — chaîne complète avec Caddy (`tls internal`) + faux upstream, pour valider le
   routage/TLS localement (`https://localhost:8443/…`, `curl -k`).
-- `./runProd` — sur la hôte self-hosted : Caddy (DNS-01 Scaleway) + proxy + admin en `network_mode: host`.
+- `./runProd` — sur l'hôte de prod : Caddy (DNS-01 Scaleway) + proxy + admin en `network_mode: host`.
   Requiert `.env.prod` (copier `.env.prod.example`). Voir [docs/DAT.md](docs/DAT.md) §Déploiement.
 
 ## Sécurité
