@@ -3,7 +3,7 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 httpx==0.28.1
-jinja2==3.1.5
+jinja2==3.1.6
 python-multipart==0.0.20        # parsing des formulaires HTML (admin)
 itsdangerous==2.2.0             # signature des cookies de session (SessionMiddleware)
 markdown==3.7                   # rendu du manuel utilisateur (docs/manual.md) dans le panel
