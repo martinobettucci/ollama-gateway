@@ -9,5 +9,5 @@ itsdangerous==2.2.0             # signature des cookies de session (SessionMiddl
 markdown==3.7                   # rendu du manuel utilisateur (docs/manual.md) dans le panel
 cryptography==44.0.0            # Fernet : chiffrement au repos des jetons des serveurs distants
 # --- tests ---
-pytest==8.3.4
+pytest==9.0.3
 pytest-asyncio==0.25.2
