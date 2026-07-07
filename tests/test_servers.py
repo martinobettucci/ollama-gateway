@@ -1,9 +1,5 @@
 """Tests des serveurs d'exécution : chiffrement des jetons, CRUD, défaut, sonde de disponibilité."""
-import httpx
-import pytest
-
 from app import config, crypto, keys, servers
-from devfixtures import fake_ollama
 
 
 # --- Chiffrement (crypto.py) ------------------------------------------------------------------
@@ -95,16 +91,6 @@ def test_delete_server_with_keys_refused_then_ok():
 
 
 # --- Sonde de disponibilité -------------------------------------------------------------------
-
-@pytest.fixture
-def probe_via_fake(monkeypatch):
-    """Route les appels httpx de la sonde vers le faux Ollama (ASGI in-process)."""
-    real_client = httpx.AsyncClient
-
-    def _client(*a, **k):
-        return real_client(transport=httpx.ASGITransport(app=fake_ollama.app))
-    monkeypatch.setattr(servers.httpx, "AsyncClient", _client)
-
 
 async def test_probe_online_lists_models(probe_via_fake):
     online, models, err = await servers.probe("http://fake")

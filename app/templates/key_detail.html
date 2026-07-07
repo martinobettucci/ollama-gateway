@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
+{% from "_model_picker.html" import model_picker %}
 {% block title %}{{ key.label }} — Passerelle Ollama{% endblock %}
 {% block body %}
 <p><a class="backlink" href="/admin">{{ icon('arrow-left') }} Tableau de bord</a></p>
@@ -43,7 +44,7 @@
             {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
           {% endfor %}
         </select>
-        <p class="hint">Changez de serveur puis enregistrez pour rafraîchir la liste des modèles.</p></div>
+        <p class="hint">Changer de serveur re-sonde ses modèles disponibles ci-dessous.</p></div>
     </div>
     <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
@@ -55,21 +56,8 @@
         <p class="hint">Vide = illimité.</p></div>
     </div>
 
-    <label>Modèles autorisés{% if server %} sur « {{ server.name }} »{% endif %}</label>
-    {% if server_models %}
-    <div class="checks" data-testid="model-checks">
-      {% for m in server_models %}
-      <label><input type="checkbox" name="model_check" value="{{ m }}"
-             {{ 'checked' if m in key.models }}> <span class="mono">{{ m }}</span></label>
-      {% endfor %}
-    </div>
-    {% else %}
-    <p class="hint">Aucun modèle détecté sur ce serveur — <a href="/admin/servers">testez-le</a>
-      pour peupler les cases, ou saisissez les noms ci-dessous.</p>
-    {% endif %}
-    <textarea id="models" name="models" placeholder="autres modèles, un par ligne"
-      >{{ extra_models|join('\n') }}</textarea>
-    <p class="hint">Cases cochées + saisie libre = allowlist. Vide partout = tous les modèles autorisés.</p>
+    <label>Modèles autorisés</label>
+    {{ model_picker(key.models) }}
 
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>

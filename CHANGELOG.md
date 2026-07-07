@@ -12,8 +12,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   repos**). Bouton **Tester** : sonde la disponibilité et liste les modèles détectés (en ligne /
   hors ligne). Chaque clé est **rattachée à exactement un serveur**.
 - **Restriction des modèles par clé, agnostique de l'API.** Une clé peut être limitée à une liste
-  de modèles autorisés sur son serveur (cases cochées depuis les modèles détectés + saisie libre ;
-  vide = tous). La restriction s'applique quelle que soit l'API du client (Ollama natif, OpenAI
+  de modèles autorisés sur son serveur : les formulaires de création et d'édition **sondent en
+  direct le serveur choisi** et présentent ses modèles disponibles en **cases à cocher** (re-sonde
+  à chaque changement de serveur ; repli en saisie libre si le serveur est injoignable ; allowlist
+  = cases cochées + saisie libre, vide = tous). La restriction s'applique quelle que soit l'API du
+  client (Ollama natif, OpenAI
   Chat/Responses, Anthropic Messages) : requête vers un modèle non autorisé → 403 ; les listes de
   modèles (`/api/tags`, `/v1/models`) sont filtrées à l'allowlist. Serveur rattaché indisponible → 503.
 - **Manuel & captures** mis à jour (page Serveurs, clé restreinte) ; migration idempotente et

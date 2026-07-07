@@ -1,0 +1,56 @@
+{# Sélecteur de modèles autorisés (spec « rattachement ») : au rendu du formulaire ET à chaque
+   changement de serveur, le serveur choisi est SONDÉ (GET /admin/servers/{id}/models) et les
+   modèles réellement disponibles s'affichent en cases à cocher ; repli en saisie libre si le
+   serveur est hors ligne. Sans JS, la textarea contient l'allowlist complète → toujours valide. #}
+{% macro model_picker(selected, select_id='server_id') -%}
+<div class="checks" id="model-checks" data-testid="model-checks"></div>
+<p class="hint" id="model-status" role="status">Sonde du serveur…</p>
+<textarea id="models" name="models"
+  placeholder="modèles supplémentaires, un par ligne">{{ selected|join('\n') }}</textarea>
+<p class="hint">Cases cochées + saisie libre = allowlist de la clé. Vide partout = tous les
+  modèles du serveur autorisés.</p>
+<script>
+(function () {
+  const sel = document.getElementById('{{ select_id }}');
+  const box = document.getElementById('model-checks');
+  const status = document.getElementById('model-status');
+  const ta = document.getElementById('models');
+  const taList = () => ta.value.split('\n').map(s => s.trim()).filter(Boolean);
+  const checkedList = () => Array.from(box.querySelectorAll('input:checked')).map(i => i.value);
+
+  async function refresh() {
+    // Consolide l'allowlist courante (cases + texte) avant de re-sonder (changement de serveur).
+    const current = [...new Set([...checkedList(), ...taList()])];
+    box.innerHTML = '';
+    ta.value = current.join('\n');
+    status.hidden = false;
+    status.textContent = 'Sonde du serveur…';
+    let data = { online: false, models: [] };
+    try {
+      const r = await fetch('/admin/servers/' + sel.value + '/models');
+      if (r.ok) data = await r.json();
+    } catch (e) { /* réseau : repli saisie libre */ }
+    if (!data.online || !Array.isArray(data.models) || !data.models.length) {
+      status.textContent = 'Serveur injoignable ou sans modèle — saisie libre ci-dessous.';
+      return;
+    }
+    status.hidden = true;
+    for (const m of data.models) {
+      const label = document.createElement('label');
+      const c = document.createElement('input');
+      c.type = 'checkbox'; c.name = 'model_check'; c.value = m;
+      c.checked = current.includes(m);
+      const span = document.createElement('span');
+      span.className = 'mono'; span.textContent = m;
+      label.append(c, ' ', span);
+      box.append(label);
+    }
+    // Ne laisse en saisie libre que les modèles hors de la liste détectée.
+    ta.value = current.filter(m => !data.models.includes(m)).join('\n');
+  }
+
+  sel.addEventListener('change', refresh);
+  refresh();
+})();
+</script>
+{%- endmacro %}

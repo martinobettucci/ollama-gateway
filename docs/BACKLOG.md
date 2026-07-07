@@ -70,6 +70,12 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   — *tests : test_proxy (gating multi-API, filtrage, 503, injection jeton amont), E2E restriction.*
 - [x] **UI** : page Serveurs (charte), sélecteur de serveur + cases de modèles sur la clé, colonnes
   dashboard — *vision : captures 06-servers, 07-key-restricted ; manuel + captures synchronisés.*
+  *Rouvert puis reclos le 2026-07-07 : la 1ʳᵉ version ne montrait les cases qu'après un « Tester »
+  manuel du serveur (spec non respectée). Corrigé : les formulaires de clé (création ET édition)
+  sondent en direct le serveur choisi (`GET /admin/servers/{id}/models`) et affichent ses modèles
+  en cases à cocher, re-sonde au changement de serveur, repli en saisie libre si hors ligne
+  (`_model_picker.html`). Preuves : test_admin (sonde live + fusion cases/saisie), E2E servers.spec
+  (cases au rattachement + repli hors ligne), captures 07 & 08 vérifiées en vision, manuel à jour.*
 - [x] **Robustesse démarrage** : migrations concurrent-safe (`flock`) + `busy_timeout` avant WAL
   (les rôles proxy/admin migrent en parallèle sur le même SQLite).
 

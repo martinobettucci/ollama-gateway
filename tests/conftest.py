@@ -35,3 +35,15 @@ def admin_client():
     from app import admin
     transport = httpx.ASGITransport(app=admin.app, client=("192.168.0.10", 5555))
     return httpx.AsyncClient(transport=transport, base_url="http://admin", follow_redirects=False)
+
+
+@pytest.fixture
+def probe_via_fake(monkeypatch):
+    """Route les appels httpx de la sonde de serveur vers le faux Ollama (ASGI in-process)."""
+    from app import servers
+    from devfixtures import fake_ollama
+    real_client = httpx.AsyncClient
+
+    def _client(*a, **k):
+        return real_client(transport=httpx.ASGITransport(app=fake_ollama.app))
+    monkeypatch.setattr(servers.httpx, "AsyncClient", _client)

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import markdown
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -191,15 +191,9 @@ async def key_detail(request: Request, key_id: int):
     rec = keys.get_key(key_id)
     if rec is None:
         return RedirectResponse("/admin", status_code=303)
-    srv = servers.get_server(rec.server_id) if rec.server_id else None
-    # Modèles détectés au dernier test du serveur rattaché (pour les cases à cocher) + extras
-    # déjà autorisés mais absents de la dernière sonde (repli saisie libre).
-    server_models = srv.last_models if srv else []
-    extra_models = [m for m in rec.models if m not in server_models]
     return TEMPLATES.TemplateResponse(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
-        "servers": servers.list_servers(), "server": srv,
-        "server_models": server_models, "extra_models": extra_models,
+        "servers": servers.list_servers(),
     })
 
 
@@ -273,6 +267,17 @@ async def server_update(request: Request, server_id: int):
         auth_token=form.get("auth_token", ""),
         clear_auth=form.get("clear_auth") is not None)
     return RedirectResponse("/admin/servers", status_code=303)
+
+
+@app.get("/admin/servers/{server_id}/models")
+async def server_models(request: Request, server_id: int):
+    """Sonde LIVE du serveur (spec « rattachement ») : appelée au rendu des formulaires de clé et
+    à chaque changement de serveur, pour peupler les cases à cocher des modèles réellement
+    disponibles. Persiste aussi le résultat (en ligne/hors ligne + modèles)."""
+    if (r := _guard(request)):
+        return r
+    online, models, err = await servers.test_server(server_id)
+    return JSONResponse({"online": online, "models": models, "error": err})
 
 
 @app.post("/admin/servers/{server_id}/test")

@@ -39,17 +39,16 @@ test('serveurs: page, test du serveur par défaut (en ligne + modèles), ajout d
   await expect(added.locator('.badge', { hasText: 'auth' })).toBeVisible();  // jeton chiffré présent
 });
 
-test('restriction de modèle: clé limitée → proxy 403 hors allowlist + listings filtrés + cases sur le détail', async ({ page, request }) => {
+test('restriction de modèle: cases sondées au rattachement → 403 hors allowlist + listings filtrés', async ({ page, request }) => {
   await login(page);
 
-  // S'assurer que le serveur par défaut a été sondé (peuple les cases à cocher).
-  await page.getByRole('link', { name: 'Serveurs' }).click();
-  await page.locator('.card', { hasText: 'Ollama local' }).getByRole('button', { name: 'Tester' }).click();
-
-  // Créer une clé restreinte à demo:latest sur le serveur par défaut.
-  await page.getByRole('link', { name: 'Tableau de bord' }).click();
+  // SPEC « rattachement » : le formulaire de création sonde le serveur choisi et affiche les
+  // modèles réellement disponibles en cases à cocher — on coche demo:latest (pas de saisie libre).
   await page.fill('#label', 'client-restreint');
-  await page.fill('#models', 'demo:latest');
+  const createChecks = page.locator('[data-testid=create-form] [data-testid=model-checks]');
+  await createChecks.locator('input[value="demo:latest"]').check();
+  await expect(createChecks.locator('input[value="autre:latest"]')).not.toBeChecked();
+  await page.screenshot({ path: `${OUT}/08-create-model-checks.jpg`, type: 'jpeg', fullPage: true });
   await page.locator('[data-testid=create-form] button[type=submit]').click();
   const secret = (await page.locator('[data-testid=created-secret]').innerText()).trim();
   expect(secret).toContain('sk-ollama-');
@@ -75,10 +74,36 @@ test('restriction de modèle: clé limitée → proxy 403 hors allowlist + listi
   const names = (await tags.json()).models.map((m: any) => m.name);
   expect(names).toEqual(['demo:latest']);
 
-  // Sur le détail de la clé : serveur rattaché sélectionné + case demo:latest cochée.
+  // Sur le détail de la clé : le serveur rattaché est re-sondé, la case demo:latest est cochée
+  // et autre:latest (disponible mais non autorisé) est décochée.
   await page.getByRole('link', { name: 'client-restreint' }).click();
   await expect(page.locator('[data-testid=server-select]')).toBeVisible();
-  const demoCheck = page.locator('[data-testid=model-checks] input[value="demo:latest"]');
-  await expect(demoCheck).toBeChecked();
+  const detailChecks = page.locator('[data-testid=model-checks]');
+  await expect(detailChecks.locator('input[value="demo:latest"]')).toBeChecked();
+  await expect(detailChecks.locator('input[value="autre:latest"]')).not.toBeChecked();
   await page.screenshot({ path: `${OUT}/07-key-restricted.jpg`, type: 'jpeg', fullPage: true });
+});
+
+test('picker de modèles: serveur hors ligne → repli en saisie libre', async ({ page }) => {
+  await login(page);
+
+  // Ajouter un serveur injoignable (port fermé), puis créer une clé dessus.
+  await page.getByRole('link', { name: 'Serveurs' }).click();
+  await page.fill('#new-name', 'Injoignable');
+  await page.fill('#new-url', 'http://127.0.0.1:59999');
+  await page.locator('[data-testid=server-create-form] button[type=submit]').click();
+  await expect(page.locator('.card', { hasText: 'Injoignable' })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Tableau de bord' }).click();
+  await page.locator('#server_id').selectOption({ label: 'Injoignable' });
+  // Repli spec : pas de cases, message + saisie libre utilisable.
+  await expect(page.locator('#model-status')).toContainText('injoignable');
+  await expect(page.locator('[data-testid=create-form] [data-testid=model-checks] input')).toHaveCount(0);
+  await page.fill('#models', 'llama3:latest');
+  await page.fill('#label', 'cle-offline');
+  await page.locator('[data-testid=create-form] button[type=submit]').click();
+  await expect(page.locator('[data-testid=created-secret]')).toBeVisible();
+  // L'allowlist saisie librement est bien enregistrée.
+  await page.getByRole('link', { name: 'cle-offline' }).click();
+  await expect(page.locator('#models')).toHaveValue('llama3:latest');
 });
