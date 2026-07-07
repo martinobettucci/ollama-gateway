@@ -1,9 +1,10 @@
 # ollama-gateway — passerelle de gestion de clés Ollama
 
-Passerelle d'authentification devant un Ollama local : **clés API par client**, **restriction
-d'origine** (IP/CIDR), **quotas** (plafond mensuel de tokens + rate-limit), **journalisation
-d'usage**, et **panel d'admin web LAN-only**. Le TLS du domaine public est terminé par
-**Caddy** (challenge ACME DNS-01 Scaleway — aucun port entrant requis hormis celui déjà forwardé).
+Passerelle d'authentification devant un ou plusieurs Ollama : **clés API par client**, **restriction
+d'origine** (IP/CIDR), **quotas** (plafond mensuel de tokens + rate-limit), **serveurs d'exécution**
+(local + distants, une clé ↦ un serveur, restriction de modèles agnostique de l'API),
+**journalisation d'usage**, et **panel d'admin web LAN-only**. Le TLS du domaine public est terminé
+par **Caddy** (challenge ACME DNS-01 Scaleway — aucun port entrant requis hormis celui déjà forwardé).
 
 Elle remplace l'ancien reverse-proxy nginx mono-clé et proxifie **tous** les endpoints Ollama
 (`/api/*`, `/v1/*`), en streaming (NDJSON/SSE), avec strip de la clé cliente avant l'amont.

@@ -116,3 +116,83 @@ async def test_health_no_auth(fake_upstream):
     async with proxy_client(fake_upstream) as c:
         r = await c.get("/_proxy_health")
     assert r.status_code == 200 and r.text.strip() == "ok"
+
+
+# --- Restriction de modèle (agnostique de l'API) + filtrage des listings ----------------------
+
+async def test_model_restriction_ollama_chat(fake_upstream):
+    _, key = keys.create_key("x", [], None, None, models=["demo:latest"])
+    async with proxy_client(fake_upstream) as c:
+        blocked = await c.post("/api/chat", headers=_auth(key),
+                               json={"model": "autre:latest"})
+        allowed = await c.post("/api/chat", headers=_auth(key),
+                               json={"model": "demo:latest"})
+    assert blocked.status_code == 403 and "non autorisé" in blocked.text
+    assert allowed.status_code == 200
+
+
+async def test_model_restriction_openai_chat_completions(fake_upstream):
+    # Même gating quel que soit l'API : OpenAI met aussi `model` à la racine du corps.
+    _, key = keys.create_key("x", [], None, None, models=["demo:latest"])
+    async with proxy_client(fake_upstream) as c:
+        blocked = await c.post("/v1/chat/completions", headers=_auth(key),
+                               json={"model": "autre:latest", "messages": []})
+        allowed = await c.post("/v1/chat/completions", headers=_auth(key),
+                               json={"model": "demo:latest", "messages": []})
+    assert blocked.status_code == 403
+    assert allowed.status_code == 200 and "chat.completion" in allowed.text
+
+
+async def test_no_restriction_allows_any_model(fake_upstream):
+    _, key = keys.create_key("x", [], None, None)  # allowlist vide = tous
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/api/chat", headers=_auth(key), json={"model": "autre:latest"})
+    assert r.status_code == 200
+
+
+async def test_tags_listing_filtered_for_restricted_key(fake_upstream):
+    _, key = keys.create_key("x", [], None, None, models=["demo:latest"])
+    async with proxy_client(fake_upstream) as c:
+        r = await c.get("/api/tags", headers=_auth(key))
+    assert r.status_code == 200
+    body = r.json()
+    names = {m.get("name") for m in body["models"]}
+    assert names == {"demo:latest"}  # 'autre:latest' filtré
+
+
+async def test_v1_models_listing_filtered_for_restricted_key(fake_upstream):
+    _, key = keys.create_key("x", [], None, None, models=["demo:latest"])
+    async with proxy_client(fake_upstream) as c:
+        r = await c.get("/v1/models", headers=_auth(key))
+    assert r.status_code == 200
+    ids = {m.get("id") for m in r.json()["data"]}
+    assert ids == {"demo:latest"}
+
+
+async def test_unrestricted_key_sees_all_models(fake_upstream):
+    _, key = keys.create_key("x", [], None, None)
+    async with proxy_client(fake_upstream) as c:
+        r = await c.get("/api/tags", headers=_auth(key))
+    names = {m.get("name") for m in r.json()["models"]}
+    assert names == {"demo:latest", "autre:latest"}
+
+
+async def test_disabled_server_returns_503(fake_upstream):
+    from app import servers
+    srv = servers.create_server("hors-ligne", "http://unused:11434")
+    _, key = keys.create_key("x", [], None, None, server_id=srv.id)
+    servers.set_enabled(srv.id, False)
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
+    assert r.status_code == 503 and "serveur d'exécution" in r.text
+
+
+async def test_forwards_server_auth_token_to_upstream(fake_upstream):
+    # Un serveur avec jeton : le proxy l'injecte vers l'amont (déchiffré), la clé cliente reste strippée.
+    from app import servers
+    srv = servers.create_server("distant", "http://remote:11434", auth_token="up-secret")
+    _, key = keys.create_key("x", [], None, None, server_id=srv.id)
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
+    assert r.status_code == 200
+    assert fake_ollama.LAST_AUTH == "Bearer up-secret"

@@ -57,3 +57,33 @@ def test_admin_password_store():
     assert stored and auth.verify_password("s3cret-admin", stored)
     keys.set_admin_password("nouveau-mdp")  # upsert
     assert auth.verify_password("nouveau-mdp", keys.get_admin_hash())
+
+
+def test_create_key_with_server_and_models():
+    from app import servers
+    srv = servers.create_server("distant", "http://h:11434")
+    rec, _ = keys.create_key("x", [], None, None, server_id=srv.id,
+                             models=["demo:latest", "autre:latest"])
+    got = keys.get_key(rec.id)
+    assert got.server_id == srv.id and got.server_name == "distant"
+    assert got.models == ["demo:latest", "autre:latest"]
+
+
+def test_update_key_changes_server_and_models():
+    from app import servers
+    srv1 = servers.create_server("s1", "http://h1:11434")
+    srv2 = servers.create_server("s2", "http://h2:11434")
+    rec, _ = keys.create_key("x", [], None, None, server_id=srv1.id, models=["demo:latest"])
+    keys.update_key(rec.id, "x", [], None, None, "n",
+                    server_id=srv2.id, models=["autre:latest"])
+    got = keys.get_key(rec.id)
+    assert got.server_id == srv2.id and got.models == ["autre:latest"]
+
+
+def test_update_key_none_keeps_server_and_models():
+    from app import servers
+    srv = servers.create_server("s", "http://h:11434")
+    rec, _ = keys.create_key("x", [], None, None, server_id=srv.id, models=["demo:latest"])
+    keys.update_key(rec.id, "y", [], None, None, "n")  # server_id/models None → inchangés
+    got = keys.get_key(rec.id)
+    assert got.label == "y" and got.server_id == srv.id and got.models == ["demo:latest"]

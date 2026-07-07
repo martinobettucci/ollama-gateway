@@ -3,6 +3,32 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-07 (suite 2) — Serveurs d'exécution & restriction de modèles
+
+- **De 1 upstream à N serveurs.** Le proxy avait un client httpx unique lié à `$OLLAMA_UPSTREAM` ;
+  il utilise désormais un client **sans base_url** et cible l'URL absolue du **serveur rattaché à
+  la clé**. Ça rend les tests inchangés (l'ASGITransport injecté ignore l'hôte) tout en permettant
+  le routage réel multi-serveurs en prod.
+- **Un seul serveur par clé (choix de simplicité demandé).** `api_keys.server_id` (FK), reconciler
+  `ensure_default` qui crée le serveur local et réassigne les clés orphelines — rétro-compatible
+  avec la prod déjà déployée (la clé historique se rattache au local au boot).
+- **Restriction agnostique de l'API (exigence).** Ollama natif, OpenAI Chat/Responses et Anthropic
+  Messages mettent tous `model` à la **racine** du corps JSON → un seul point de contrôle suffit,
+  quel que soit le chemin. En complément, filtrage des listings `/api/tags` (forme `models/name`)
+  et `/v1/models` (forme `data/id`) pour ne montrer que les modèles permis.
+- **Secret distant chiffré, pas haché.** Le jeton Bearer d'un serveur distant doit être **réémis**
+  vers l'amont → Fernet réversible (`crypto.py`, clé dérivée de `$P2E_MASTER_KEY`), contrairement
+  aux clés API/mot de passe admin hachés one-way. Jamais réaffiché ; le champ vide du formulaire
+  conserve le jeton existant (`clear_auth` pour l'effacer).
+- **Bug de concurrence révélé au démarrage.** Les rôles proxy/admin migrent en parallèle sur le
+  même SQLite : (1) `PRAGMA journal_mode=WAL` prenait un verrou d'écriture **avant** `busy_timeout`
+  → « database is locked » ; (2) deux runners appliquaient `0002` en même temps → « duplicate
+  column ». Corrigé : `busy_timeout` d'abord, et **verrou `flock`** autour de l'application des
+  migrations (partagé via le volume). Latent avant cette feature (peu d'écritures au boot).
+- **E2E** : le serveur par défaut est seedé depuis `$OLLAMA_UPSTREAM` ; il fallait le pointer sur
+  le faux Ollama (11533) dans `global-setup.ts`, sinon il visait `127.0.0.1:11434` (un vrai Ollama
+  de la machine dev renvoyait 404).
+
 ## 2026-07-07 (suite) — Manuel utilisateur intégré
 
 - **Manuel en modale dans le panel** : `docs/manual.md` (source unique, publiable) est rendu

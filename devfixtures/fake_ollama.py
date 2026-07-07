@@ -23,7 +23,35 @@ async def root() -> PlainTextResponse:
 
 @app.get("/api/tags")
 async def tags() -> JSONResponse:
-    return JSONResponse({"models": [{"name": "demo:latest", "model": "demo:latest"}]})
+    # Deux modèles → permet de tester le filtrage de listing par l'allowlist d'une clé.
+    return JSONResponse({"models": [
+        {"name": "demo:latest", "model": "demo:latest"},
+        {"name": "autre:latest", "model": "autre:latest"},
+    ]})
+
+
+@app.get("/v1/models")
+async def openai_models() -> JSONResponse:
+    # Forme OpenAI/Anthropic : {"object":"list","data":[{"id":…}]}.
+    return JSONResponse({"object": "list", "data": [
+        {"id": "demo:latest", "object": "model"},
+        {"id": "autre:latest", "object": "model"},
+    ]})
+
+
+@app.post("/v1/chat/completions")
+async def openai_chat(request: Request):
+    # OpenAI Chat Completions : modèle à la racine du corps (même gating que /api/chat).
+    global LAST_AUTH
+    LAST_AUTH = request.headers.get("authorization")
+    body = await request.json()
+    model = body.get("model", "demo:latest")
+    return JSONResponse({
+        "id": "chatcmpl-demo", "object": "chat.completion", "model": model,
+        "choices": [{"index": 0, "message": {"role": "assistant", "content": "".join(_CHUNKS)},
+                     "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": 11, "completion_tokens": len(_CHUNKS), "total_tokens": 18},
+    })
 
 
 @app.post("/api/embed")

@@ -26,6 +26,7 @@ services:
       GATEWAY_DB_PATH: /data/gateway.db
       TRUSTED_PROXY_IPS: 127.0.0.1,::1
       ADMIN_PASSWORD: adminpass
+      P2E_MASTER_KEY: dev-insecure-master-key
     volumes:
       - gw_data:/data
     ports:
@@ -45,10 +46,16 @@ services:
       GATEWAY_DB_PATH: /data/gateway.db
       ADMIN_SESSION_SECRET: dev-insecure-session-secret
       ADMIN_PASSWORD: adminpass
+      # L'admin crée/sonde le serveur par défaut : même upstream + même clé maître que le proxy.
+      OLLAMA_UPSTREAM: http://fake-ollama:11434
+      P2E_MASTER_KEY: dev-insecure-master-key
     volumes:
       - gw_data:/data
     ports:
       - "8788:8788"
+    depends_on:
+      fake-ollama:
+        condition: service_healthy
 
 volumes:
   gw_data:

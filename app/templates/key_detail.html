@@ -36,6 +36,16 @@
     <div class="row">
       <div><label for="label">Label *</label>
         <input id="label" name="label" value="{{ key.label }}" required></div>
+      <div><label for="server_id">Serveur d'exécution</label>
+        <select id="server_id" name="server_id" data-testid="server-select">
+          {% for s in servers %}
+          <option value="{{ s.id }}"{{ ' selected' if s.id == key.server_id }}{{ ' disabled' if not s.enabled and s.id != key.server_id }}>
+            {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">Changez de serveur puis enregistrez pour rafraîchir la liste des modèles.</p></div>
+    </div>
+    <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"
                value="{{ key.monthly_token_cap or '' }}">
@@ -44,6 +54,23 @@
         <input id="rpm_limit" name="rpm_limit" type="number" min="1" value="{{ key.rpm_limit or '' }}">
         <p class="hint">Vide = illimité.</p></div>
     </div>
+
+    <label>Modèles autorisés{% if server %} sur « {{ server.name }} »{% endif %}</label>
+    {% if server_models %}
+    <div class="checks" data-testid="model-checks">
+      {% for m in server_models %}
+      <label><input type="checkbox" name="model_check" value="{{ m }}"
+             {{ 'checked' if m in key.models }}> <span class="mono">{{ m }}</span></label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="hint">Aucun modèle détecté sur ce serveur — <a href="/admin/servers">testez-le</a>
+      pour peupler les cases, ou saisissez les noms ci-dessous.</p>
+    {% endif %}
+    <textarea id="models" name="models" placeholder="autres modèles, un par ligne"
+      >{{ extra_models|join('\n') }}</textarea>
+    <p class="hint">Cases cochées + saisie libre = allowlist. Vide partout = tous les modèles autorisés.</p>
+
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>
     <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>

@@ -156,8 +156,13 @@ mensuel de tokens + rate-limit req/min), journalisation d'usage, panel d'admin w
 - `docs/JOURNAL.md` — journal chronologique des décisions.
 - `docs/BACKLOG.md` — backlog phasé (DoD par phase ; marquage `[ ]`/`[~]`/`[x]`).
 - `docs/manual.md` — doc publique du fonctionnement (synchrone avec le code, règle dure).
-- `app/` (FastAPI : `proxy.py`, `admin.py`, `keys.py`, `quotas.py`, `usage.py`, `templates/`)
-  · `db/migrations/` (SQL idempotent) · `devfixtures/` (faux Ollama) · `tests/` (pytest)
-  · `e2e/` (Playwright, serveurs uvicorn locaux + base dédiée re-seedée à chaque run).
+- `app/` (FastAPI : `proxy.py`, `admin.py`, `keys.py`, `servers.py`, `quotas.py`, `usage.py`,
+  `crypto.py`, `templates/`) · `db/migrations/` (SQL idempotent, concurrent-safe via `flock`)
+  · `devfixtures/` (faux Ollama) · `tests/` (pytest) · `e2e/` (Playwright, serveurs uvicorn
+  locaux + base dédiée re-seedée à chaque run).
+- **Serveurs d'exécution** : `servers.py` (registre local+distants, sonde, `ensure_default`),
+  jeton distant chiffré (`crypto.py`, Fernet/`P2E_MASTER_KEY`), une clé ↦ un serveur
+  (`api_keys.server_id`), allowlist de modèles par clé (`key_models`) appliquée par le proxy
+  quelle que soit l'API (403 + filtrage `/api/tags`·`/v1/models`).
 - `Caddyfile`, `Dockerfile.caddy` — edge TLS ; `runDev`/`runStaging`/`runProd` + un
   `docker-compose` par profil.

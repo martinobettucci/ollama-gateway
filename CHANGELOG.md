@@ -6,6 +6,19 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Serveurs d'exécution (« executors ») multi-Ollama.** La passerelle route désormais vers
+  plusieurs serveurs Ollama : le serveur **local** (créé automatiquement, indélébile) et des
+  **serveurs distants** ajoutés dans l'admin (nom, URL, jeton Bearer optionnel **chiffré au
+  repos**). Bouton **Tester** : sonde la disponibilité et liste les modèles détectés (en ligne /
+  hors ligne). Chaque clé est **rattachée à exactement un serveur**.
+- **Restriction des modèles par clé, agnostique de l'API.** Une clé peut être limitée à une liste
+  de modèles autorisés sur son serveur (cases cochées depuis les modèles détectés + saisie libre ;
+  vide = tous). La restriction s'applique quelle que soit l'API du client (Ollama natif, OpenAI
+  Chat/Responses, Anthropic Messages) : requête vers un modèle non autorisé → 403 ; les listes de
+  modèles (`/api/tags`, `/v1/models`) sont filtrées à l'allowlist. Serveur rattaché indisponible → 503.
+- **Manuel & captures** mis à jour (page Serveurs, clé restreinte) ; migration idempotente et
+  **concurrent-safe** (verrou fichier ; `busy_timeout` avant WAL) pour le démarrage parallèle des
+  rôles proxy/admin.
 - **Panel d'admin restylé selon la charte graphique P2Enjoy** : thème clair, cartes blanches
   arrondies avec codage couleur par catégorie (bleu = clés, vert = usage, jaune = tokens,
   rouge = erreurs), navigation en pilules, icônes vectorielles lucide, écrans de connexion et

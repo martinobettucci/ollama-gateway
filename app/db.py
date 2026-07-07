@@ -3,7 +3,7 @@
 WAL permet un writer + plusieurs readers concurrents → le proxy journalise l'usage pendant que
 l'admin lit, sans blocage notable à notre échelle. `foreign_keys=ON` pour les CASCADE.
 """
-import os
+import fcntl
 import sqlite3
 from pathlib import Path
 
@@ -19,8 +19,10 @@ def connect(db_path: str | None = None) -> sqlite3.Connection:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path, timeout=30, check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
+    # busy_timeout AVANT journal_mode : passer en WAL prend un verrou d'écriture bref ; si un autre
+    # process (rôle proxy/admin démarrant en parallèle) tient la base, on doit attendre, pas échouer.
     conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
@@ -36,9 +38,21 @@ def _ensure_migrations_table(conn: sqlite3.Connection) -> None:
 def apply_migrations(db_path: str | None = None) -> list[str]:
     """Applique toutes les migrations non encore appliquées. Renvoie la liste des versions posées.
 
-    Idempotent : rejouable sans effet si tout est déjà appliqué (chaque fichier est enveloppé dans
-    une transaction, enregistré dans schema_migrations).
+    Idempotent ET concurrent-safe : les rôles proxy/admin démarrent en parallèle sur le même
+    fichier SQLite. Un verrou fichier (`flock`, partagé via le volume) sérialise l'application ;
+    le second process attend, relit `schema_migrations` et ne réapplique rien.
     """
+    path = db_path or config.DB_PATH
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(str(path) + ".migrate.lock", "w") as lock_f:
+        fcntl.flock(lock_f, fcntl.LOCK_EX)
+        try:
+            return _apply_migrations_locked(path)
+        finally:
+            fcntl.flock(lock_f, fcntl.LOCK_UN)
+
+
+def _apply_migrations_locked(db_path: str) -> list[str]:
     conn = connect(db_path)
     applied: list[str] = []
     try:

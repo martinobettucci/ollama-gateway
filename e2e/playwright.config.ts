@@ -30,12 +30,16 @@ export default defineConfig({
     {
       command: `${PY} -m uvicorn app.proxy:app --host 127.0.0.1 --port 8791`,
       cwd: ROOT, url: 'http://127.0.0.1:8791/_proxy_health', reuseExistingServer: false,
-      env: { ...baseEnv, OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', TRUSTED_PROXY_IPS: '127.0.0.1,::1' },
+      env: { ...baseEnv, OLLAMA_UPSTREAM: 'http://127.0.0.1:11533',
+             TRUSTED_PROXY_IPS: '127.0.0.1,::1', P2E_MASTER_KEY: 'e2e-master' },
     },
     {
       command: `${PY} -m uvicorn app.admin:app --host 127.0.0.1 --port 8792`,
       cwd: ROOT, url: 'http://127.0.0.1:8792/admin/login', reuseExistingServer: false,
-      env: { ...baseEnv, ADMIN_SESSION_SECRET: 'e2e-secret' },
+      // OLLAMA_UPSTREAM = faux Ollama : le serveur par défaut pointe dessus et la sonde /api/tags
+      // réussit (test « serveur en ligne »). Même clé maître Fernet que le proxy.
+      env: { ...baseEnv, ADMIN_SESSION_SECRET: 'e2e-secret',
+             OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', P2E_MASTER_KEY: 'e2e-master' },
     },
   ],
 });

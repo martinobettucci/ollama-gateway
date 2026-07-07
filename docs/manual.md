@@ -33,6 +33,47 @@ Deux rôles distincts tournent à partir du même code (variable `GATEWAY_ROLE`)
 - le **proxy** — la seule surface exposée publiquement (derrière le TLS) ;
 - l'**admin** — jamais exposé à Internet, réservé au réseau local.
 
+## Serveurs d'exécution (« executors »)
+
+La passerelle peut router les clés vers **plusieurs serveurs Ollama** : le serveur **local**
+(créé automatiquement, indélébile) et des **serveurs distants** ajoutés à la main (par exemple
+d'autres machines du réseau). **Chaque clé est rattachée à exactement un serveur.**
+
+```mermaid
+flowchart LR
+    subgraph Passerelle
+      P[Proxy]
+    end
+    K1[clé A] -. rattachée .-> S1[Serveur local]
+    K2[clé B] -. rattachée .-> S2[Serveur atelier]
+    P --> S1
+    P --> S2
+```
+
+Depuis la page **Serveurs** :
+
+- **Ajouter un serveur** : un nom, une URL de base, et — si le serveur distant exige une
+  authentification — un **jeton Bearer** (chiffré au repos, jamais réaffiché).
+- **Tester** un serveur : la passerelle interroge sa liste de modèles ; le serveur passe
+  « en ligne » ou « hors ligne » et ses modèles détectés s'affichent.
+- **Activer / désactiver** ou **supprimer** un serveur (le serveur par défaut et un serveur
+  avec des clés rattachées ne peuvent pas être supprimés).
+
+![Page Serveurs](../app/static/manual/06-servers.jpg)
+
+### Restreindre les modèles d'une clé
+
+Sur une clé, on choisit son **serveur** et, optionnellement, la **liste des modèles autorisés**
+sur ce serveur (en cochant les modèles détectés, ou en les saisissant à la main). Liste vide =
+tous les modèles du serveur autorisés.
+
+La restriction s'applique **quelle que soit l'API** utilisée par le client (Ollama natif,
+OpenAI Chat/Responses, Anthropic Messages) : une requête vers un modèle non autorisé est
+refusée (403), et les listes de modèles (`/api/tags`, `/v1/models`) sont **filtrées** pour ne
+montrer que les modèles permis.
+
+![Détail d'une clé restreinte à un modèle](../app/static/manual/07-key-restricted.jpg)
+
 ## Cycle de vie d'une requête
 
 ```mermaid
@@ -49,8 +90,12 @@ sequenceDiagram
         P-->>C: 403
     else quota mensuel ou rate-limit dépassé
         P-->>C: 429
+    else serveur rattaché indisponible
+        P-->>C: 503
+    else modèle non autorisé pour la clé
+        P-->>C: 403
     else OK
-        P->>O: requête SANS l'en-tête Authorization
+        P->>O: requête vers le SERVEUR rattaché (clé cliente strippée,<br/>jeton du serveur injecté si défini)
         O-->>P: réponse (streaming NDJSON/SSE intégral)
         P-->>C: réponse relayée telle quelle
         P->>DB: usage journalisé (tokens du chunk final)
@@ -61,9 +106,14 @@ Points de comportement :
 
 - **Tous** les endpoints Ollama sont proxifiés (`/api/*`, `/v1/*`) ; `/_proxy_health`
   répond sans authentification pour la supervision.
+- La requête est routée vers le **serveur d'exécution rattaché à la clé** (local ou distant) ;
+  si ce serveur est désactivé/absent → 503.
+- La **restriction de modèle** est appliquée avant le relais, quelle que soit l'API (Ollama,
+  OpenAI, Anthropic) : modèle non autorisé → 403 ; les listings sont filtrés.
 - Le **streaming est intégral** : les chunks sont relayés au fil de l'eau ; le comptage de
   tokens lit le payload final (`eval_count`, `prompt_eval_count`) y compris en streaming.
-- La clé du client est **strippée avant l'amont** : Ollama ne la voit jamais.
+- La clé du client est **strippée avant l'amont** ; si le serveur distant exige un jeton, la
+  passerelle l'injecte (déchiffré) à sa place. Ollama ne voit jamais la clé cliente.
 - Les erreurs (≥ 400) sont journalisées et visibles dans le panel.
 
 ## Les clés API
@@ -76,6 +126,8 @@ Points de comportement :
 | Origines | liste d'IP/CIDR (v4/v6) ; vide = toutes les origines |
 | Plafond mensuel | budget de tokens par mois calendaire ; dépassé → 429 |
 | Rate-limit | requêtes par minute glissante ; dépassé → 429 |
+| Serveur | serveur d'exécution rattaché (exactement un ; local par défaut) |
+| Modèles | liste de modèles autorisés sur ce serveur ; vide = tous autorisés |
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
 

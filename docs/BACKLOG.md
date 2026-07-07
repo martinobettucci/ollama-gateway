@@ -56,6 +56,23 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   vision, validé aussi dans le conteneur Docker.*
 - [x] **`runDev` affiche le mot de passe admin dev** dans le récapitulatif de lancement.
 
+## Phase 4 — Serveurs d'exécution multi-Ollama & restriction de modèles (2026-07-07)
+
+- [x] **Registre de serveurs d'exécution** (local par défaut indélébile + distants), CRUD,
+  jeton Bearer distant **chiffré au repos** (Fernet, `P2E_MASTER_KEY`), reconciler `ensure_default`
+  — *tests : test_servers (crypto, CRUD, défaut, suppression protégée), E2E servers.spec.*
+- [x] **Test de disponibilité** d'un serveur (sonde `/api/tags` → en ligne/hors ligne + modèles)
+  — *tests : test_servers (probe/test_server via ASGI), E2E « test du serveur par défaut ».*
+- [x] **Rattachement clé → un serveur unique** (`api_keys.server_id`, défaut auto) — *tests :
+  test_keys (server_id), test_servers (réassignation orpheline), E2E rattachement.*
+- [x] **Restriction de modèles par clé, agnostique de l'API** (Ollama/OpenAI/Anthropic : `model`
+  à la racine) : 403 hors allowlist + filtrage `/api/tags` & `/v1/models` ; 503 serveur indispo
+  — *tests : test_proxy (gating multi-API, filtrage, 503, injection jeton amont), E2E restriction.*
+- [x] **UI** : page Serveurs (charte), sélecteur de serveur + cases de modèles sur la clé, colonnes
+  dashboard — *vision : captures 06-servers, 07-key-restricted ; manuel + captures synchronisés.*
+- [x] **Robustesse démarrage** : migrations concurrent-safe (`flock`) + `busy_timeout` avant WAL
+  (les rôles proxy/admin migrent en parallèle sur le même SQLite).
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.
