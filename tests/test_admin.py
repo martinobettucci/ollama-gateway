@@ -49,6 +49,20 @@ async def test_create_key_shows_secret_once(admin_client):
     assert rec.monthly_token_cap == 100000
 
 
+async def test_create_key_merges_checked_and_free_models(admin_client):
+    """Spec « rattachement » : l'allowlist = cases cochées (model_check) + saisie libre (models),
+    dédupliquées en conservant l'ordre cases → texte."""
+    async with admin_client as c:
+        await c.post("/admin/setup", data={"password": "supersecret", "confirm": "supersecret"})
+        r = await c.post("/admin/keys", data={
+            "label": "client-mix", "origins": "", "note": "",
+            "model_check": ["demo:latest", "autre:latest"],
+            "models": "autre:latest\nperso:7b"})
+        assert r.status_code == 303
+    rec = keys.list_keys()[0]
+    assert rec.models == ["demo:latest", "autre:latest", "perso:7b"]
+
+
 async def test_toggle_and_delete_key(admin_client):
     async with admin_client as c:
         await c.post("/admin/setup", data={"password": "supersecret", "confirm": "supersecret"})
@@ -66,6 +80,30 @@ async def test_guard_blocks_key_creation_without_session(admin_client):
         r = await c.post("/admin/keys", data={"label": "hack", "origins": ""})
     assert r.status_code == 303 and r.headers["location"] == "/admin/login"
     assert keys.list_keys() == []
+
+
+async def test_server_models_requires_login(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.get("/admin/servers/1/models")
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+
+
+async def test_server_models_probes_live(admin_client, probe_via_fake):
+    """Spec « rattachement » : l'endpoint sonde le serveur en LIVE et renvoie les modèles
+    réellement disponibles (peuple les cases à cocher des formulaires de clé)."""
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.get(f"/admin/servers/{sid}/models")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["online"] is True
+    assert "demo:latest" in data["models"] and "autre:latest" in data["models"]
+    # La sonde persiste aussi le résultat (état du serveur rafraîchi).
+    assert servers.get_server(sid).last_online is True
 
 
 async def test_manual_requires_login(admin_client):

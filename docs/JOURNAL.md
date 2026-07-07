@@ -3,6 +3,22 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-07 (suite 3) — Correction : cases de modèles sondées en direct
+
+- **Écart de spec signalé par le responsable.** La 1ʳᵉ version du sélecteur de modèles ne
+  peuplait les cases à cocher qu'après un clic manuel sur « Tester » côté page Serveurs (elle
+  lisait le dernier résultat persisté) : au premier rendu, l'admin ne voyait qu'une textarea.
+  La spec demandait des **cases listant les modèles disponibles** du serveur rattaché.
+- **Correctif : sonde LIVE depuis le formulaire.** Nouveau partial `_model_picker.html`
+  (macro Jinja partagée création/édition) : au rendu et à chaque changement de serveur, appel
+  `GET /admin/servers/{id}/models` (nouvel endpoint qui sonde et persiste), cases cochées selon
+  l'allowlist courante, **repli en saisie libre** si le serveur est injoignable — et sans JS la
+  textarea porte l'allowlist complète, donc le formulaire reste toujours valide. Côté POST,
+  `_collect_models` fusionne cases (`model_check`) + saisie libre, dédupliquées.
+- **Leçon (DoD).** L'unité UI avait été close sur la foi du code + une capture, sans vérifier
+  le comportement « cases visibles au rattachement » de bout en bout. Rouvert, testé (unitaires
+  + E2E dédiés, dont le repli hors ligne), vérifié en vision, reclos.
+
 ## 2026-07-07 (suite 2) — Serveurs d'exécution & restriction de modèles
 
 - **De 1 upstream à N serveurs.** Le proxy avait un client httpx unique lié à `$OLLAMA_UPSTREAM` ;

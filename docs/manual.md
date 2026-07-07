@@ -63,9 +63,13 @@ Depuis la page **Serveurs** :
 
 ### Restreindre les modèles d'une clé
 
-Sur une clé, on choisit son **serveur** et, optionnellement, la **liste des modèles autorisés**
-sur ce serveur (en cochant les modèles détectés, ou en les saisissant à la main). Liste vide =
-tous les modèles du serveur autorisés.
+Sur une clé (à la création comme à l'édition), on choisit son **serveur** ; le formulaire
+**sonde alors ce serveur en direct** et affiche ses modèles réellement disponibles sous forme
+de **cases à cocher** — changer de serveur re-sonde et met à jour les cases. Si le serveur est
+injoignable, le formulaire **replie en saisie libre** (un modèle par ligne). L'allowlist de la
+clé = cases cochées + saisie libre ; liste vide = tous les modèles du serveur autorisés.
+
+![Création d'une clé — modèles du serveur en cases à cocher](../app/static/manual/08-create-model-checks.jpg)
 
 La restriction s'applique **quelle que soit l'API** utilisée par le client (Ollama natif,
 OpenAI Chat/Responses, Anthropic Messages) : une requête vers un modèle non autorisé est
