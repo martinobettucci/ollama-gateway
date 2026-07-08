@@ -112,6 +112,14 @@ test('essayer maintenant : chat de test d\'une clé → réponse réelle du serv
   await expect(log.locator('.chat-msg.bot')).toContainText('faux modèle');
   await expect(log.locator('.chat-msg.bot .chat-model')).toContainText('demo:latest');
   await page.screenshot({ path: `${OUT}/10-try-chat.jpg`, type: 'jpeg' });
+
+  // La modale doit RÉELLEMENT se fermer (bouton Fermer + touche Échap) — régression corrigée.
+  await page.locator('#try-close').click();
+  await expect(dlg).toBeHidden();
+  await page.locator('[data-testid=try-open]').click();
+  await expect(dlg).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dlg).toBeHidden();
 });
 
 test('plein viewport : le layout occupe toute la largeur, pas de colonne centrée', async ({ page }) => {

@@ -21,22 +21,27 @@
   <div class="manual-head">
     <span class="chip-ic brand">{{ icon('message-square', 18) }}</span>
     <h2>Essayer « {{ key.label }} »</h2>
-    <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }}</button>
+    <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
   </div>
-  <div class="chat-log" id="try-log" data-testid="try-log">
-    <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
-      rattaché à cette clé et affiche la réponse du modèle.</p>
+  <div class="modal-scroll" id="try-log" data-testid="try-log">
+    <div class="modal-col chat-col" id="try-col">
+      <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
+        rattaché à cette clé et affiche la réponse du modèle.</p>
+    </div>
   </div>
-  <form class="chat-input" id="try-form">
-    <input id="try-msg" data-testid="try-msg" autocomplete="off"
-           placeholder="Écrivez un message…" required>
-    <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
-  </form>
+  <div class="chat-inputbar">
+    <form class="chat-input" id="try-form">
+      <input id="try-msg" data-testid="try-msg" autocomplete="off"
+             placeholder="Écrivez un message…" required>
+      <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
+    </form>
+  </div>
 </dialog>
 <script>
 (function () {
   const dlg = document.getElementById('try-dialog');
   const log = document.getElementById('try-log');
+  const col = document.getElementById('try-col');
   const hint = document.getElementById('try-hint');
   const form = document.getElementById('try-form');
   const input = document.getElementById('try-msg');
@@ -53,14 +58,13 @@
     const p = document.createElement('div');
     p.className = 'chat-text'; p.textContent = text;
     b.append(p);
-    log.append(b);
+    col.append(b);
     log.scrollTop = log.scrollHeight;
     return p;
   }
 
   document.getElementById('try-open').addEventListener('click', () => { dlg.showModal(); input.focus(); });
   document.getElementById('try-close').addEventListener('click', () => dlg.close());
-  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

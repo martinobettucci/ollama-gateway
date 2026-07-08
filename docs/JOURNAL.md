@@ -3,6 +3,27 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-08 (suite) — Modales plein écran + bug de fermeture corrigé
+
+- **Bug : la modale de chat ne se fermait pas.** Root cause trouvée en instrumentant les
+  événements du `<dialog>` : à la fermeture (bouton X, Échap, `close()`), l'événement `close`
+  se déclenchait bien (`open=false`) mais la modale **restait affichée**. Cause : la règle CSS
+  `dialog.chatmod { display:flex }` (posée sur le sélecteur nu) **écrasait** la règle du
+  navigateur `dialog:not([open]) { display:none }` → une fois fermée, la modale n'était plus
+  modale (ni backdrop, ni capture d'événements) mais restait peinte à l'écran, donnant
+  l'impression d'une fenêtre bloquée sans bouton. Les modales manuel/env n'avaient pas de
+  `display` forcé, d'où leur bon fonctionnement.
+- **Correctif.** Le `display` n'est plus posé que sur `dialog…[open]` : la règle UA reprend la
+  main à la fermeture. Règle générale retenue : **ne jamais forcer `display` sur un
+  `<dialog>` nu** — toujours scoper à `[open]`.
+- **Modales plein écran (règle dure du responsable).** Les trois modales (manuel, configuration
+  client, chat) passent en **plein viewport** (100vw × 100dvh, sans marge ni coin arrondi),
+  avec une **barre de titre** portant un bouton **Fermer** (X + libellé) bien visible et une
+  colonne de contenu lisible centrée. Fermeture par le bouton ou Échap.
+- **Trou de test comblé.** L'E2E « essayer maintenant » vérifie désormais la **fermeture
+  réelle** (clic Fermer puis Échap → modale masquée) : le test précédent ne faisait que
+  screenshoter la modale ouverte, ce qui avait laissé passer le bug.
+
 ## 2026-07-08 — « Essayer maintenant » : chat de test d'une clé
 
 - **Relais admin plutôt que navigateur → proxy.** Le bouton « Essayer maintenant » aurait pu

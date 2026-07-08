@@ -20,9 +20,10 @@
   <div class="manual-head">
     <span class="chip-ic success">{{ icon('terminal', 18) }}</span>
     <h2>Clé « {{ created.label }} » créée — configurer le client</h2>
-    <button type="button" class="btn-close" id="env-close" aria-label="Fermer">{{ icon('x') }}</button>
+    <button type="button" class="btn-close" id="env-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
   </div>
-  <div class="env-body">
+  <div class="modal-scroll">
+   <div class="modal-col env-body">
     <p>Copiez ces variables d'environnement sur la machine cliente.
       <strong>La clé ne sera plus jamais réaffichée.</strong></p>
     <div class="checks" data-testid="env-apis">
@@ -40,6 +41,7 @@
         {{ icon('copy') }} <span id="env-copy-label">Copier les variables</span></button>
       <button type="button" class="btn-secondary" id="env-done">Fermer</button>
     </p>
+   </div>
   </div>
 </dialog>
 <script>

@@ -163,35 +163,47 @@
     @media (max-width:860px) { .auth-wrap { grid-template-columns:1fr; }
       .hero, .auth-card { padding:2.2rem 1.6rem; justify-content:flex-start; } }
 
-    /* ── Modale du manuel utilisateur ─────────────────────────────────────────────── */
+    /* ── Modales PLEIN ÉCRAN (règle dure : occupent tout le viewport) ──────────────── */
     button.pill-link { background:transparent; border:0; color:var(--text-2); }
     button.pill-link:hover { background:#F3F4F6; color:var(--text-2); }
-    dialog.manual { width:min(1200px,96vw); max-height:92vh; border:1px solid var(--line);
-                    border-radius:var(--radius); padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }
-    dialog.manual::backdrop { background:rgba(13,13,13,.45); }
-    .manual-head { position:sticky; top:0; z-index:1; display:flex; align-items:center; gap:.7rem;
-                   padding:.85rem 1.2rem; background:var(--surface); border-bottom:1px solid var(--line); }
-    .manual-head h2 { flex:1; }
-    .btn-close { min-height:36px; padding:.3rem .6rem; background:var(--surface); color:var(--text-2);
-                 border-color:var(--line); }
+    /* display géré UNIQUEMENT via [open] : ne jamais forcer display sur le sélecteur nu,
+       sinon la règle UA « dialog:not([open]){display:none} » est écrasée et la modale reste
+       affichée après fermeture (bug corrigé). */
+    dialog.manual, dialog.envmod, dialog.chatmod {
+      width:100vw; height:100dvh; max-width:100vw; max-height:100dvh; margin:0; padding:0;
+      border:0; border-radius:0; background:var(--bg); overflow:hidden; }
+    dialog.manual[open], dialog.envmod[open], dialog.chatmod[open] {
+      display:flex; flex-direction:column; }
+    dialog.manual::backdrop, dialog.envmod::backdrop, dialog.chatmod::backdrop {
+      background:rgba(13,13,13,.5); }
+
+    /* Barre de titre commune : titre à gauche, bouton « Fermer » (X + libellé) bien visible. */
+    .manual-head { flex:none; display:flex; align-items:center; gap:.7rem;
+                   padding:.85rem clamp(1rem,3vw,2.4rem); background:var(--surface);
+                   border-bottom:1px solid var(--line); }
+    .manual-head h2 { flex:1; font-size:18px; }
+    .btn-close { min-height:40px; padding:.45rem 1rem; background:var(--surface); color:var(--text);
+                 border-color:var(--line); font-weight:600; }
     .btn-close:hover { background:#F3F4F6; border-color:var(--line); }
-    .manual-body { padding:.4rem 1.5rem 1.6rem; font-size:14.5px; }
-    .manual-body h1 { font-size:21px; margin:1.2rem 0 .6rem; }
-    .manual-body h2 { font-size:17px; margin:1.5rem 0 .5rem; }
+
+    /* Zone de contenu défilante commune, colonne lisible centrée dans la surface pleine largeur. */
+    .modal-scroll { flex:1; overflow-y:auto; display:flex; justify-content:center;
+                    padding:1.4rem clamp(1rem,4vw,3rem); }
+    .modal-col { width:100%; max-width:960px; }
+
+    /* Manuel */
+    .manual-body { font-size:15px; }
+    .manual-body h1 { font-size:22px; margin:1.4rem 0 .6rem; }
+    .manual-body h2 { font-size:18px; margin:1.6rem 0 .5rem; }
     .manual-body img { max-width:100%; border:1px solid var(--line); border-radius:var(--radius-sm);
                        box-shadow:var(--shadow); margin:.35rem 0; }
     .manual-body pre { background:#F3F4F6; padding:.7rem .8rem; border-radius:var(--radius-sm); overflow-x:auto; }
     .manual-body table { margin:.5rem 0 1rem; }
     .manual-body a { word-break:break-word; }
 
-    /* ── Modale de chat de test (« Essayer maintenant ») ──────────────────────────── */
-    dialog.chatmod { width:min(720px,94vw); height:min(620px,88vh); border:1px solid var(--line);
-                     border-radius:var(--radius); padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22);
-                     display:flex; flex-direction:column; overflow:hidden; }
-    dialog.chatmod::backdrop { background:rgba(13,13,13,.45); }
-    .chat-log { flex:1; overflow-y:auto; padding:1.1rem 1.4rem; display:flex; flex-direction:column;
-                gap:.7rem; background:var(--bg); }
-    .chat-hint { color:var(--text-3); font-size:13.5px; margin:auto 0; text-align:center; }
+    /* Chat de test */
+    .chat-col { display:flex; flex-direction:column; gap:.7rem; }
+    .chat-hint { color:var(--text-3); font-size:14px; text-align:center; padding:1.5rem 0; }
     .chat-msg { display:flex; flex-direction:column; gap:.25rem; max-width:82%; }
     .chat-msg.user { align-self:flex-end; align-items:flex-end; }
     .chat-msg.bot { align-self:flex-start; align-items:flex-start; }
@@ -202,17 +214,15 @@
     .chat-msg.chat-err .chat-text { background:var(--color-danger-soft); color:var(--color-danger);
                                     border-color:var(--color-danger); }
     .chat-model { font-size:11.5px; color:var(--text-3); }
-    .chat-input { display:flex; gap:.6rem; padding:.85rem 1.2rem; background:var(--surface);
-                  border-top:1px solid var(--line); }
+    .chat-inputbar { flex:none; display:flex; justify-content:center; background:var(--surface);
+                     border-top:1px solid var(--line); padding:1rem clamp(1rem,4vw,3rem); }
+    .chat-input { display:flex; gap:.6rem; width:100%; max-width:960px; }
     .chat-input input { flex:1; }
     .chat-input button { flex:none; }
 
-    /* ── Modale de configuration client (variables d'env, post-création de clé) ───── */
-    dialog.envmod { width:min(820px,94vw); border:1px solid var(--line); border-radius:var(--radius);
-                    padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }
-    dialog.envmod::backdrop { background:rgba(13,13,13,.45); }
-    .env-body { padding:.9rem 1.4rem 1.4rem; }
-    /* Hauteur réservée pour 6 lignes (3 API cochées) : la modale ne « saute » pas quand on coche. */
+    /* Configuration client (variables d'env) */
+    .env-body h2 { font-size:16px; }
+    /* Hauteur réservée pour 6 lignes (3 API cochées) : la sortie ne « saute » pas quand on coche. */
     .env-output { background:var(--color-ink); color:#E5E7EB; padding:.9rem 1rem; margin:.6rem 0 0;
                   border-radius:var(--radius-sm); overflow-x:auto; min-height:9.5rem; white-space:pre; }
 
@@ -247,10 +257,12 @@
       <span class="chip-ic brand">{{ icon('book-open', 18) }}</span>
       <h2>Manuel utilisateur</h2>
       <button type="button" class="btn-close" id="manual-close" aria-label="Fermer le manuel">
-        {{ icon('x') }}</button>
+        {{ icon('x') }} Fermer</button>
     </div>
-    <div class="manual-body" id="manual-content" data-testid="manual-content">
-      <p class="muted">Chargement du manuel…</p>
+    <div class="modal-scroll">
+      <div class="modal-col manual-body" id="manual-content" data-testid="manual-content">
+        <p class="muted">Chargement du manuel…</p>
+      </div>
     </div>
   </dialog>
   <script>

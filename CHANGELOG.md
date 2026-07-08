@@ -14,7 +14,9 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 - **Layout plein viewport (règle dure).** Le panel occupe désormais **100 % de la largeur et
   de la hauteur de l'écran** (plus de colonne centrée) : tableau des clés et formulaire côte à
   côte sur grand écran, page Serveurs en grille de cartes, écran de connexion en split
-  hero/formulaire pleine hauteur.
+  hero/formulaire pleine hauteur. **Les fenêtres modales (manuel, configuration client, chat de
+  test) s'affichent en plein écran**, avec une barre de titre et un bouton **Fermer** bien
+  visible (fermeture aussi par la touche Échap).
 - **Modale « configurer le client » à la création d'une clé.** Elle génère les **variables
   d'environnement prêtes à copier** pour la machine cliente selon les API cochées — Ollama
   (`OLLAMA_HOST`, `OLLAMA_API_KEY`), OpenAI (`OPENAI_BASE_URL`, `OPENAI_API_KEY`), Anthropic
