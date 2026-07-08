@@ -32,6 +32,36 @@ def test_ensure_default_idempotent_and_single():
     assert len(defaults) == 1 and defaults[0].base_url == config.OLLAMA_UPSTREAM
 
 
+def test_ensure_default_collapses_duplicate_defaults():
+    """Auto-réparation : deux serveurs défaut (course de démarrage antérieure) → un seul conservé,
+    la clé qui pointait sur le doublon est réaffectée (jamais orpheline) et le doublon supprimé."""
+    from app import db
+    did = servers.ensure_default()  # défaut local canonique
+    conn = db.connect()
+    try:
+        with conn:
+            cur = conn.execute(
+                "INSERT INTO servers(name, base_url, is_default, enabled) "
+                "VALUES ('Ollama local', ?, 1, 1)", (config.OLLAMA_UPSTREAM,))
+            dup_id = cur.lastrowid
+            conn.execute("INSERT INTO api_keys(label, key_prefix, key_hash, server_id) "
+                         "VALUES ('sur-doublon', 'pfx', 'hash-uniq', ?)", (dup_id,))
+    finally:
+        conn.close()
+    assert len([s for s in servers.list_servers() if s.is_default]) == 2  # doublon bien en place
+
+    kept = servers.ensure_default()  # doit collapser
+    defaults = [s for s in servers.list_servers() if s.is_default]
+    assert len(defaults) == 1 and defaults[0].id == kept == did
+    conn = db.connect()
+    try:
+        assert conn.execute("SELECT COUNT(*) n FROM servers").fetchone()["n"] == 1
+        row = conn.execute("SELECT server_id FROM api_keys WHERE key_hash='hash-uniq'").fetchone()
+        assert row["server_id"] == did  # clé réaffectée au défaut conservé
+    finally:
+        conn.close()
+
+
 def test_new_key_attached_to_default_server():
     rec, _ = keys.create_key("k", [], None, None)
     default = [s for s in servers.list_servers() if s.is_default][0]

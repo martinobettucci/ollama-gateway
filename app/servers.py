@@ -45,28 +45,41 @@ def _row_to_record(row: sqlite3.Row) -> ServerRecord:
 # --- Reconciler / défaut ----------------------------------------------------------------------
 
 def ensure_default() -> int:
-    """Garantit l'existence d'UN serveur par défaut (local, `$OLLAMA_UPSTREAM`) et réassigne toute
-    clé orpheline (server_id NULL) à ce serveur. Idempotent ; appelé au démarrage de chaque rôle."""
-    conn = db.connect()
-    try:
-        with conn:
-            row = conn.execute("SELECT id FROM servers WHERE is_default = 1").fetchone()
-            if row:
-                did = row["id"]
-            else:
-                any_row = conn.execute("SELECT id FROM servers ORDER BY id LIMIT 1").fetchone()
-                if any_row:  # legacy : promeut le premier serveur en défaut
-                    did = any_row["id"]
-                    conn.execute("UPDATE servers SET is_default = 1 WHERE id = ?", (did,))
+    """Garantit l'existence d'UN SEUL serveur par défaut (local, `$OLLAMA_UPSTREAM`) et réassigne
+    toute clé orpheline (server_id NULL) à ce serveur.
+
+    **Sérialisé par verrou fichier** (`db.file_lock`) : les rôles proxy/admin démarrent en
+    parallèle sur le même SQLite ; sans verrou, un check-then-insert concurrent crée DEUX défauts.
+    **Auto-réparateur** : collapse d'éventuels doublons de défaut hérités d'une course antérieure
+    (les clés des doublons sont réaffectées au défaut conservé, puis les doublons supprimés).
+    Idempotent ; appelé au démarrage de chaque rôle."""
+    with db.file_lock("reconcile"):
+        conn = db.connect()
+        try:
+            with conn:
+                defaults = conn.execute(
+                    "SELECT id FROM servers WHERE is_default = 1 ORDER BY id").fetchall()
+                if defaults:
+                    did = defaults[0]["id"]
+                    for extra in defaults[1:]:  # collapse des doublons (course antérieure)
+                        conn.execute("UPDATE api_keys SET server_id = ? WHERE server_id = ?",
+                                     (did, extra["id"]))
+                        conn.execute("DELETE FROM servers WHERE id = ?", (extra["id"],))
                 else:
-                    cur = conn.execute(
-                        "INSERT INTO servers(name, base_url, is_default, enabled) "
-                        "VALUES ('Ollama local', ?, 1, 1)", (config.OLLAMA_UPSTREAM,))
-                    did = cur.lastrowid
-            conn.execute("UPDATE api_keys SET server_id = ? WHERE server_id IS NULL", (did,))
-        return did
-    finally:
-        conn.close()
+                    any_row = conn.execute(
+                        "SELECT id FROM servers ORDER BY id LIMIT 1").fetchone()
+                    if any_row:  # legacy : promeut le premier serveur en défaut
+                        did = any_row["id"]
+                        conn.execute("UPDATE servers SET is_default = 1 WHERE id = ?", (did,))
+                    else:
+                        cur = conn.execute(
+                            "INSERT INTO servers(name, base_url, is_default, enabled) "
+                            "VALUES ('Ollama local', ?, 1, 1)", (config.OLLAMA_UPSTREAM,))
+                        did = cur.lastrowid
+                conn.execute("UPDATE api_keys SET server_id = ? WHERE server_id IS NULL", (did,))
+            return did
+        finally:
+            conn.close()
 
 
 def default_id(conn: sqlite3.Connection) -> int:

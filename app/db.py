@@ -5,12 +5,28 @@ l'admin lit, sans blocage notable à notre échelle. `foreign_keys=ON` pour les 
 """
 import fcntl
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 
 from . import config
 
 # Répertoire des migrations : db/migrations/*.sql, appliquées par ordre alphabétique.
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "db" / "migrations"
+
+
+@contextmanager
+def file_lock(suffix: str = "migrate", db_path: str | None = None):
+    """Verrou fichier inter-process (`flock`) partagé via le volume : sérialise une section
+    critique entre les rôles proxy/admin qui démarrent en parallèle sur le même SQLite.
+    Utilisé pour les migrations ET les reconcilers check-then-write (ex. `ensure_default`)."""
+    path = db_path or config.DB_PATH
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(f"{path}.{suffix}.lock", "w") as lock_f:
+        fcntl.flock(lock_f, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_f, fcntl.LOCK_UN)
 
 
 def connect(db_path: str | None = None) -> sqlite3.Connection:
@@ -43,13 +59,8 @@ def apply_migrations(db_path: str | None = None) -> list[str]:
     le second process attend, relit `schema_migrations` et ne réapplique rien.
     """
     path = db_path or config.DB_PATH
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(str(path) + ".migrate.lock", "w") as lock_f:
-        fcntl.flock(lock_f, fcntl.LOCK_EX)
-        try:
-            return _apply_migrations_locked(path)
-        finally:
-            fcntl.flock(lock_f, fcntl.LOCK_UN)
+    with file_lock("migrate", path):
+        return _apply_migrations_locked(path)
 
 
 def _apply_migrations_locked(db_path: str) -> list[str]:
