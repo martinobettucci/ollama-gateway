@@ -87,8 +87,10 @@ sequenceDiagram
     participant DB as SQLite
     participant O as Ollama
     C->>P: POST /api/chat (Bearer sk-ollama-…)
-    P->>DB: clé connue, active ?
-    alt clé absente/inconnue/désactivée
+    P->>DB: origine bannie ?
+    alt origine bannie (liste globale)
+        P-->>C: 403
+    else clé absente/inconnue/désactivée
         P-->>C: 401
     else origine non autorisée
         P-->>C: 403
@@ -108,6 +110,8 @@ sequenceDiagram
 
 Points de comportement :
 
+- Le **bannissement d'origine est vérifié en premier** (avant toute clé) : une IP/CIDR de la
+  liste globale est refusée (403), quelle que soit la clé présentée.
 - **Tous** les endpoints Ollama sont proxifiés (`/api/*`, `/v1/*`) ; `/_proxy_health`
   répond sans authentification pour la supervision.
 - La requête est routée vers le **serveur d'exécution rattaché à la clé** (local ou distant) ;
@@ -197,15 +201,34 @@ dernières erreurs :
 
 ### Essayer une clé en direct
 
-Le bouton **Essayer maintenant**, sur la page d'une clé, ouvre une petite fenêtre de chat pour
-vérifier que la configuration répond réellement : le message est envoyé au **serveur rattaché à
-la clé**, avec le **modèle autorisé** (le premier de l'allowlist, ou le premier modèle détecté
-si la clé n'en restreint aucun), et la réponse s'affiche dans la conversation. C'est un moyen
-rapide de confirmer, sans quitter le panel, que le serveur est joignable et que le modèle
-fonctionne. La réponse indique le modèle utilisé ; un modèle hors allowlist est refusé, comme
-au travers du proxy.
+Le bouton **Essayer maintenant**, sur la page d'une clé, ouvre une fenêtre de chat pour
+vérifier que la configuration répond réellement. On y **choisit le modèle** (parmi ceux
+autorisés pour la clé, ou détectés sur son serveur) et **l'API cliente** à tester :
+
+- **Ollama (chat)** — `POST /api/chat`
+- **OpenAI Chat Completions** — `POST /v1/chat/completions`
+- **OpenAI Responses** — `POST /v1/responses`
+- **Anthropic Messages** — `POST /v1/messages`
+
+Le message est relayé au serveur rattaché à la clé et la réponse s'affiche, préfixée du
+**modèle et de l'API utilisés**. C'est un moyen rapide de confirmer, sans quitter le panel,
+que le serveur répond via l'API attendue (le serveur doit évidemment servir le chemin choisi).
+Un modèle hors allowlist est refusé, comme au travers du proxy.
 
 ![Essayer une clé — fenêtre de chat de test](../app/static/manual/10-try-chat.jpg)
+
+### Console de logs & bannissement d'origines
+
+La page **Logs** conserve le **journal complet des requêtes** (une ligne par requête, autorisée
+ou refusée ; jamais purgé) : horodatage, origine, clé, méthode, chemin, modèle, statut, tokens,
+durée. Chaque ligne porte un bouton **Bannir** qui ajoute l'IP à la **liste de bannissement
+globale**. On peut aussi bannir une IP ou un **CIDR** à la main, et lever un bannissement.
+
+Une origine bannie est **refusée (403) par le proxy avant toute vérification de clé** : c'est un
+blocage réseau global, indépendant des allowlists d'origine *par clé*. Utile pour couper un
+scanner ou un abus repéré dans le journal, en un clic.
+
+![Console de logs et bannissements](../app/static/manual/11-logs.jpg)
 
 ### Suivi de l'usage
 

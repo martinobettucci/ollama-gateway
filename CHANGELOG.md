@@ -6,11 +6,21 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
-- **Bouton « Essayer maintenant » sur une clé.** La page d'une clé propose désormais une petite
-  fenêtre de **chat de test** : le message est relayé (côté admin, LAN-only) vers le serveur
-  rattaché à la clé avec un modèle autorisé, et la réponse du modèle s'affiche. Permet de
-  vérifier en un clic que la configuration répond réellement, sans quitter le panel ni exposer
-  le secret. L'allowlist de modèles de la clé est respectée (modèle hors liste → refusé).
+- **Console de logs & bannissement d'origines.** Nouvelle page **Logs** : journal complet des
+  requêtes (une ligne par requête, autorisée ou refusée, conservé intégralement — jamais purgé)
+  avec horodatage, origine, clé, méthode, chemin, modèle, statut, tokens et durée. Chaque ligne
+  permet de **bannir l'IP en un clic** ; on peut aussi bannir/lever une IP ou un **CIDR** à la
+  main. Une origine bannie est **refusée (403) par le proxy avant toute vérification de clé**
+  (blocage réseau global, distinct des allowlists d'origine par clé).
+- **Bouton « Essayer maintenant » enrichi.** La fenêtre de chat de test permet maintenant de
+  **choisir le modèle** (parmi les modèles autorisés/détectés) **et l'API cliente** à tester :
+  Ollama (`/api/chat`), OpenAI Chat Completions (`/v1/chat/completions`), OpenAI Responses
+  (`/v1/responses`), Anthropic Messages (`/v1/messages`). La réponse indique le modèle et l'API
+  utilisés ; le relais reste côté admin (LAN-only) et respecte l'allowlist de la clé.
+- **Bouton « Essayer maintenant » sur une clé.** La page d'une clé propose une fenêtre de
+  **chat de test** : le message est relayé (côté admin, LAN-only) vers le serveur rattaché à la
+  clé, et la réponse du modèle s'affiche. Permet de vérifier en un clic que la configuration
+  répond réellement, sans quitter le panel ni exposer le secret.
 - **Layout plein viewport (règle dure).** Le panel occupe désormais **100 % de la largeur et
   de la hauteur de l'écran** (plus de colonne centrée) : tableau des clés et formulaire côte à
   côte sur grand écran, page Serveurs en grille de cartes, écran de connexion en split

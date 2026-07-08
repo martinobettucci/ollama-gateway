@@ -57,7 +57,11 @@ car Ollama est en loopback natif (hors Docker).
 - `api_keys.server_id` (FK `servers`, ON DELETE SET NULL) — serveur rattaché ; `key_models(key_id,
   model)` — allowlist de modèles par clé (aucune ligne = tous autorisés).
 - `usage_events(...)` — append-only, une ligne par requête (autorisée ou refusée) : clé, IP,
-  méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out.
+  méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out. **Jamais
+  purgé** ; exposé intégralement par la console de logs (`GET /admin/logs`).
+- `banned_origins(id, cidr, reason, created_at)` (migration 0003) — liste de bannissement
+  **globale** d'origines (IP `/32`·`/128` ou CIDR), appliquée par le proxy **avant l'auth** (403).
+  Pilotée depuis la console de logs (`bans.py`). Distincte des `key_origins` (ALLOW par clé).
 - `admin_auth(id=1, password_hash)` — mot de passe admin (pbkdf2).
 - Migrations idempotentes **et concurrent-safe** (verrou `flock` : proxy/admin migrent en
   parallèle sur le même fichier). `busy_timeout` posé avant `PRAGMA journal_mode=WAL`.
@@ -74,6 +78,7 @@ car Ollama est en loopback natif (hors Docker).
 1. Caddy termine le TLS et route `/api/*|/v1/*|/_proxy_health` vers le proxy (loopback), en posant
    `X-Forwarded-For`.
 2. Le proxy détermine l'IP source (XFF si le pair est de confiance — `TRUSTED_PROXY_IPS`).
+2b. **Bannissement global** : si l'IP source ∈ `banned_origins` → `403` immédiat (avant l'auth).
 3. `401` si clé absente/inconnue/désactivée ; `403` si origine hors allowlist ; `429` si quota ;
    `503` si serveur rattaché désactivé/absent ; `403` si modèle hors allowlist de la clé (le
    `model` est lu à la racine du corps → même gate pour Ollama, OpenAI chat/responses, Anthropic).
@@ -90,7 +95,7 @@ car Ollama est en loopback natif (hors Docker).
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
 ```
 
-Tests : `python -m pytest` (66) ; `cd e2e && npm test` (10 E2E + captures `e2e/output/`).
+Tests : `python -m pytest` (82) ; `cd e2e && npm test` (11 E2E + captures `e2e/output/`).
 
 ## 6. Déploiement hôte self-hosted & migration (procédure)
 

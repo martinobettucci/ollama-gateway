@@ -3,6 +3,31 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-08 (suite 2) — Console de logs, bannissement d'origines, try-me multi-API
+
+- **Bannissement = DENY global avant l'auth (choix d'architecture).** Le bannissement d'origine
+  est une nouvelle table `banned_origins` vérifiée **tout en haut du proxy**, avant même le
+  contrôle de clé : couper un scanner/abus repéré dans les logs doit fonctionner quelle que soit
+  la clé présentée. C'est distinct des `key_origins` (un ALLOW *par clé*) : ici un DENY *global*.
+  IP normalisée en hôte (`/32`·`/128`) ou CIDR ; la vérification teste l'appartenance réseau.
+- **Console de logs = exposition du journal déjà conservé.** `usage_events` est append-only et
+  complet depuis l'origine ; il n'était affiché que par clé (erreurs récentes). La page `/admin/logs`
+  expose **tout** le journal (dernières 500 lignes affichées, total indiqué — rien n'est purgé) et
+  ajoute le bouton « Bannir » par ligne. Les lignes déjà couvertes par un ban sont marquées
+  (`bans.banned_among`, une seule requête pour tout l'écran plutôt qu'une par ligne).
+- **Try-me multi-API.** Le relais `chat_once` devient `try_call(server_id, api, model, message)`
+  piloté par `TRY_APIS` : chaque API a son chemin, sa fabrique de corps et son extracteur de
+  réponse (Ollama `message.content`, OpenAI chat `choices[].message.content`, OpenAI responses
+  `output_text`/`output[].content[].text`, Anthropic `content[].text`). Le faux Ollama gagne
+  `/v1/responses` et `/v1/messages` pour un E2E déterministe des quatre. Le serveur amont doit
+  servir le chemin choisi ; sinon le relais renvoie l'erreur (utile pour tester la config).
+- **Piège dev/prod sur l'IP journalisée (documenté, pas un bug).** En dev via docker-compose, le
+  proxy voit comme pair la passerelle du bridge Docker (172.18.0.1), pas 127.0.0.1 : le XFF de
+  l'hôte n'est donc pas « de confiance » et c'est l'IP du bridge qui est journalisée/bannie. En
+  **prod** (`network_mode: host`, Caddy en loopback), le pair est 127.0.0.1 (de confiance) et le
+  XFF de Caddy est honoré → l'**IP client réelle** est journalisée et bannissable. L'E2E valide le
+  chemin XFF-de-confiance en lançant uvicorn en direct (pair = 127.0.0.1).
+
 ## 2026-07-08 (suite) — Modales plein écran + bug de fermeture corrigé
 
 - **Bug : la modale de chat ne se fermait pas.** Root cause trouvée en instrumentant les

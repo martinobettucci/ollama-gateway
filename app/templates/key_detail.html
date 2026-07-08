@@ -23,6 +23,22 @@
     <h2>Essayer « {{ key.label }} »</h2>
     <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
   </div>
+  <div class="chat-controls">
+    <div class="chat-controls-col">
+      <label for="try-model-sel">Modèle</label>
+      {# Allowlist rendue côté serveur si la clé en a une ; sinon peuplée par sonde du serveur. #}
+      <select id="try-model-sel" data-testid="try-model">
+        {% for m in key.models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+      </select>
+      <label for="try-api-sel">API</label>
+      <select id="try-api-sel" data-testid="try-api">
+        <option value="ollama">Ollama (chat)</option>
+        <option value="openai-chat">OpenAI Chat Completions</option>
+        <option value="openai-responses">OpenAI Responses</option>
+        <option value="anthropic">Anthropic Messages</option>
+      </select>
+    </div>
+  </div>
   <div class="modal-scroll" id="try-log" data-testid="try-log">
     <div class="modal-col chat-col" id="try-col">
       <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
@@ -46,6 +62,31 @@
   const form = document.getElementById('try-form');
   const input = document.getElementById('try-msg');
   const send = document.getElementById('try-send');
+  const modelSel = document.getElementById('try-model-sel');
+  const apiSel = document.getElementById('try-api-sel');
+  const serverId = {{ key.server_id or 'null' }};
+  let modelsLoaded = modelSel.options.length > 0;  // allowlist déjà rendue côté serveur
+
+  async function ensureModels() {
+    if (modelsLoaded || serverId === null) return;
+    modelSel.innerHTML = '<option value="">Sonde du serveur…</option>';
+    try {
+      const r = await fetch('/admin/servers/' + serverId + '/models');
+      const data = r.ok ? await r.json() : { online: false, models: [] };
+      if (data.online && Array.isArray(data.models) && data.models.length) {
+        modelSel.innerHTML = '';
+        for (const m of data.models) {
+          const o = document.createElement('option');
+          o.value = m; o.textContent = m; modelSel.append(o);
+        }
+        modelsLoaded = true;
+      } else {
+        modelSel.innerHTML = '<option value="">(aucun modèle détecté)</option>';
+      }
+    } catch (e) {
+      modelSel.innerHTML = '<option value="">(serveur injoignable)</option>';
+    }
+  }
 
   function bubble(role, text, model) {
     const b = document.createElement('div');
@@ -63,7 +104,9 @@
     return p;
   }
 
-  document.getElementById('try-open').addEventListener('click', () => { dlg.showModal(); input.focus(); });
+  document.getElementById('try-open').addEventListener('click', () => {
+    dlg.showModal(); ensureModels(); input.focus();
+  });
   document.getElementById('try-close').addEventListener('click', () => dlg.close());
 
   form.addEventListener('submit', async (e) => {
@@ -72,20 +115,22 @@
     if (!msg) return;
     if (hint) { hint.remove(); }
     bubble('user', msg);
+    const apiLabel = apiSel.options[apiSel.selectedIndex].text;
     input.value = '';
     input.disabled = send.disabled = true;
     const pending = bubble('bot', '…');
     try {
       const r = await fetch('/admin/keys/{{ key.id }}/try-chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg }),
+        body: JSON.stringify({ message: msg, model: modelSel.value, api: apiSel.value }),
       });
       const data = await r.json();
       if (r.ok) {
         pending.textContent = data.reply;
         pending.parentElement.querySelector('.chat-model')?.remove();
         const m = document.createElement('span');
-        m.className = 'chat-model mono'; m.textContent = data.model;
+        m.className = 'chat-model mono';
+        m.textContent = (data.model || '?') + ' · ' + apiLabel;
         pending.parentElement.prepend(m);
       } else {
         pending.parentElement.classList.add('chat-err');

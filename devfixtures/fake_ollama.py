@@ -56,6 +56,40 @@ async def openai_chat(request: Request):
     })
 
 
+@app.post("/v1/responses")
+async def openai_responses(request: Request):
+    # OpenAI Responses API : entrée `input`, sortie `output[].content[].text` (+ `output_text`).
+    global LAST_AUTH, LAST_XAPIKEY
+    LAST_AUTH = request.headers.get("authorization")
+    LAST_XAPIKEY = request.headers.get("x-api-key")
+    body = await request.json()
+    model = body.get("model", "demo:latest")
+    full = "".join(_CHUNKS)
+    return JSONResponse({
+        "id": "resp-demo", "object": "response", "model": model, "status": "completed",
+        "output": [{"type": "message", "role": "assistant",
+                    "content": [{"type": "output_text", "text": full}]}],
+        "output_text": full,
+        "usage": {"input_tokens": 11, "output_tokens": len(_CHUNKS)},
+    })
+
+
+@app.post("/v1/messages")
+async def anthropic_messages(request: Request):
+    # Anthropic Messages API : sortie `content[].text` ; modèle à la racine (même gating).
+    global LAST_AUTH, LAST_XAPIKEY
+    LAST_AUTH = request.headers.get("authorization")
+    LAST_XAPIKEY = request.headers.get("x-api-key")
+    body = await request.json()
+    model = body.get("model", "demo:latest")
+    return JSONResponse({
+        "id": "msg-demo", "type": "message", "role": "assistant", "model": model,
+        "content": [{"type": "text", "text": "".join(_CHUNKS)}],
+        "stop_reason": "end_turn",
+        "usage": {"input_tokens": 11, "output_tokens": len(_CHUNKS)},
+    })
+
+
 @app.post("/api/embed")
 async def embed(request: Request) -> JSONResponse:
     body = await request.json()

@@ -134,6 +134,8 @@
     .hint { margin:.3rem 0 0; font-size:12.5px; color:var(--text-3); }
     .row { display:flex; gap:1rem; flex-wrap:wrap; } .row > div { flex:1 1 180px; }
     .actions { margin-top:1.2rem; }
+    .ban-add { display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1rem; }
+    .ban-add > div { flex:1 1 220px; } .ban-add label { margin-top:0; } .ban-add > button { flex:none; }
 
     /* ── Messages & états ─────────────────────────────────────────────────────────── */
     .flash { display:flex; gap:.7rem; border:1px solid var(--line); border-top:3px solid var(--color-success);
@@ -202,6 +204,12 @@
     .manual-body a { word-break:break-word; }
 
     /* Chat de test */
+    .chat-controls { flex:none; display:flex; justify-content:center; background:var(--surface);
+                     border-bottom:1px solid var(--line); padding:.7rem clamp(1rem,4vw,3rem); }
+    .chat-controls-col { display:flex; gap:.6rem 1rem; align-items:center; flex-wrap:wrap;
+                         width:100%; max-width:960px; }
+    .chat-controls label { margin:0; }
+    .chat-controls select { width:auto; min-width:170px; flex:1 1 200px; }
     .chat-col { display:flex; flex-direction:column; gap:.7rem; }
     .chat-hint { color:var(--text-3); font-size:14px; text-align:center; padding:1.5rem 0; }
     .chat-msg { display:flex; flex-direction:column; gap:.25rem; max-width:82%; }
@@ -244,6 +252,8 @@
          href="/admin">{{ icon('layout-dashboard') }} Tableau de bord</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/servers') %} active{% endif %}"
          href="/admin/servers">{{ icon('server') }} Serveurs</a>
+      <a class="pill-link{% if request.url.path.startswith('/admin/logs') or request.url.path.startswith('/admin/bans') %} active{% endif %}"
+         href="/admin/logs">{{ icon('scroll-text') }} Logs</a>
       <button type="button" class="pill-link" id="manual-open" data-testid="manual-open"
               aria-haspopup="dialog">{{ icon('book-open') }} Manuel</button>
       <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} Déconnexion</a>

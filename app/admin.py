@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, config, db, keys, servers, usage
+from . import auth, bans, config, db, keys, servers, usage
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -229,6 +229,9 @@ async def key_try_chat(request: Request, key_id: int):
     message = (body.get("message") or "").strip()
     if not message:
         return JSONResponse({"error": "message vide"}, status_code=400)
+    api = (body.get("api") or "ollama").strip()
+    if api not in servers.TRY_APIS:
+        return JSONResponse({"error": f"API inconnue: {api}"}, status_code=400)
     server_id = rec.server_id or servers.default_id(db.connect())
     model = (body.get("model") or "").strip()
     if model:
@@ -243,10 +246,10 @@ async def key_try_chat(request: Request, key_id: int):
             return JSONResponse(
                 {"error": "serveur injoignable ou sans modèle disponible"}, status_code=502)
         model = avail[0]
-    reply, err = await servers.chat_once(server_id, model, message)
+    reply, err = await servers.try_call(server_id, api, model, message)
     if err:
-        return JSONResponse({"error": err, "model": model}, status_code=502)
-    return JSONResponse({"reply": reply, "model": model})
+        return JSONResponse({"error": err, "model": model, "api": api}, status_code=502)
+    return JSONResponse({"reply": reply, "model": model, "api": api})
 
 
 @app.post("/admin/keys/{key_id}/toggle")
@@ -265,6 +268,46 @@ async def key_delete(request: Request, key_id: int):
         return r
     keys.delete_key(key_id)
     return RedirectResponse("/admin", status_code=303)
+
+
+# --- Console de logs + bannissement d'origines ------------------------------------------------
+
+@app.get("/admin/logs", response_class=HTMLResponse)
+async def logs_page(request: Request):
+    """Console de logs : journal COMPLET des requêtes (conservé append-only) + liste de
+    bannissement d'origines. Chaque ligne permet de bannir l'IP en un clic."""
+    if (r := _guard(request)):
+        return r
+    events = usage.recent_events(500)
+    return TEMPLATES.TemplateResponse(request, "logs.html", {
+        "events": events,
+        "total": usage.total_events(),
+        "banned_ips": bans.banned_among(e["client_ip"] for e in events),
+        "bans": bans.list_bans(),
+        "flash": request.session.pop("logs_flash", None),
+    })
+
+
+@app.post("/admin/logs/ban")
+async def logs_ban(request: Request):
+    """Bannit une IP/CIDR (bouton « Bannir » d'une ligne, ou saisie manuelle)."""
+    if (r := _guard(request)):
+        return r
+    form = await request.form()
+    norm = bans.add_ban(form.get("cidr", ""), form.get("reason", ""))
+    request.session["logs_flash"] = (
+        {"ok": True, "text": f"Origine bannie : {norm}"} if norm
+        else {"ok": False, "text": "IP/CIDR invalide — rien banni."})
+    return RedirectResponse("/admin/logs", status_code=303)
+
+
+@app.post("/admin/bans/{ban_id}/delete")
+async def ban_delete(request: Request, ban_id: int):
+    if (r := _guard(request)):
+        return r
+    bans.remove_ban(ban_id)
+    request.session["logs_flash"] = {"ok": True, "text": "Bannissement levé."}
+    return RedirectResponse("/admin/logs", status_code=303)
 
 
 # --- Serveurs d'exécution ---------------------------------------------------------------------

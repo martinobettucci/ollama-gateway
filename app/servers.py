@@ -259,13 +259,85 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
 
 # --- Chat de test (« Essayer maintenant » du panel) -------------------------------------------
 
-async def chat_once(server_id: int, model: str, message: str) -> tuple[str, str]:
-    """Envoie un unique message de chat (non-streamé) au serveur et renvoie (réponse, erreur).
+# APIs proposées par le bouton « Essayer maintenant » : chemin amont, fabrique du corps, et
+# extracteur de la réponse. Le serveur d'exécution (Ollama ou compatible) doit servir le chemin
+# choisi ; sinon le relais renvoie l'erreur telle quelle (utile pour tester la config cliente).
+def _body_ollama(model, msg):
+    return {"model": model, "stream": False,
+            "messages": [{"role": "user", "content": msg}]}
+
+
+def _body_openai_chat(model, msg):
+    return {"model": model, "stream": False,
+            "messages": [{"role": "user", "content": msg}]}
+
+
+def _body_openai_responses(model, msg):
+    return {"model": model, "stream": False, "input": msg}
+
+
+def _body_anthropic(model, msg):
+    return {"model": model, "max_tokens": 1024,
+            "messages": [{"role": "user", "content": msg}]}
+
+
+def _reply_ollama(d):
+    return (d.get("message") or {}).get("content", "") if isinstance(d, dict) else ""
+
+
+def _reply_openai_chat(d):
+    try:
+        return d["choices"][0]["message"]["content"] or ""
+    except (KeyError, IndexError, TypeError):
+        return ""
+
+
+def _reply_openai_responses(d):
+    if not isinstance(d, dict):
+        return ""
+    if isinstance(d.get("output_text"), str) and d["output_text"]:
+        return d["output_text"]
+    try:  # forme structurée : output[].content[].text
+        for item in d.get("output", []):
+            for c in item.get("content", []):
+                if c.get("text"):
+                    return c["text"]
+    except (AttributeError, TypeError):
+        pass
+    return ""
+
+
+def _reply_anthropic(d):
+    try:
+        for c in d.get("content", []):
+            if c.get("text"):
+                return c["text"]
+    except (AttributeError, TypeError):
+        pass
+    return ""
+
+
+TRY_APIS = {
+    "ollama": ("/api/chat", _body_ollama, _reply_ollama, "Ollama (chat)"),
+    "openai-chat": ("/v1/chat/completions", _body_openai_chat, _reply_openai_chat,
+                    "OpenAI Chat Completions"),
+    "openai-responses": ("/v1/responses", _body_openai_responses, _reply_openai_responses,
+                         "OpenAI Responses"),
+    "anthropic": ("/v1/messages", _body_anthropic, _reply_anthropic, "Anthropic Messages"),
+}
+
+
+async def try_call(server_id: int, api: str, model: str, message: str) -> tuple[str, str]:
+    """Envoie un unique message au serveur via l'API choisie, renvoie (réponse, erreur).
 
     Relais **LAN-only** derrière l'admin (jamais exposé publiquement) : sert au bouton
-    « Essayer maintenant » pour vérifier qu'une clé/serveur/modèle répond réellement. Le jeton
-    distant est déchiffré et injecté vers l'amont ; il n'apparaît jamais côté navigateur.
+    « Essayer maintenant » pour vérifier qu'une clé/serveur/modèle/API répond réellement. Le
+    jeton distant est déchiffré et injecté vers l'amont ; il n'apparaît jamais côté navigateur.
     """
+    spec = TRY_APIS.get(api)
+    if spec is None:
+        return "", "API inconnue"
+    path, make_body, extract, _label = spec
     conn = db.connect()
     try:
         row = conn.execute(
@@ -282,16 +354,13 @@ async def chat_once(server_id: int, model: str, message: str) -> tuple[str, str]
         token = crypto.decrypt(row["auth_token_enc"])
         if token:
             headers["Authorization"] = f"Bearer {token}"
-    url = row["base_url"].rstrip("/") + "/api/chat"
-    payload = {"model": model, "stream": False,
-               "messages": [{"role": "user", "content": message}]}
+    url = row["base_url"].rstrip("/") + path
     try:
         async with httpx.AsyncClient(timeout=config.UPSTREAM_TIMEOUT_S) as c:
-            r = await c.post(url, json=payload, headers=headers)
+            r = await c.post(url, json=make_body(model, message), headers=headers)
         if r.status_code != 200:
             return "", f"HTTP {r.status_code}"
-        data = r.json()
-        reply = (data.get("message") or {}).get("content", "") if isinstance(data, dict) else ""
+        reply = extract(r.json())
         return (reply, "") if reply else ("", "réponse vide du serveur")
     except (httpx.HTTPError, ValueError) as exc:
         return "", exc.__class__.__name__

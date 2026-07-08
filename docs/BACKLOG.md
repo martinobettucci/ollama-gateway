@@ -94,14 +94,32 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 - [x] **Proxy : clé acceptée en `x-api-key`** (SDK Anthropic) en plus du Bearer, en-tête strippé
   avant l'amont — *tests : test_proxy (x-api-key ok + strip, x-api-key invalide → 401).*
 - [x] **« Essayer maintenant » : chat de test d'une clé** (relais admin LAN-only
-  `POST /admin/keys/{id}/try-chat` vers le serveur rattaché, modèle de l'allowlist, non-streamé
-  `servers.chat_once`) avec fenêtre de chat sur la page de la clé — *tests : test_admin (login
-  requis, réponse renvoyée, modèle hors allowlist → 403, message vide → 400), E2E admin.spec
-  « essayer maintenant » ; vision : capture 10-try-chat ; manuel synchronisé.*
+  `POST /admin/keys/{id}/try-chat` vers le serveur rattaché) avec fenêtre de chat sur la page de
+  la clé — *tests : test_admin (login requis, réponse renvoyée, modèle hors allowlist → 403,
+  message vide → 400), E2E admin.spec « essayer maintenant » ; vision : capture 10 ; manuel à jour.*
+
+## Phase 6 — Console de logs, bannissement d'origines, try-me modèle+API (2026-07-08)
+
+- [x] **Console de logs (journal complet)** : page `/admin/logs` listant l'intégralité du journal
+  `usage_events` (jamais purgé), la plus récente d'abord (`usage.recent_events`/`total_events`)
+  — *tests : test_bans (login requis, page rendue), E2E admin.spec « console de logs » ; vision :
+  capture 11-logs.*
+- [x] **Bannissement GLOBAL d'origines (IP/CIDR)** : table `banned_origins` (migration 0003),
+  module `bans.py` (normalisation IP→/32·/128, add/list/remove, `is_banned`), appliqué par le
+  proxy **avant l'auth** (403), pilotable depuis la console (bouton par ligne + saisie manuelle +
+  débannir) — *tests : test_bans (normalisation, CIDR couvrant une plage, DENY proxy avant auth,
+  ban/unban admin, entrée invalide), E2E « bannir bloque le proxy (403) puis débannir » ; vision :
+  capture logs état banni.*
+- [x] **« Essayer maintenant » : choix du modèle ET de l'API** (Ollama chat, OpenAI Chat
+  Completions, OpenAI Responses, Anthropic Messages) via `servers.try_call` + `TRY_APIS` ; faux
+  Ollama étendu (`/v1/responses`, `/v1/messages`) — *tests : test_admin (4 API paramétrées → réponse,
+  API inconnue → 400), E2E admin.spec (select modèle sondé + API OpenAI, réponse étiquetée) ;
+  vision : capture 10 (selects).*
 
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.
 - [ ] Rotation de clé (regénérer en conservant label/origines/quota).
-- [ ] Export CSV de l'usage ; rétention/rotation des `usage_events`.
+- [ ] Export CSV de l'usage ; rétention/rotation des `usage_events` (le journal est actuellement
+  conservé intégralement, sans purge).
 - [ ] Quota par fenêtre glissante distribuée si multi-instance (non requis ici).

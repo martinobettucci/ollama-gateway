@@ -104,6 +104,11 @@ test('essayer maintenant : chat de test d\'une clé → réponse réelle du serv
   const dlg = page.locator('[data-testid=try-dialog]');
   await expect(dlg).toBeVisible();
 
+  // Sélection d'un modèle (sondé sur le serveur) et de l'API OpenAI Chat Completions.
+  await expect(page.locator('[data-testid=try-model] option')).toHaveCount(2);  // demo + autre
+  await page.locator('[data-testid=try-model]').selectOption('demo:latest');
+  await page.locator('[data-testid=try-api]').selectOption('openai-chat');
+
   // Envoie un message : le relais interroge le serveur rattaché (faux Ollama) et affiche la réponse.
   await page.locator('[data-testid=try-msg]').fill('Dis bonjour');
   await page.locator('[data-testid=try-send]').click();
@@ -111,6 +116,7 @@ test('essayer maintenant : chat de test d\'une clé → réponse réelle du serv
   await expect(log.locator('.chat-msg.user')).toContainText('Dis bonjour');
   await expect(log.locator('.chat-msg.bot')).toContainText('faux modèle');
   await expect(log.locator('.chat-msg.bot .chat-model')).toContainText('demo:latest');
+  await expect(log.locator('.chat-msg.bot .chat-model')).toContainText('OpenAI Chat Completions');
   await page.screenshot({ path: `${OUT}/10-try-chat.jpg`, type: 'jpeg' });
 
   // La modale doit RÉELLEMENT se fermer (bouton Fermer + touche Échap) — régression corrigée.
@@ -120,6 +126,50 @@ test('essayer maintenant : chat de test d\'une clé → réponse réelle du serv
   await expect(dlg).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dlg).toBeHidden();
+});
+
+test('console de logs : journal + bannir une origine bloque le proxy (403 avant auth)', async ({ page, request }) => {
+  const PROXY = 'http://127.0.0.1:8791';
+  const DEMO = 'sk-ollama-devdemokey000000000000000000000000000000000000000000000000';
+  // X-Forwarded-For de confiance (le pair 127.0.0.1 est un proxy de confiance en E2E) : le log
+  // porte cette IP synthétique, dont le bannissement n'affecte PAS les requêtes du runner (127.0.0.1).
+  const XFF = { 'X-Forwarded-For': '198.51.100.77' };
+
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+
+  // Génère une requête journalisée (200) depuis l'origine synthétique.
+  const ok = await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}`, ...XFF }, data: { model: 'demo:latest' },
+  });
+  expect(ok.status()).toBe(200);
+
+  // Console de logs : la requête apparaît avec son origine.
+  await page.getByRole('link', { name: 'Logs' }).click();
+  await expect(page.locator('h1')).toContainText('Journal');
+  const row = page.locator('[data-testid=log-row]', { hasText: '198.51.100.77' }).first();
+  await expect(row).toBeVisible();
+  await page.screenshot({ path: `${OUT}/11-logs.jpg`, type: 'jpeg', fullPage: true });
+
+  // Bannir l'origine directement depuis la ligne → apparaît dans « Origines bannies ».
+  await row.locator('[data-testid=log-ban]').click();
+  await expect(page.locator('[data-testid=bans-table]')).toContainText('198.51.100.77');
+
+  // Le proxy refuse désormais cette origine (403), AVANT l'auth de clé.
+  const blocked = await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}`, ...XFF }, data: { model: 'demo:latest' },
+  });
+  expect(blocked.status()).toBe(403);
+  // Les autres origines (le runner, 127.0.0.1) restent servies.
+  const still = await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}` }, data: { model: 'demo:latest' },
+  });
+  expect(still.status()).toBe(200);
+
+  // Débannir depuis la console (hygiène) → l'origine synthétique est réacceptée.
+  await page.locator('[data-testid=bans-table] form[action^="/admin/bans/"] button').first().click();
+  await expect(page.locator('[data-testid=bans-table]')).toHaveCount(0);
 });
 
 test('plein viewport : le layout occupe toute la largeur, pas de colonne centrée', async ({ page }) => {

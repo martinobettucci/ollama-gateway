@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from starlette.background import BackgroundTask
 
-from . import auth, config, db, keys, quotas, servers, usage
+from . import auth, bans, config, db, keys, quotas, servers, usage
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
 # cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
@@ -170,6 +170,11 @@ async def proxy(request: Request, full_path: str):
     ip = client_ip(request)
     method = request.method
     path = "/" + full_path
+
+    # --- Bannissement global d'origine (DENY avant toute auth ; opéré depuis la console) ---
+    if bans.is_banned(ip):
+        _log(None, ip, method, path, "", 403, t0)
+        return JSONResponse({"error": "origine bannie"}, status_code=403)
 
     if not path.startswith(config.ALLOWED_PATH_PREFIXES):
         return JSONResponse({"error": "not found"}, status_code=404)

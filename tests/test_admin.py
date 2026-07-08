@@ -1,4 +1,6 @@
 """Tests d'intégration du panel admin : setup, login/guard, CRUD clés, flash secret unique."""
+import pytest
+
 from app import keys
 
 
@@ -135,6 +137,35 @@ async def test_try_chat_empty_message_400(admin_client, probe_via_fake):
     async with admin_client as c:
         await c.post("/admin/login", data={"password": "admin-mdp"})
         r = await c.post(f"/admin/keys/{rec.id}/try-chat", json={"message": "   "})
+    assert r.status_code == 400
+
+
+@pytest.mark.parametrize("api", ["ollama", "openai-chat", "openai-responses", "anthropic"])
+async def test_try_chat_each_api_returns_reply(admin_client, probe_via_fake, api):
+    """« Essayer maintenant » : chaque API sélectionnable relaie et renvoie la réponse du modèle
+    (le faux Ollama sert /api/chat, /v1/chat/completions, /v1/responses, /v1/messages)."""
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    rec, _ = keys.create_key("cli", [], None, None, server_id=sid, models=[])
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.post(f"/admin/keys/{rec.id}/try-chat",
+                         json={"message": "salut", "model": "demo:latest", "api": api})
+    assert r.status_code == 200
+    data = r.json()
+    assert "faux modèle" in data["reply"] and data["api"] == api
+
+
+async def test_try_chat_unknown_api_400(admin_client, probe_via_fake):
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    rec, _ = keys.create_key("cli", [], None, None, server_id=sid, models=[])
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.post(f"/admin/keys/{rec.id}/try-chat",
+                         json={"message": "x", "model": "demo:latest", "api": "bogus"})
     assert r.status_code == 400
 
 

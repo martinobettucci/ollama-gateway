@@ -92,6 +92,39 @@ def key_summary(key_id: int, conn: sqlite3.Connection | None = None) -> dict:
             conn.close()
 
 
+def recent_events(limit: int = 500, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Journal complet des dernières requêtes (console de logs admin), la plus récente d'abord.
+
+    Le label de la clé est joint (LEFT JOIN : NULL si clé absente/supprimée ou requête non
+    authentifiée). Le journal `usage_events` est append-only et intégralement conservé ; `limit`
+    ne borne QUE l'affichage, pas la rétention.
+    """
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT e.id, e.ts, e.client_ip, e.method, e.path, e.model, e.status, "
+            "e.tokens_prompt, e.tokens_completion, e.duration_ms, k.label AS key_label "
+            "FROM usage_events e LEFT JOIN api_keys k ON k.id = e.key_id "
+            "ORDER BY e.id DESC LIMIT ?", (int(limit),)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
+def total_events(conn: sqlite3.Connection | None = None) -> int:
+    """Nombre total d'événements conservés (le journal n'est jamais purgé)."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        return int(conn.execute("SELECT COUNT(*) AS n FROM usage_events").fetchone()["n"])
+    finally:
+        if own:
+            conn.close()
+
+
 def global_summary(conn: sqlite3.Connection | None = None) -> dict:
     """Totaux globaux (bandeau du dashboard)."""
     own = conn is None
