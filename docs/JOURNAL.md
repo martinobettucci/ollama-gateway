@@ -3,6 +3,25 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-08 — « Essayer maintenant » : chat de test d'une clé
+
+- **Relais admin plutôt que navigateur → proxy.** Le bouton « Essayer maintenant » aurait pu
+  faire un `fetch` direct du navigateur vers le proxy public avec la clé en Bearer. Écarté :
+  (1) le secret n'est affiché **qu'une fois** à la création → indisponible sur la page d'une
+  clé existante ; (2) cela aurait exigé d'ouvrir **CORS** sur la seule surface publique
+  (garde-fou fort du repo). Choix : un endpoint **admin LAN-only** `POST
+  /admin/keys/{id}/try-chat` qui relaie vers le serveur rattaché (jeton distant déchiffré,
+  jamais côté navigateur), en **respectant l'allowlist** de la clé (fidèle au proxy : modèle
+  hors liste → 403). Rien n'est ajouté à la surface publique.
+- **Modèle choisi automatiquement.** Sans modèle explicite : premier de l'allowlist, sinon
+  première entrée d'une sonde live du serveur. La réponse renvoie le modèle utilisé (affiché
+  au-dessus de la bulle). Appel **non-streamé** (`servers.chat_once`, `stream:false`) : une
+  fenêtre de chat n'a pas besoin du streaming, et la réponse unique simplifie l'affichage et
+  le test déterministe (le faux Ollama sert déjà `/api/chat` non-streamé).
+- **Testabilité.** Le relais passe par `httpx` de `servers`, donc la fixture `probe_via_fake`
+  (ASGITransport vers le faux Ollama) couvre aussi `chat_once` en unitaire ; l'E2E exerce la
+  fenêtre réelle sur la clé de démo (serveur par défaut → faux Ollama).
+
 ## 2026-07-07 (suite 4) — Plein viewport, modale de configuration client, x-api-key
 
 - **Règle dure édictée par le responsable : tout le viewport, toujours.** Le conteneur central

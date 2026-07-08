@@ -6,6 +6,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Bouton « Essayer maintenant » sur une clé.** La page d'une clé propose désormais une petite
+  fenêtre de **chat de test** : le message est relayé (côté admin, LAN-only) vers le serveur
+  rattaché à la clé avec un modèle autorisé, et la réponse du modèle s'affiche. Permet de
+  vérifier en un clic que la configuration répond réellement, sans quitter le panel ni exposer
+  le secret. L'allowlist de modèles de la clé est respectée (modèle hors liste → refusé).
 - **Layout plein viewport (règle dure).** Le panel occupe désormais **100 % de la largeur et
   de la hauteur de l'écran** (plus de colonne centrée) : tableau des clés et formulaire côte à
   côte sur grand écran, page Serveurs en grille de cartes, écran de connexion en split

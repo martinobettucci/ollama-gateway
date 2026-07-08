@@ -90,7 +90,7 @@ car Ollama est en loopback natif (hors Docker).
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
 ```
 
-Tests : `python -m pytest` (62) ; `cd e2e && npm test` (9 E2E + captures `e2e/output/`).
+Tests : `python -m pytest` (66) ; `cd e2e && npm test` (10 E2E + captures `e2e/output/`).
 
 ## 6. Déploiement hôte self-hosted & migration (procédure)
 

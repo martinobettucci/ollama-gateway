@@ -195,6 +195,18 @@ dernières erreurs :
 
 ![Détail d'une clé](../app/static/manual/03-key-detail.jpg)
 
+### Essayer une clé en direct
+
+Le bouton **Essayer maintenant**, sur la page d'une clé, ouvre une petite fenêtre de chat pour
+vérifier que la configuration répond réellement : le message est envoyé au **serveur rattaché à
+la clé**, avec le **modèle autorisé** (le premier de l'allowlist, ou le premier modèle détecté
+si la clé n'en restreint aucun), et la réponse s'affiche dans la conversation. C'est un moyen
+rapide de confirmer, sans quitter le panel, que le serveur est joignable et que le modèle
+fonctionne. La réponse indique le modèle utilisé ; un modèle hors allowlist est refusé, comme
+au travers du proxy.
+
+![Essayer une clé — fenêtre de chat de test](../app/static/manual/10-try-chat.jpg)
+
 ### Suivi de l'usage
 
 Dès qu'une clé sert des requêtes, les compteurs du tableau de bord et le dernier usage par

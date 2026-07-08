@@ -213,6 +213,42 @@ async def key_update(request: Request, key_id: int):
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 
 
+@app.post("/admin/keys/{key_id}/try-chat")
+async def key_try_chat(request: Request, key_id: int):
+    """Chat de test (« Essayer maintenant ») : relais LAN-only vers le serveur rattaché à la clé.
+    Respecte l'allowlist de modèles de la clé (fidèle au proxy). Jamais routé par Caddy."""
+    if (r := _guard(request)):
+        return r
+    rec = keys.get_key(key_id)
+    if rec is None:
+        return JSONResponse({"error": "clé introuvable"}, status_code=404)
+    try:
+        body = await request.json()
+    except (ValueError, TypeError):
+        body = {}
+    message = (body.get("message") or "").strip()
+    if not message:
+        return JSONResponse({"error": "message vide"}, status_code=400)
+    server_id = rec.server_id or servers.default_id(db.connect())
+    model = (body.get("model") or "").strip()
+    if model:
+        if rec.models and model not in set(rec.models):
+            return JSONResponse(
+                {"error": f"modèle « {model} » hors allowlist de la clé"}, status_code=403)
+    elif rec.models:
+        model = rec.models[0]
+    else:
+        online, avail, _ = await servers.test_server(server_id)
+        if not online or not avail:
+            return JSONResponse(
+                {"error": "serveur injoignable ou sans modèle disponible"}, status_code=502)
+        model = avail[0]
+    reply, err = await servers.chat_once(server_id, model, message)
+    if err:
+        return JSONResponse({"error": err, "model": model}, status_code=502)
+    return JSONResponse({"reply": reply, "model": model})
+
+
 @app.post("/admin/keys/{key_id}/toggle")
 async def key_toggle(request: Request, key_id: int):
     if (r := _guard(request)):

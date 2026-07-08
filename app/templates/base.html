@@ -184,6 +184,29 @@
     .manual-body table { margin:.5rem 0 1rem; }
     .manual-body a { word-break:break-word; }
 
+    /* ── Modale de chat de test (« Essayer maintenant ») ──────────────────────────── */
+    dialog.chatmod { width:min(720px,94vw); height:min(620px,88vh); border:1px solid var(--line);
+                     border-radius:var(--radius); padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22);
+                     display:flex; flex-direction:column; overflow:hidden; }
+    dialog.chatmod::backdrop { background:rgba(13,13,13,.45); }
+    .chat-log { flex:1; overflow-y:auto; padding:1.1rem 1.4rem; display:flex; flex-direction:column;
+                gap:.7rem; background:var(--bg); }
+    .chat-hint { color:var(--text-3); font-size:13.5px; margin:auto 0; text-align:center; }
+    .chat-msg { display:flex; flex-direction:column; gap:.25rem; max-width:82%; }
+    .chat-msg.user { align-self:flex-end; align-items:flex-end; }
+    .chat-msg.bot { align-self:flex-start; align-items:flex-start; }
+    .chat-text { padding:.6rem .85rem; border-radius:var(--radius-sm); font-size:14.5px;
+                 white-space:pre-wrap; word-break:break-word; box-shadow:var(--shadow); }
+    .chat-msg.user .chat-text { background:var(--color-brand); color:#fff; }
+    .chat-msg.bot .chat-text { background:var(--surface); color:var(--text); border:1px solid var(--line); }
+    .chat-msg.chat-err .chat-text { background:var(--color-danger-soft); color:var(--color-danger);
+                                    border-color:var(--color-danger); }
+    .chat-model { font-size:11.5px; color:var(--text-3); }
+    .chat-input { display:flex; gap:.6rem; padding:.85rem 1.2rem; background:var(--surface);
+                  border-top:1px solid var(--line); }
+    .chat-input input { flex:1; }
+    .chat-input button { flex:none; }
+
     /* ── Modale de configuration client (variables d'env, post-création de clé) ───── */
     dialog.envmod { width:min(820px,94vw); border:1px solid var(--line); border-radius:var(--radius);
                     padding:0; box-shadow:0 16px 48px rgba(0,0,0,.22); }

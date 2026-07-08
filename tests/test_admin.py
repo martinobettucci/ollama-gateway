@@ -91,6 +91,53 @@ async def test_toggle_and_delete_key(admin_client):
     assert keys.get_key(kid) is None
 
 
+async def test_try_chat_requires_login(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.post("/admin/keys/1/try-chat", json={"message": "salut"})
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+
+
+async def test_try_chat_returns_reply(admin_client, probe_via_fake):
+    """« Essayer maintenant » : relais LAN vers le serveur rattaché, réponse du modèle renvoyée
+    (modèle choisi automatiquement quand la clé n'a pas d'allowlist)."""
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    rec, _ = keys.create_key("cli", [], None, None, server_id=sid, models=[])
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.post(f"/admin/keys/{rec.id}/try-chat", json={"message": "Bonjour ?"})
+    assert r.status_code == 200
+    data = r.json()
+    assert "faux modèle" in data["reply"]
+    assert data["model"] in ("demo:latest", "autre:latest")
+
+
+async def test_try_chat_rejects_model_outside_allowlist(admin_client, probe_via_fake):
+    """Fidèle au proxy : un modèle hors de l'allowlist de la clé est refusé (403)."""
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    rec, _ = keys.create_key("cli", [], None, None, server_id=sid, models=["demo:latest"])
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.post(f"/admin/keys/{rec.id}/try-chat",
+                         json={"message": "x", "model": "autre:latest"})
+    assert r.status_code == 403
+
+
+async def test_try_chat_empty_message_400(admin_client, probe_via_fake):
+    from app import servers
+    keys.set_admin_password("admin-mdp")
+    sid = servers.ensure_default()
+    rec, _ = keys.create_key("cli", [], None, None, server_id=sid, models=[])
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "admin-mdp"})
+        r = await c.post(f"/admin/keys/{rec.id}/try-chat", json={"message": "   "})
+    assert r.status_code == 400
+
+
 async def test_guard_blocks_key_creation_without_session(admin_client):
     keys.set_admin_password("x")
     async with admin_client as c:

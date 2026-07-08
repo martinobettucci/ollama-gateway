@@ -9,6 +9,95 @@
 </h1>
 <p class="page-meta mono">{{ key.key_prefix }}… · créée le {{ key.created_at }} · dernier usage : {{ key.last_used_at or 'jamais' }}</p>
 
+<p class="actions">
+  <button type="button" id="try-open" data-testid="try-open" aria-haspopup="dialog">
+    {{ icon('message-square') }} Essayer maintenant</button>
+</p>
+
+{# Modale de chat de test : envoie un message au serveur rattaché à la clé (relais LAN-only via
+   /admin/keys/{id}/try-chat), en respectant l'allowlist de modèles. Vérifie « en vrai » que la
+   configuration répond, sans quitter le panel ni exposer le secret. #}
+<dialog class="chatmod" id="try-dialog" data-testid="try-dialog" aria-label="Essayer la clé">
+  <div class="manual-head">
+    <span class="chip-ic brand">{{ icon('message-square', 18) }}</span>
+    <h2>Essayer « {{ key.label }} »</h2>
+    <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }}</button>
+  </div>
+  <div class="chat-log" id="try-log" data-testid="try-log">
+    <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
+      rattaché à cette clé et affiche la réponse du modèle.</p>
+  </div>
+  <form class="chat-input" id="try-form">
+    <input id="try-msg" data-testid="try-msg" autocomplete="off"
+           placeholder="Écrivez un message…" required>
+    <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
+  </form>
+</dialog>
+<script>
+(function () {
+  const dlg = document.getElementById('try-dialog');
+  const log = document.getElementById('try-log');
+  const hint = document.getElementById('try-hint');
+  const form = document.getElementById('try-form');
+  const input = document.getElementById('try-msg');
+  const send = document.getElementById('try-send');
+
+  function bubble(role, text, model) {
+    const b = document.createElement('div');
+    b.className = 'chat-msg ' + role;
+    if (model) {
+      const m = document.createElement('span');
+      m.className = 'chat-model mono'; m.textContent = model;
+      b.append(m);
+    }
+    const p = document.createElement('div');
+    p.className = 'chat-text'; p.textContent = text;
+    b.append(p);
+    log.append(b);
+    log.scrollTop = log.scrollHeight;
+    return p;
+  }
+
+  document.getElementById('try-open').addEventListener('click', () => { dlg.showModal(); input.focus(); });
+  document.getElementById('try-close').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = input.value.trim();
+    if (!msg) return;
+    if (hint) { hint.remove(); }
+    bubble('user', msg);
+    input.value = '';
+    input.disabled = send.disabled = true;
+    const pending = bubble('bot', '…');
+    try {
+      const r = await fetch('/admin/keys/{{ key.id }}/try-chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg }),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        pending.textContent = data.reply;
+        pending.parentElement.querySelector('.chat-model')?.remove();
+        const m = document.createElement('span');
+        m.className = 'chat-model mono'; m.textContent = data.model;
+        pending.parentElement.prepend(m);
+      } else {
+        pending.parentElement.classList.add('chat-err');
+        pending.textContent = 'Échec : ' + (data.error || ('HTTP ' + r.status));
+      }
+    } catch (err) {
+      pending.parentElement.classList.add('chat-err');
+      pending.textContent = 'Erreur réseau.';
+    } finally {
+      input.disabled = send.disabled = false;
+      input.focus();
+    }
+  });
+})();
+</script>
+
 <div class="stats">
   <div class="card stat cat-brand">
     <span class="chip-ic brand">{{ icon('activity', 18) }}</span>

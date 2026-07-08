@@ -93,6 +93,11 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   de configuration client » ; vision : capture 09-env-modal ; manuel synchronisé.*
 - [x] **Proxy : clé acceptée en `x-api-key`** (SDK Anthropic) en plus du Bearer, en-tête strippé
   avant l'amont — *tests : test_proxy (x-api-key ok + strip, x-api-key invalide → 401).*
+- [x] **« Essayer maintenant » : chat de test d'une clé** (relais admin LAN-only
+  `POST /admin/keys/{id}/try-chat` vers le serveur rattaché, modèle de l'allowlist, non-streamé
+  `servers.chat_once`) avec fenêtre de chat sur la page de la clé — *tests : test_admin (login
+  requis, réponse renvoyée, modèle hors allowlist → 403, message vide → 400), E2E admin.spec
+  « essayer maintenant » ; vision : capture 10-try-chat ; manuel synchronisé.*
 
 ## Idées ultérieures (non planifiées)
 

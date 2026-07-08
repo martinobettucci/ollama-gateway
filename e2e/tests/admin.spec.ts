@@ -93,6 +93,27 @@ test('modale de configuration client : variables d\'env selon les API cochées +
   await expect(dlg).toBeHidden();
 });
 
+test('essayer maintenant : chat de test d\'une clé → réponse réelle du serveur', async ({ page }) => {
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+
+  // Ouvre le détail de la clé de démo puis la modale « Essayer maintenant ».
+  await page.getByRole('link', { name: 'demo (dev)' }).click();
+  await page.locator('[data-testid=try-open]').click();
+  const dlg = page.locator('[data-testid=try-dialog]');
+  await expect(dlg).toBeVisible();
+
+  // Envoie un message : le relais interroge le serveur rattaché (faux Ollama) et affiche la réponse.
+  await page.locator('[data-testid=try-msg]').fill('Dis bonjour');
+  await page.locator('[data-testid=try-send]').click();
+  const log = page.locator('[data-testid=try-log]');
+  await expect(log.locator('.chat-msg.user')).toContainText('Dis bonjour');
+  await expect(log.locator('.chat-msg.bot')).toContainText('faux modèle');
+  await expect(log.locator('.chat-msg.bot .chat-model')).toContainText('demo:latest');
+  await page.screenshot({ path: `${OUT}/10-try-chat.jpg`, type: 'jpeg' });
+});
+
 test('plein viewport : le layout occupe toute la largeur, pas de colonne centrée', async ({ page }) => {
   // Règle dure : l'app remplit 100 % du viewport (largeur ET hauteur), login compris.
   await page.goto('/admin/login');

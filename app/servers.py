@@ -242,3 +242,43 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
     online, models, err = await probe(row["base_url"], row["auth_token_enc"])
     record_probe(server_id, online, models)
     return online, models, err
+
+
+# --- Chat de test (« Essayer maintenant » du panel) -------------------------------------------
+
+async def chat_once(server_id: int, model: str, message: str) -> tuple[str, str]:
+    """Envoie un unique message de chat (non-streamé) au serveur et renvoie (réponse, erreur).
+
+    Relais **LAN-only** derrière l'admin (jamais exposé publiquement) : sert au bouton
+    « Essayer maintenant » pour vérifier qu'une clé/serveur/modèle répond réellement. Le jeton
+    distant est déchiffré et injecté vers l'amont ; il n'apparaît jamais côté navigateur.
+    """
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT base_url, auth_token_enc, enabled FROM servers WHERE id = ?",
+            (server_id,)).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return "", "serveur introuvable"
+    if not row["enabled"]:
+        return "", "serveur désactivé"
+    headers = {}
+    if row["auth_token_enc"]:
+        token = crypto.decrypt(row["auth_token_enc"])
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+    url = row["base_url"].rstrip("/") + "/api/chat"
+    payload = {"model": model, "stream": False,
+               "messages": [{"role": "user", "content": message}]}
+    try:
+        async with httpx.AsyncClient(timeout=config.UPSTREAM_TIMEOUT_S) as c:
+            r = await c.post(url, json=payload, headers=headers)
+        if r.status_code != 200:
+            return "", f"HTTP {r.status_code}"
+        data = r.json()
+        reply = (data.get("message") or {}).get("content", "") if isinstance(data, dict) else ""
+        return (reply, "") if reply else ("", "réponse vide du serveur")
+    except (httpx.HTTPError, ValueError) as exc:
+        return "", exc.__class__.__name__
