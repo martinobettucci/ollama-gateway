@@ -24,6 +24,8 @@ class KeyRecord:
     rpm_limit: int | None
     server_id: int | None = None
     server_name: str | None = None
+    fallback_server_id: int | None = None
+    fallback_server_name: str | None = None
     target_id: int | None = None
     target_name: str | None = None
     target_base_url: str | None = None
@@ -103,6 +105,7 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                rpm_limit: int | None, note: str = "", key_value: str | None = None,
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
+               fallback_server_id: int | None = None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
@@ -120,11 +123,11 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
         with conn:
             cur = conn.execute(
                 "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id, target_id, "
-                "total_token_cap, total_request_cap, expires_at, idle_expiry_days, "
-                "log_retention_days) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                "fallback_server_id, total_token_cap, total_request_cap, expires_at, "
+                "idle_expiry_days, log_retention_days) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (label, auth.key_prefix(key), auth.hash_key(key), note, sid, tid,
-                 total_token_cap, total_request_cap, expires_at, idle_expiry_days,
-                 log_retention_days),
+                 fallback_server_id, total_token_cap, total_request_cap, expires_at,
+                 idle_expiry_days, log_retention_days),
             )
             kid = cur.lastrowid
             for c in origins:
@@ -160,6 +163,9 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
         server_id = row["server_id"]
         srv = conn.execute(
             "SELECT name FROM servers WHERE id = ?", (server_id,)).fetchone() if server_id else None
+        fb_id = row["fallback_server_id"] if "fallback_server_id" in row.keys() else None
+        fb = conn.execute(
+            "SELECT name FROM servers WHERE id = ?", (fb_id,)).fetchone() if fb_id else None
         target_id = row["target_id"] if "target_id" in row.keys() else None
         tgt = conn.execute(
             "SELECT name, base_url FROM targets WHERE id = ?", (target_id,)
@@ -171,6 +177,7 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             monthly_token_cap=q["monthly_token_cap"] if q else None,
             rpm_limit=q["rpm_limit"] if q else None,
             server_id=server_id, server_name=srv["name"] if srv else None,
+            fallback_server_id=fb_id, fallback_server_name=fb["name"] if fb else None,
             target_id=target_id, target_name=tgt["name"] if tgt else None,
             target_base_url=tgt["base_url"] if tgt else None,
             models=models_for(key_id, conn),
@@ -210,6 +217,7 @@ def update_key(key_id: int, label: str, origins: list[str],
                monthly_token_cap: int | None, rpm_limit: int | None, note: str,
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
+               fallback_server_id: int | None = None, clear_fallback: bool = False,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> None:
@@ -232,6 +240,12 @@ def update_key(key_id: int, label: str, origins: list[str],
             if target_id is not None:
                 conn.execute("UPDATE api_keys SET target_id = ? WHERE id = ?",
                              (target_id, key_id))
+            if clear_fallback:
+                conn.execute("UPDATE api_keys SET fallback_server_id = NULL WHERE id = ?",
+                             (key_id,))
+            elif fallback_server_id is not None:
+                conn.execute("UPDATE api_keys SET fallback_server_id = ? WHERE id = ?",
+                             (fallback_server_id, key_id))
             conn.execute("DELETE FROM key_origins WHERE key_id = ?", (key_id,))
             for c in origins:
                 if c.strip():

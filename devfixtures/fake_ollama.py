@@ -111,6 +111,9 @@ async def chat(request: Request):
     global LAST_AUTH, LAST_XAPIKEY
     LAST_AUTH = request.headers.get("authorization")
     LAST_XAPIKEY = request.headers.get("x-api-key")
+    # Simulation d'erreur serveur pour tester le repli : Host contenant « fail » → 500.
+    if "fail" in (request.headers.get("host", "")):
+        return JSONResponse({"error": "boom"}, status_code=500)
     body = await request.json()
     model = body.get("model", "demo:latest")
     if body.get("stream", True):

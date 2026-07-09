@@ -6,6 +6,10 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Serveur de repli (fallback) transparent par clé.** Une clé peut désigner un **serveur de
+  repli** : si l'amont primaire répond en **erreur serveur (5xx)** ou est **injoignable**, le proxy
+  **rejoue la même requête** vers le repli, de façon transparente pour le client. L'événement
+  d'usage est attribué au **serveur ayant réellement traité** (repli inclus).
 - **Recherche & filtres des clés (tableau de bord).** Barre de recherche instantanée (label ou
   préfixe) + filtres par **serveur**, **famille d'API** et **état** (active/désactivée), appliqués
   côté navigateur sur la liste des clés.

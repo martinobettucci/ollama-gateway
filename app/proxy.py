@@ -204,6 +204,8 @@ async def proxy(request: Request, full_path: str):
         ok, reason = quotas.check(rec, conn)
         srv = servers.get_server(rec.server_id, conn) if rec.server_id else None
         srv_auth = servers.auth_header_for(rec.server_id, conn) if srv else {}
+        fb = servers.get_server(rec.fallback_server_id, conn) if rec.fallback_server_id else None
+        fb_auth = servers.auth_header_for(rec.fallback_server_id, conn) if fb else {}
     finally:
         conn.close()
     if not ok:
@@ -225,7 +227,7 @@ async def proxy(request: Request, full_path: str):
                       headers=request.headers, body=body, status=status, model=model)
 
     if rec.models and req_model and req_model not in set(rec.models):
-        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body))
+        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(403, req_model)
         return JSONResponse(
             {"error": f"modèle non autorisé pour cette clé: {req_model}"}, status_code=403)
@@ -235,48 +237,70 @@ async def proxy(request: Request, full_path: str):
     #     (déjà filtrés par l'allowlist de modèles). ---
     family = apis.family_for_path(path)
     if rec.apis and path not in _LISTING_PATHS and (family is None or family not in set(rec.apis)):
-        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body))
+        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(403, req_model)
         return JSONResponse(
             {"error": f"API non autorisée pour cette clé: {family or path}"}, status_code=403)
 
     keys.touch_last_used(rec.id)
 
-    # --- Relais amont (streaming) vers l'URL absolue du serveur rattaché ---
-    fwd_headers = [(k, v) for k, v in request.headers.raw
-                   if k.decode("latin-1").lower() not in _DROP_REQ_HEADERS]
-    fwd_headers += [(k.encode("latin-1"), v.encode("latin-1")) for k, v in srv_auth.items()]
-    url = httpx.URL(srv.base_url.rstrip("/") + path)
-    if request.url.query:
-        url = url.copy_with(query=request.url.query.encode("utf-8"))
+    # --- Relais amont (streaming) avec REPLI transparent ---
+    # Candidats : serveur primaire, puis serveur de repli (si défini/activé/distinct). Sur ERREUR
+    # SERVEUR (5xx) ou erreur de connexion du primaire, on rejoue la MÊME requête vers le repli.
     upstream: httpx.AsyncClient = request.app.state.upstream
-    up_req = upstream.build_request(method, url, headers=fwd_headers, content=body)
+    base_headers = [(k, v) for k, v in request.headers.raw
+                    if k.decode("latin-1").lower() not in _DROP_REQ_HEADERS]
+    candidates = [(srv, srv_auth)]
+    if fb is not None and fb.enabled and fb.id != srv.id:
+        candidates.append((fb, fb_auth))
+
+    def _build(server, auth):
+        hs = list(base_headers) + [(k.encode("latin-1"), v.encode("latin-1"))
+                                   for k, v in auth.items()]
+        u = httpx.URL(server.base_url.rstrip("/") + path)
+        if request.url.query:
+            u = u.copy_with(query=request.url.query.encode("utf-8"))
+        return upstream.build_request(method, u, headers=hs, content=body)
+
+    async def _send_chain(stream: bool):
+        """Renvoie (réponse, serveur_utilisé) ou (None, None). Bascule sur le repli si le primaire
+        lève une erreur de connexion ou répond en 5xx (et qu'un repli reste disponible)."""
+        for i, (server, auth) in enumerate(candidates):
+            last = i + 1 == len(candidates)
+            try:
+                resp = await upstream.send(_build(server, auth), stream=stream)
+            except httpx.HTTPError:
+                if last:
+                    return None, None
+                continue
+            if resp.status_code >= 500 and not last:
+                await resp.aclose()
+                continue
+            return resp, server
+        return None, None
 
     # Listing de modèles pour une clé restreinte : bufferiser + filtrer (petites réponses).
     if path in _LISTING_PATHS and rec.models:
-        try:
-            up_resp = await upstream.send(up_req)
-        except httpx.HTTPError as exc:
-            _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
+        up_resp, used = await _send_chain(stream=False)
+        if up_resp is None:
+            _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body),
+                 server_id=srv.id)
             _content_log(502, req_model)
-            return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
-                                status_code=502)
+            return JSONResponse({"error": "upstream indisponible"}, status_code=502)
         content = up_resp.content
         if up_resp.status_code == 200:
             content = _filter_models(content, set(rec.models))
         _log(rec.id, ip, method, path, "", up_resp.status_code, t0,
-             bytes_in=len(body), bytes_out=len(content))
+             bytes_in=len(body), bytes_out=len(content), server_id=used.id)
         _content_log(up_resp.status_code, req_model)
         media = up_resp.headers.get("content-type", "application/json")
         return Response(content, status_code=up_resp.status_code, media_type=media)
 
-    try:
-        up_resp = await upstream.send(up_req, stream=True)
-    except httpx.HTTPError as exc:
-        _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
+    up_resp, used = await _send_chain(stream=True)
+    if up_resp is None:
+        _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(502, req_model)
-        return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
-                            status_code=502)
+        return JSONResponse({"error": "upstream indisponible"}, status_code=502)
 
     sniff = _TokenSniffer()
     sniff.model = req_model
@@ -297,7 +321,7 @@ async def proxy(request: Request, full_path: str):
         model = sniff.model or _model_from_body(body)
         _log(rec.id, ip, method, path, model, up_resp.status_code, t0,
              tokens_prompt=sniff.tokens_prompt, tokens_completion=sniff.tokens_completion,
-             bytes_in=len(body), bytes_out=bytes_out)
+             bytes_in=len(body), bytes_out=bytes_out, server_id=used.id)
         _content_log(up_resp.status_code, model)
 
     resp_headers = [(k, v) for k, v in up_resp.headers.items()

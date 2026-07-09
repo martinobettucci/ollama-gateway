@@ -156,9 +156,11 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 - [~] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état) :
   toolbar + attributs de ligne + filtrage JS. Reste pour `[x]` : **E2E + vision**. — *tests verts :
   test_admin_pages (toolbar + attributs rendus).*
-- [ ] **Serveur de repli (fallback) optionnel par clé** : `api_keys.fallback_server_id` ; sur
-  **erreur serveur** de l'amont primaire (5xx ou erreur de connexion), la requête est **rejouée
-  de façon transparente** vers le serveur de repli. — *tests à écrire.*
+- [~] **Serveur de repli (fallback) optionnel par clé** : migration 0008 (`fallback_server_id` +
+  `usage_events.server_id`), proxy `_send_chain` (repli sur 5xx/erreur connexion, streaming inclus),
+  attribution serveur des logs, sélecteur sur la clé (create+edit, avec `clear_fallback`). Reste
+  pour `[x]` : **E2E + vision**. — *tests verts : test_fallback (repli sur 500, sans repli 500 relayé,
+  primaire OK non replié, round-trip + clear).*
 - [ ] **Monitoring par serveur + stats intensives** : `usage_events.server_id` (attribution réelle,
   repli inclus), page **Monitor** par serveur (consommation/erreurs **par clé**), onglet de stats
   intensives (par serveur ET par clé) avec graphiques (barres, camemberts, séries temporelles). — *tests à écrire.*

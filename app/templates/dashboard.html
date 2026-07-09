@@ -232,6 +232,14 @@
           {% endfor %}
         </select>
         <p class="hint">URL publique injectée dans les variables d'environnement de la clé.</p></div>
+      <div><label for="fallback_server_id">Serveur de repli (fallback)</label>
+        <select id="fallback_server_id" name="fallback_server_id" data-testid="fallback-select">
+          <option value="">— aucun —</option>
+          {% for s in servers %}
+          <option value="{{ s.id }}">{{ s.name }}{{ ' — désactivé' if not s.enabled }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">Repli transparent sur erreur serveur (5xx / connexion).</p></div>
     </div>
     <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>

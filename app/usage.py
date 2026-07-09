@@ -7,19 +7,21 @@ from . import db
 def record(
     *, key_id: int | None, client_ip: str, method: str, path: str, model: str,
     status: int, duration_ms: int, tokens_prompt: int = 0, tokens_completion: int = 0,
-    bytes_in: int = 0, bytes_out: int = 0, conn: sqlite3.Connection | None = None,
+    bytes_in: int = 0, bytes_out: int = 0, server_id: int | None = None,
+    conn: sqlite3.Connection | None = None,
 ) -> None:
-    """Insère un événement d'usage (append-only)."""
+    """Insère un événement d'usage (append-only). `server_id` = serveur ayant réellement traité
+    (repli inclus ; None si la requête n'a pas atteint d'amont)."""
     own = conn is None
     conn = conn or db.connect()
     try:
         with conn:
             conn.execute(
                 "INSERT INTO usage_events(key_id, client_ip, method, path, model, status, "
-                "duration_ms, tokens_prompt, tokens_completion, bytes_in, bytes_out) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                "duration_ms, tokens_prompt, tokens_completion, bytes_in, bytes_out, server_id) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (key_id, client_ip, method, path, model, status, duration_ms,
-                 tokens_prompt, tokens_completion, bytes_in, bytes_out),
+                 tokens_prompt, tokens_completion, bytes_in, bytes_out, server_id),
             )
     finally:
         if own:

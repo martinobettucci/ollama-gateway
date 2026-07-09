@@ -195,6 +195,18 @@
         <p class="hint">URL publique utilisée pour générer les variables d'environnement.</p></div>
     </div>
     <div class="row">
+      <div><label for="fallback_server_id">Serveur de repli (fallback)</label>
+        <select id="fallback_server_id" name="fallback_server_id" data-testid="fallback-select">
+          <option value="">— aucun —</option>
+          {% for s in servers %}
+          <option value="{{ s.id }}"{{ ' selected' if s.id == key.fallback_server_id }}>
+            {{ s.name }}{{ ' — désactivé' if not s.enabled }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">Sur erreur serveur (5xx / connexion) de l'amont primaire, la requête est
+          rejouée de façon transparente vers ce serveur.</p></div>
+    </div>
+    <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"
                value="{{ key.monthly_token_cap or '' }}">

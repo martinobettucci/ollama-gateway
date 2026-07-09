@@ -209,7 +209,7 @@ async def create_key(request: Request):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=server_id, models=_collect_models(form), key_apis=_collect_apis(form),
-        target_id=target_id,
+        target_id=target_id, fallback_server_id=_parse_int(form.get("fallback_server_id", "")),
         total_token_cap=_parse_int(form.get("total_token_cap", "")),
         total_request_cap=_parse_int(form.get("total_request_cap", "")),
         expires_at=_parse_dt_local(form.get("expires_at", "")),
@@ -252,6 +252,9 @@ async def key_update(request: Request, key_id: int):
         note=form.get("note", "").strip(),
         server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
         key_apis=_collect_apis(form), target_id=_parse_int(form.get("target_id", "")),
+        fallback_server_id=_parse_int(form.get("fallback_server_id", "")),
+        clear_fallback=("fallback_server_id" in form
+                        and not (form.get("fallback_server_id") or "").strip()),
         total_token_cap=_parse_int(form.get("total_token_cap", "")),
         total_request_cap=_parse_int(form.get("total_request_cap", "")),
         expires_at=_parse_dt_local(form.get("expires_at", "")),
