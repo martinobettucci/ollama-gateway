@@ -42,6 +42,34 @@ def month_tokens(key_id: int, conn: sqlite3.Connection | None = None) -> int:
             conn.close()
 
 
+def lifetime_tokens(key_id: int, conn: sqlite3.Connection | None = None) -> int:
+    """Somme de TOUS les tokens (prompt+complétion) de la clé, sans fenêtre — plafond de vie."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(tokens_prompt + tokens_completion), 0) AS t "
+            "FROM usage_events WHERE key_id = ?", (key_id,),
+        ).fetchone()
+        return int(row["t"])
+    finally:
+        if own:
+            conn.close()
+
+
+def lifetime_requests(key_id: int, conn: sqlite3.Connection | None = None) -> int:
+    """Nombre TOTAL de requêtes journalisées de la clé, sans fenêtre — plafond de vie."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) AS n FROM usage_events WHERE key_id = ?", (key_id,)).fetchone()
+        return int(row["n"])
+    finally:
+        if own:
+            conn.close()
+
+
 def recent_request_count(key_id: int, seconds: int = 60, conn: sqlite3.Connection | None = None) -> int:
     """Nombre de requêtes de la clé sur la fenêtre glissante (défaut 60 s) — pour le rate-limit."""
     own = conn is None

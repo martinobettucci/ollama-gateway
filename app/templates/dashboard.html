@@ -186,6 +186,25 @@
         <input id="rpm_limit" name="rpm_limit" type="number" min="1">
         <p class="hint">Vide = illimité.</p></div>
     </div>
+    <fieldset class="expiry" data-testid="expiry-fields">
+      <legend>Expiration / plafonds de vie <span class="hint">(essai à coût plafonné — distinct du rate-limit)</span></legend>
+      <div class="row">
+        <div><label for="total_token_cap">Plafond total de tokens</label>
+          <input id="total_token_cap" name="total_token_cap" type="number" min="1">
+          <p class="hint">Budget absolu sur la vie de la clé. Vide = illimité.</p></div>
+        <div><label for="total_request_cap">Plafond total de requêtes</label>
+          <input id="total_request_cap" name="total_request_cap" type="number" min="1">
+          <p class="hint">Nombre absolu de requêtes. Vide = illimité.</p></div>
+      </div>
+      <div class="row">
+        <div><label for="expires_at">Expire le</label>
+          <input id="expires_at" name="expires_at" type="datetime-local">
+          <p class="hint">Date/heure limite. Vide = jamais.</p></div>
+        <div><label for="idle_expiry_days">Expiration par inactivité (jours)</label>
+          <input id="idle_expiry_days" name="idle_expiry_days" type="number" min="1">
+          <p class="hint">Refus après N jours sans usage. Vide = jamais.</p></div>
+      </div>
+    </fieldset>
     <label for="models">Modèles autorisés</label>
     {{ model_picker([]) }}
     <label>API autorisées</label>

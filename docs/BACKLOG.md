@@ -148,9 +148,11 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   **Cibles**, sélecteur sur la clé, env-gen utilise l'URL de la cible rattachée. N'affecte pas le
   routage. Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_targets (défaut/placeholder,
   idempotence, rattachement, round-trip env-url, suppression défaut/rattachée bloquée).*
-- [ ] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : plafond **absolu** de
-  tokens, plafond **absolu** de requêtes, **date/heure d'expiration**, **expiration par inactivité**
-  (N jours sans usage → désactivation). Appliqué par le proxy (refus une fois atteint). — *tests à écrire.*
+- [~] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : migration 0007
+  (`total_token_cap`/`total_request_cap`/`expires_at`/`idle_expiry_days`), `usage.lifetime_tokens`
+  /`lifetime_requests`, `quotas.check` étendu (expiration, inactivité, plafonds absolus), champs de
+  formulaire (create+edit). Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_expiry
+  (expiration passée/future, plafonds tokens/requêtes, inactivité stale/récente, round-trip).*
 - [ ] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état). — *tests à écrire.*
 - [ ] **Serveur de repli (fallback) optionnel par clé** : `api_keys.fallback_server_id` ; sur
   **erreur serveur** de l'amont primaire (5xx ou erreur de connexion), la requête est **rejouée

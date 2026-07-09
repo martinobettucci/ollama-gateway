@@ -6,6 +6,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Expiration & plafonds de VIE d'une clé (« essai à coût plafonné »).** Nouveaux réglages par
+  clé, **distincts du rate-limit et du plafond mensuel** (qui se réinitialisent) : **plafond absolu
+  de tokens** et **de requêtes** cumulés sur toute la vie de la clé, **date/heure d'expiration**, et
+  **expiration par inactivité** (refus après N jours sans usage). Une fois un seuil franchi, le
+  proxy refuse la clé (429) avec le motif correspondant.
 - **Cibles publiques (ingress) rattachées par clé.** Nouvel onglet **Cibles** : gestion des URL
   **publiques** de la passerelle telles que vues par les clients (ex. `https://…:port`). Chaque
   clé pointe vers une cible ; la **génération des variables d'environnement** (post-création)

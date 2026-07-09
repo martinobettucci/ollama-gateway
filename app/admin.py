@@ -66,6 +66,15 @@ def _parse_retention(v: str | None) -> int | None:
         return None
 
 
+def _parse_dt_local(v: str | None) -> str | None:
+    """Champ `datetime-local` ('YYYY-MM-DDTHH:MM') → 'YYYY-MM-DD HH:MM:SS' pour SQLite, ou None."""
+    v = (v or "").strip()
+    if not v:
+        return None
+    v = v.replace("T", " ")
+    return v if len(v) > 16 else v + ":00"
+
+
 def _parse_origins(raw: str) -> list[str]:
     """Découpe une saisie multi-lignes/virgules en liste de CIDR/IP nettoyés."""
     out: list[str] = []
@@ -201,6 +210,10 @@ async def create_key(request: Request):
         note=form.get("note", "").strip(),
         server_id=server_id, models=_collect_models(form), key_apis=_collect_apis(form),
         target_id=target_id,
+        total_token_cap=_parse_int(form.get("total_token_cap", "")),
+        total_request_cap=_parse_int(form.get("total_request_cap", "")),
+        expires_at=_parse_dt_local(form.get("expires_at", "")),
+        idle_expiry_days=_parse_int(form.get("idle_expiry_days", "")),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     # Le secret n'est montré qu'ici, une seule fois (via un flash de session). L'URL de la cible
     # rattachée sert à générer les variables d'environnement (repli sur PUBLIC_BASE_URL).
@@ -239,6 +252,10 @@ async def key_update(request: Request, key_id: int):
         note=form.get("note", "").strip(),
         server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
         key_apis=_collect_apis(form), target_id=_parse_int(form.get("target_id", "")),
+        total_token_cap=_parse_int(form.get("total_token_cap", "")),
+        total_request_cap=_parse_int(form.get("total_request_cap", "")),
+        expires_at=_parse_dt_local(form.get("expires_at", "")),
+        idle_expiry_days=_parse_int(form.get("idle_expiry_days", "")),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 

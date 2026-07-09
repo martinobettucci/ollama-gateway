@@ -30,6 +30,11 @@ class KeyRecord:
     models: list[str] = field(default_factory=list)
     apis: list[str] = field(default_factory=list)  # allowlist de familles d'API (vide = toutes)
     log_retention_days: int | None = None  # NULL → rétention globale par défaut
+    # Plafonds/expiration de VIE (distinct du rate-limit et du plafond mensuel) ; NULL = aucun.
+    total_token_cap: int | None = None
+    total_request_cap: int | None = None
+    expires_at: str | None = None
+    idle_expiry_days: int | None = None
 
 
 # --- Lookup / validation (chemin proxy) -------------------------------------------------------
@@ -98,6 +103,8 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                rpm_limit: int | None, note: str = "", key_value: str | None = None,
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
+               total_token_cap: int | None = None, total_request_cap: int | None = None,
+               expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
@@ -113,8 +120,10 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
         with conn:
             cur = conn.execute(
                 "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id, target_id, "
-                "log_retention_days) VALUES (?,?,?,?,?,?,?)",
+                "total_token_cap, total_request_cap, expires_at, idle_expiry_days, "
+                "log_retention_days) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 (label, auth.key_prefix(key), auth.hash_key(key), note, sid, tid,
+                 total_token_cap, total_request_cap, expires_at, idle_expiry_days,
                  log_retention_days),
             )
             kid = cur.lastrowid
@@ -167,6 +176,12 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             models=models_for(key_id, conn),
             apis=apis_for(key_id, conn),
             log_retention_days=row["log_retention_days"],
+            total_token_cap=row["total_token_cap"] if "total_token_cap" in row.keys() else None,
+            total_request_cap=(row["total_request_cap"]
+                               if "total_request_cap" in row.keys() else None),
+            expires_at=row["expires_at"] if "expires_at" in row.keys() else None,
+            idle_expiry_days=(row["idle_expiry_days"]
+                              if "idle_expiry_days" in row.keys() else None),
         )
     finally:
         if own:
@@ -195,6 +210,8 @@ def update_key(key_id: int, label: str, origins: list[str],
                monthly_token_cap: int | None, rpm_limit: int | None, note: str,
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
+               total_token_cap: int | None = None, total_request_cap: int | None = None,
+               expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> None:
     """Met à jour une clé. `server_id`/`models`/`key_apis`/`target_id` non fournis (None) → inchangés.
 
@@ -204,8 +221,11 @@ def update_key(key_id: int, label: str, origins: list[str],
     try:
         with conn:
             conn.execute(
-                "UPDATE api_keys SET label = ?, note = ?, log_retention_days = ? WHERE id = ?",
-                (label, note, log_retention_days, key_id))
+                "UPDATE api_keys SET label = ?, note = ?, log_retention_days = ?, "
+                "total_token_cap = ?, total_request_cap = ?, expires_at = ?, "
+                "idle_expiry_days = ? WHERE id = ?",
+                (label, note, log_retention_days, total_token_cap, total_request_cap,
+                 expires_at, idle_expiry_days, key_id))
             if server_id is not None:
                 conn.execute("UPDATE api_keys SET server_id = ? WHERE id = ?",
                              (server_id, key_id))
