@@ -19,6 +19,7 @@ services:
       PROXY_HOST: 0.0.0.0
       PROXY_PORT: "8787"
       GATEWAY_DB_PATH: /data/gateway.db
+      REQUEST_LOG_DIR: /data/reqlogs   # contenu complet des requêtes (hors base)
       # Caddy est sur le réseau bridge Docker (172.16/12) → XFF de confiance depuis cette plage.
       TRUSTED_PROXY_IPS: 172.16.0.0/12,127.0.0.1
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-stagingpass}
@@ -36,6 +37,7 @@ services:
       ADMIN_HOST: 0.0.0.0
       ADMIN_PORT: "8788"
       GATEWAY_DB_PATH: /data/gateway.db
+      REQUEST_LOG_DIR: /data/reqlogs   # contenu complet des requêtes (hors base)
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-staging-session-secret}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-stagingpass}
       # URL publique de la passerelle vue des clients (modale des variables d'env).

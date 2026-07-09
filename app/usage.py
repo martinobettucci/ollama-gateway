@@ -114,6 +114,25 @@ def recent_events(limit: int = 500, conn: sqlite3.Connection | None = None) -> l
             conn.close()
 
 
+def origins_seen(key_id: int, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Origines (IP) uniques ayant utilisé la clé : compte + dernier vu, plus fréquentes d'abord.
+
+    Alimente la liste « Origines vues » du panel (recherche + bouton WHOIS).
+    """
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT client_ip AS ip, COUNT(*) AS hits, MAX(ts) AS last_seen "
+            "FROM usage_events WHERE key_id = ? AND client_ip <> '' "
+            "GROUP BY client_ip ORDER BY hits DESC, last_seen DESC", (key_id,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
 def total_events(conn: sqlite3.Connection | None = None) -> int:
     """Nombre total d'événements conservés (le journal n'est jamais purgé)."""
     own = conn is None

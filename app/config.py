@@ -51,6 +51,13 @@ KEY_PREFIX = os.environ.get("KEY_PREFIX", "sk-ollama-")
 # affiche un placeholder à remplacer à la main.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 
+# Journal de CONTENU complet des requêtes, sur le SYSTÈME DE FICHIERS (jamais en base) : un
+# dossier par clé, un fichier JSONL par heure. Vide = journalisation de contenu désactivée.
+# Rétention globale par défaut (jours), surchargée par clé (`api_keys.log_retention_days`).
+# Le cron `python -m app.reqlog compact` gzip les heures passées et purge au-delà de la rétention.
+REQUEST_LOG_DIR = os.environ.get("REQUEST_LOG_DIR", "").rstrip("/")
+REQUEST_LOG_RETENTION_DAYS = int(os.environ.get("REQUEST_LOG_RETENTION_DAYS", "30"))
+
 # Chemins amont explicitement proxifiables. Tout le reste → 404 (défense en profondeur ; Caddy
 # filtre déjà, mais le proxy re-vérifie). Préfixes, pas exact-match.
 ALLOWED_PATH_PREFIXES = ("/api/", "/v1/")

@@ -25,6 +25,7 @@ class KeyRecord:
     server_id: int | None = None
     server_name: str | None = None
     models: list[str] = field(default_factory=list)
+    log_retention_days: int | None = None  # NULL → rétention globale par défaut
 
 
 # --- Lookup / validation (chemin proxy) -------------------------------------------------------
@@ -85,8 +86,8 @@ def touch_last_used(key_id: int, conn: sqlite3.Connection | None = None) -> None
 
 def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                rpm_limit: int | None, note: str = "", key_value: str | None = None,
-               server_id: int | None = None,
-               models: list[str] | None = None) -> tuple[KeyRecord, str]:
+               server_id: int | None = None, models: list[str] | None = None,
+               log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
     `key_value` permet d'injecter une clé existante (migration) au lieu d'en générer une neuve.
@@ -99,9 +100,10 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
         sid = server_id if server_id is not None else servers.default_id(conn)
         with conn:
             cur = conn.execute(
-                "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id) "
-                "VALUES (?,?,?,?,?)",
-                (label, auth.key_prefix(key), auth.hash_key(key), note, sid),
+                "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id, "
+                "log_retention_days) VALUES (?,?,?,?,?,?)",
+                (label, auth.key_prefix(key), auth.hash_key(key), note, sid,
+                 log_retention_days),
             )
             kid = cur.lastrowid
             for c in origins:
@@ -141,6 +143,7 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             rpm_limit=q["rpm_limit"] if q else None,
             server_id=server_id, server_name=srv["name"] if srv else None,
             models=models_for(key_id, conn),
+            log_retention_days=row["log_retention_days"],
         )
     finally:
         if own:
@@ -167,13 +170,18 @@ def set_enabled(key_id: int, enabled: bool) -> None:
 
 def update_key(key_id: int, label: str, origins: list[str],
                monthly_token_cap: int | None, rpm_limit: int | None, note: str,
-               server_id: int | None = None, models: list[str] | None = None) -> None:
-    """Met à jour une clé. `server_id`/`models` non fournis (None) → inchangés."""
+               server_id: int | None = None, models: list[str] | None = None,
+               log_retention_days: int | None = None) -> None:
+    """Met à jour une clé. `server_id`/`models` non fournis (None) → inchangés.
+
+    `log_retention_days` est toujours appliqué (le formulaire l'inclut ; vide = NULL = défaut).
+    """
     conn = db.connect()
     try:
         with conn:
-            conn.execute("UPDATE api_keys SET label = ?, note = ? WHERE id = ?",
-                         (label, note, key_id))
+            conn.execute(
+                "UPDATE api_keys SET label = ?, note = ?, log_retention_days = ? WHERE id = ?",
+                (label, note, log_retention_days, key_id))
             if server_id is not None:
                 conn.execute("UPDATE api_keys SET server_id = ? WHERE id = ?",
                              (server_id, key_id))

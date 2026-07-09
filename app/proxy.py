@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from starlette.background import BackgroundTask
 
-from . import auth, bans, config, db, keys, quotas, servers, usage
+from . import auth, bans, config, db, keys, quotas, reqlog, servers, usage
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
 # cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
@@ -218,8 +218,15 @@ async def proxy(request: Request, full_path: str):
     #     Ollama, OpenAI chat/responses et Anthropic messages) ---
     body = await request.body()
     req_model = _model_from_body(body)
+
+    def _content_log(status: int, model: str) -> None:
+        # Contenu COMPLET (sanitisé) sur disque, hors base — best-effort, ne lève jamais.
+        reqlog.record(key_id=rec.id, ip=ip, method=method, path=path,
+                      headers=request.headers, body=body, status=status, model=model)
+
     if rec.models and req_model and req_model not in set(rec.models):
         _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body))
+        _content_log(403, req_model)
         return JSONResponse(
             {"error": f"modèle non autorisé pour cette clé: {req_model}"}, status_code=403)
 
@@ -241,6 +248,7 @@ async def proxy(request: Request, full_path: str):
             up_resp = await upstream.send(up_req)
         except httpx.HTTPError as exc:
             _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
+            _content_log(502, req_model)
             return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
                                 status_code=502)
         content = up_resp.content
@@ -248,6 +256,7 @@ async def proxy(request: Request, full_path: str):
             content = _filter_models(content, set(rec.models))
         _log(rec.id, ip, method, path, "", up_resp.status_code, t0,
              bytes_in=len(body), bytes_out=len(content))
+        _content_log(up_resp.status_code, req_model)
         media = up_resp.headers.get("content-type", "application/json")
         return Response(content, status_code=up_resp.status_code, media_type=media)
 
@@ -255,6 +264,7 @@ async def proxy(request: Request, full_path: str):
         up_resp = await upstream.send(up_req, stream=True)
     except httpx.HTTPError as exc:
         _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body))
+        _content_log(502, req_model)
         return JSONResponse({"error": f"upstream indisponible: {exc.__class__.__name__}"},
                             status_code=502)
 
@@ -274,9 +284,11 @@ async def proxy(request: Request, full_path: str):
             await up_resp.aclose()
 
     def finalize():
-        _log(rec.id, ip, method, path, sniff.model or _model_from_body(body),
-             up_resp.status_code, t0, tokens_prompt=sniff.tokens_prompt,
-             tokens_completion=sniff.tokens_completion, bytes_in=len(body), bytes_out=bytes_out)
+        model = sniff.model or _model_from_body(body)
+        _log(rec.id, ip, method, path, model, up_resp.status_code, t0,
+             tokens_prompt=sniff.tokens_prompt, tokens_completion=sniff.tokens_completion,
+             bytes_in=len(body), bytes_out=bytes_out)
+        _content_log(up_resp.status_code, model)
 
     resp_headers = [(k, v) for k, v in up_resp.headers.items()
                     if k.lower() not in _DROP_RESP_HEADERS]

@@ -201,8 +201,16 @@
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>
     <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>
-    <label for="note">Note</label>
-    <input id="note" name="note" value="{{ key.note }}">
+    <div class="row">
+      <div><label for="log_retention_days">Rétention des logs (jours)</label>
+        <input id="log_retention_days" name="log_retention_days" type="number" min="0"
+               value="{{ key.log_retention_days if key.log_retention_days is not none else '' }}"
+               data-testid="retention-input">
+        <p class="hint">Contenu complet des requêtes (fichiers hors base). Vide = défaut global
+          ({{ retention_default }} j) ; 0 = purge des heures passées.</p></div>
+      <div><label for="note">Note</label>
+        <input id="note" name="note" value="{{ key.note }}"></div>
+    </div>
     <p class="actions"><button type="submit">{{ icon('check') }} Enregistrer</button></p>
   </form>
 </div>
@@ -228,6 +236,37 @@
   {% endif %}
 </div>
 
+<div class="card cat-brand">
+  <div class="card-head">
+    <span class="chip-ic brand">{{ icon('globe', 18) }}</span>
+    <h2>Origines vues ({{ origins_seen|length }})</h2>
+  </div>
+  {% if origins_seen %}
+  <input type="search" id="origin-search" data-testid="origin-search"
+         placeholder="Rechercher une IP…" autocomplete="off">
+  <div class="table-wrap">
+  <table data-testid="origins-table">
+    <thead><tr><th>IP</th><th>Requêtes</th><th>Dernier vu</th><th>WHOIS</th></tr></thead>
+    <tbody id="origins-body">
+    {% for o in origins_seen %}
+      <tr class="origin-row" data-ip="{{ o.ip }}">
+        <td class="mono">{{ o.ip }}</td>
+        <td class="mono">{{ o.hits }}</td>
+        <td class="mono muted">{{ o.last_seen }}</td>
+        <td><button type="button" class="btn-secondary btn-sm origin-whois"
+                    data-ip="{{ o.ip }}" data-testid="origin-whois">{{ icon('search', 14) }} WHOIS</button></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="hint" id="origin-empty" hidden>Aucune origine ne correspond à la recherche.</p>
+  {% else %}
+  <div class="empty">{{ icon('globe', 22) }}
+    <span>Aucune origine encore vue pour cette clé.</span></div>
+  {% endif %}
+</div>
+
 {% if summary.recent_errors %}
 <div class="card cat-danger">
   <div class="card-head">
@@ -247,4 +286,69 @@
 {% endif %}
 </div>
 </div>
+
+{# Modale WHOIS plein écran (résolution RDAP d'une origine). #}
+<dialog class="chatmod" id="whois-dialog" data-testid="whois-dialog" aria-label="WHOIS d'une origine">
+  <div class="manual-head">
+    <span class="chip-ic brand">{{ icon('globe', 18) }}</span>
+    <h2 id="whois-title">WHOIS</h2>
+    <button type="button" class="btn-close" id="whois-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
+  </div>
+  <div class="modal-scroll">
+    <div class="modal-col" id="whois-content" data-testid="whois-content">
+      <p class="muted">…</p>
+    </div>
+  </div>
+</dialog>
+<script>
+(function () {
+  const esc = s => String(s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // Recherche client-side dans la liste des origines.
+  const search = document.getElementById('origin-search');
+  if (search) {
+    const rows = Array.from(document.querySelectorAll('.origin-row'));
+    const empty = document.getElementById('origin-empty');
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      for (const r of rows) {
+        const match = r.dataset.ip.toLowerCase().includes(q);
+        r.hidden = !match; if (match) shown++;
+      }
+      empty.hidden = shown > 0;
+    });
+  }
+
+  // WHOIS à la demande (modale).
+  const dlg = document.getElementById('whois-dialog');
+  const title = document.getElementById('whois-title');
+  const content = document.getElementById('whois-content');
+  document.getElementById('whois-close').addEventListener('click', () => dlg.close());
+  document.querySelectorAll('.origin-whois').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const ip = btn.dataset.ip;
+      title.textContent = 'WHOIS — ' + ip;
+      content.innerHTML = '<p class="muted">Résolution…</p>';
+      dlg.showModal();
+      try {
+        const r = await fetch('/admin/whois?ip=' + encodeURIComponent(ip));
+        const d = await r.json();
+        let html = '<p data-testid="whois-summary"><strong>' + esc(d.summary) + '</strong></p>';
+        if (d.fields && Object.keys(d.fields).length) {
+          html += '<table class="whois-fields">';
+          for (const [k, v] of Object.entries(d.fields)) {
+            html += '<tr><th>' + esc(k) + '</th><td class="mono">' + esc(v) + '</td></tr>';
+          }
+          html += '</table>';
+        }
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = '<p class="err">WHOIS indisponible.</p>';
+      }
+    });
+  });
+})();
+</script>
 {% endblock %}

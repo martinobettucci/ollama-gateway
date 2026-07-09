@@ -31,7 +31,9 @@ export default defineConfig({
       command: `${PY} -m uvicorn app.proxy:app --host 127.0.0.1 --port 8791`,
       cwd: ROOT, url: 'http://127.0.0.1:8791/_proxy_health', reuseExistingServer: false,
       env: { ...baseEnv, OLLAMA_UPSTREAM: 'http://127.0.0.1:11533',
-             TRUSTED_PROXY_IPS: '127.0.0.1,::1', P2E_MASTER_KEY: 'e2e-master' },
+             TRUSTED_PROXY_IPS: '127.0.0.1,::1', P2E_MASTER_KEY: 'e2e-master',
+             // Le proxy écrit le contenu complet des requêtes ici (exerce le chemin reqlog).
+             REQUEST_LOG_DIR: path.join(__dirname, 'e2e-data', 'reqlogs') },
     },
     {
       command: `${PY} -m uvicorn app.admin:app --host 127.0.0.1 --port 8792`,

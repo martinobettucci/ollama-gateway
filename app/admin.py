@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, bans, config, db, keys, servers, usage
+from . import auth, bans, config, db, keys, servers, usage, whois
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -49,6 +49,18 @@ def _parse_int(v: str | None) -> int | None:
     try:
         n = int(v)
         return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _parse_retention(v: str | None) -> int | None:
+    """Rétention de logs (jours) : entier ≥ 0, ou None (vide/invalide → défaut global)."""
+    v = (v or "").strip()
+    if not v:
+        return None
+    try:
+        n = int(v)
+        return n if n >= 0 else None
     except ValueError:
         return None
 
@@ -179,7 +191,8 @@ async def create_key(request: Request):
         monthly_token_cap=_parse_int(form.get("monthly_token_cap", "")),
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
-        server_id=server_id, models=_collect_models(form))
+        server_id=server_id, models=_collect_models(form),
+        log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     # Le secret n'est montré qu'ici, une seule fois (via un flash de session).
     request.session["created_key"] = {"label": rec.label, "secret": secret}
     return RedirectResponse("/admin", status_code=303)
@@ -195,6 +208,8 @@ async def key_detail(request: Request, key_id: int):
     return TEMPLATES.TemplateResponse(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
         "servers": servers.list_servers(),
+        "origins_seen": usage.origins_seen(key_id),
+        "retention_default": config.REQUEST_LOG_RETENTION_DAYS,
     })
 
 
@@ -209,7 +224,8 @@ async def key_update(request: Request, key_id: int):
         monthly_token_cap=_parse_int(form.get("monthly_token_cap", "")),
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
-        server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form))
+        server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
+        log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 
 
@@ -299,6 +315,15 @@ async def logs_ban(request: Request):
         {"ok": True, "text": f"Origine bannie : {norm}"} if norm
         else {"ok": False, "text": "IP/CIDR invalide — rien banni."})
     return RedirectResponse("/admin/logs", status_code=303)
+
+
+@app.get("/admin/whois")
+async def whois_lookup(request: Request):
+    """Résolution WHOIS/RDAP d'une IP (bouton « WHOIS » des origines d'une clé). LAN-only."""
+    if (r := _guard(request)):
+        return r
+    ip = request.query_params.get("ip", "")
+    return JSONResponse(await whois.lookup(ip))
 
 
 @app.post("/admin/bans/{ban_id}/delete")

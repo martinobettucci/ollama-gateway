@@ -24,6 +24,7 @@ services:
       PROXY_HOST: 0.0.0.0
       PROXY_PORT: "8787"
       GATEWAY_DB_PATH: /data/gateway.db
+      REQUEST_LOG_DIR: /data/reqlogs   # contenu complet des requêtes (hors base)
       TRUSTED_PROXY_IPS: 127.0.0.1,::1
       ADMIN_PASSWORD: adminpass
       P2E_MASTER_KEY: dev-insecure-master-key
@@ -44,6 +45,7 @@ services:
       ADMIN_HOST: 0.0.0.0
       ADMIN_PORT: "8788"
       GATEWAY_DB_PATH: /data/gateway.db
+      REQUEST_LOG_DIR: /data/reqlogs   # contenu complet des requêtes (hors base)
       ADMIN_SESSION_SECRET: dev-insecure-session-secret
       ADMIN_PASSWORD: adminpass
       # L'admin crée/sonde le serveur par défaut : même upstream + même clé maître que le proxy.
