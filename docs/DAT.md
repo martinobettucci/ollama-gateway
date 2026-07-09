@@ -61,9 +61,25 @@ car Ollama est en loopback natif (hors Docker).
   (Fernet), jamais en clair ; `last_models` = JSON des modèles détectés au dernier test.
 - `api_keys.server_id` (FK `servers`, ON DELETE SET NULL) — serveur rattaché ; `key_models(key_id,
   model)` — allowlist de modèles par clé (aucune ligne = tous autorisés).
+- **Compatibilité d'API (migration 0005).** `key_apis(key_id, api)` — allowlist de **familles
+  d'API** par clé (`ollama`/`openai`/`anthropic`) ; aucune ligne = toutes autorisées ; appliquée par
+  le proxy en **allow/forbid de chemin** (`app/apis.py::family_for_path`, listings exemptés), sans
+  validation de schéma. `servers.last_compat`/`last_compat_at` — matrice JSON du dernier test
+  d'accessibilité des chemins (`servers.run_compat`, catalogue `apis.CATALOG`).
+- **Cibles publiques (migration 0006).** `targets(id, name, base_url, is_default, created_at)` — URL
+  publiques vues des clients ; `api_keys.target_id` (FK, ON DELETE SET NULL) — cible rattachée,
+  utilisée **uniquement** pour générer les variables d'environnement (n'affecte pas le routage).
+  Défaut indélébile seedé de `PUBLIC_BASE_URL` (auto-réparation du placeholder). `app/targets.py`.
+- **Expiration / plafonds de vie (migration 0007).** `api_keys.total_token_cap` /
+  `total_request_cap` / `expires_at` / `idle_expiry_days` (NULL = aucun) — plafonds **absolus** et
+  échéances appliqués par `quotas.check` (distinct du rate-limit et du plafond mensuel).
+- **Repli & monitoring (migration 0008).** `api_keys.fallback_server_id` (FK, ON DELETE SET NULL) —
+  serveur de repli ; le proxy rejoue la requête vers lui sur 5xx/erreur de connexion du primaire
+  (`_send_chain`). `usage_events.server_id` — serveur ayant **réellement** traité (repli inclus),
+  base du monitoring par serveur/clé (`usage.server_*`, graphiques SVG `app/charts.py`).
 - `usage_events(...)` — append-only, une ligne par requête (autorisée ou refusée) : clé, IP,
-  méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out. **Jamais
-  purgé** ; exposé intégralement par la console de logs (`GET /admin/logs`).
+  méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out, **server_id**.
+  **Jamais purgé** ; exposé intégralement par la console de logs (`GET /admin/logs`).
 - **Contenu complet des requêtes = HORS BASE** (`app/reqlog.py`) : fichiers `$REQUEST_LOG_DIR/
   key-<id>/<YYYY-MM-DD_HH>.jsonl` (un dossier par clé, un fichier par heure), secrets masqués.
   `api_keys.log_retention_days` (migration 0004, NULL → `REQUEST_LOG_RETENTION_DAYS`) pilote le
