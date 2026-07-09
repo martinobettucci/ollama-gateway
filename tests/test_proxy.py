@@ -50,6 +50,35 @@ async def test_origin_allowed_passes(fake_upstream):
     assert r.status_code == 200
 
 
+async def test_api_allowlist_empty_allows_all(fake_upstream):
+    _, key = keys.create_key("x", [], None, None)  # aucune API restreinte = toutes
+    async with proxy_client(fake_upstream) as c:
+        r1 = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
+        r2 = await c.post("/v1/chat/completions", headers=_auth(key),
+                          json={"model": "demo:latest"})
+    assert r1.status_code == 200 and r2.status_code == 200
+
+
+async def test_api_allowlist_forbids_other_family(fake_upstream):
+    _, key = keys.create_key("x", [], None, None, key_apis=["ollama"])
+    async with proxy_client(fake_upstream) as c:
+        ok = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
+        openai = await c.post("/v1/chat/completions", headers=_auth(key),
+                              json={"model": "demo:latest"})
+        anthropic = await c.post("/v1/messages", headers=_auth(key),
+                                 json={"model": "demo:latest"})
+    assert ok.status_code == 200
+    assert openai.status_code == 403 and anthropic.status_code == 403
+
+
+async def test_api_allowlist_listing_paths_always_served(fake_upstream):
+    # Une clé restreinte à Anthropic doit tout de même pouvoir lister les modèles OpenAI.
+    _, key = keys.create_key("x", [], None, None, key_apis=["anthropic"])
+    async with proxy_client(fake_upstream) as c:
+        r = await c.get("/v1/models", headers=_auth(key))
+    assert r.status_code == 200
+
+
 async def test_streaming_chat_ok_and_strips_authorization(fake_upstream):
     _, key = keys.create_key("x", [], None, None)
     async with proxy_client(fake_upstream) as c:

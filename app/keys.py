@@ -7,7 +7,7 @@ import ipaddress
 import sqlite3
 from dataclasses import dataclass, field
 
-from . import auth, db, servers
+from . import apis, auth, db, servers
 
 
 @dataclass
@@ -25,6 +25,7 @@ class KeyRecord:
     server_id: int | None = None
     server_name: str | None = None
     models: list[str] = field(default_factory=list)
+    apis: list[str] = field(default_factory=list)  # allowlist de familles d'API (vide = toutes)
     log_retention_days: int | None = None  # NULL → rétention globale par défaut
 
 
@@ -52,6 +53,12 @@ def models_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
     """Allowlist de modèles de la clé (vide = tous les modèles du serveur autorisés)."""
     return [r["model"] for r in conn.execute(
         "SELECT model FROM key_models WHERE key_id = ? ORDER BY id", (key_id,))]
+
+
+def apis_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
+    """Allowlist de familles d'API de la clé (vide = toutes les familles autorisées)."""
+    return [r["api"] for r in conn.execute(
+        "SELECT api FROM key_apis WHERE key_id = ? ORDER BY id", (key_id,))]
 
 
 def origin_allowed(client_ip: str, cidrs: list[str]) -> bool:
@@ -87,6 +94,7 @@ def touch_last_used(key_id: int, conn: sqlite3.Connection | None = None) -> None
 def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                rpm_limit: int | None, note: str = "", key_value: str | None = None,
                server_id: int | None = None, models: list[str] | None = None,
+               key_apis: list[str] | None = None,
                log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
@@ -112,6 +120,10 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                 if m.strip():
                     conn.execute("INSERT INTO key_models(key_id, model) VALUES (?,?)",
                                  (kid, m.strip()))
+            for a in (key_apis or []):
+                if a.strip() in apis.FAMILIES:
+                    conn.execute("INSERT INTO key_apis(key_id, api) VALUES (?,?)",
+                                 (kid, a.strip()))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(
                     "INSERT INTO key_quotas(key_id, monthly_token_cap, rpm_limit) VALUES (?,?,?)",
@@ -143,6 +155,7 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             rpm_limit=q["rpm_limit"] if q else None,
             server_id=server_id, server_name=srv["name"] if srv else None,
             models=models_for(key_id, conn),
+            apis=apis_for(key_id, conn),
             log_retention_days=row["log_retention_days"],
         )
     finally:
@@ -171,8 +184,9 @@ def set_enabled(key_id: int, enabled: bool) -> None:
 def update_key(key_id: int, label: str, origins: list[str],
                monthly_token_cap: int | None, rpm_limit: int | None, note: str,
                server_id: int | None = None, models: list[str] | None = None,
+               key_apis: list[str] | None = None,
                log_retention_days: int | None = None) -> None:
-    """Met à jour une clé. `server_id`/`models` non fournis (None) → inchangés.
+    """Met à jour une clé. `server_id`/`models`/`key_apis` non fournis (None) → inchangés.
 
     `log_retention_days` est toujours appliqué (le formulaire l'inclut ; vide = NULL = défaut).
     """
@@ -196,6 +210,12 @@ def update_key(key_id: int, label: str, origins: list[str],
                     if m.strip():
                         conn.execute("INSERT INTO key_models(key_id, model) VALUES (?,?)",
                                      (key_id, m.strip()))
+            if key_apis is not None:
+                conn.execute("DELETE FROM key_apis WHERE key_id = ?", (key_id,))
+                for a in key_apis:
+                    if a.strip() in apis.FAMILIES:
+                        conn.execute("INSERT INTO key_apis(key_id, api) VALUES (?,?)",
+                                     (key_id, a.strip()))
             conn.execute("DELETE FROM key_quotas WHERE key_id = ?", (key_id,))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(

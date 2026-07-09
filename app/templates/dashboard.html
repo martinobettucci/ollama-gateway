@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
 {% from "_model_picker.html" import model_picker %}
+{% from "_api_picker.html" import api_picker %}
 {% block title %}Tableau de bord — Passerelle Ollama{% endblock %}
 {% block body %}
 <h1>Tableau de bord</h1>
@@ -176,6 +177,8 @@
     </div>
     <label for="models">Modèles autorisés</label>
     {{ model_picker([]) }}
+    <label>API autorisées</label>
+    {{ api_picker([]) }}
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins" placeholder="203.0.113.7&#10;192.168.0.0/24"></textarea>
     <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>

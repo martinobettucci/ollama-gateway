@@ -5,13 +5,14 @@ automatiquement à partir de `$OLLAMA_UPSTREAM` et ne peut être ni supprimé ni
 orphelines (le reconciler `ensure_default` réassigne toute clé au serveur par défaut). Le jeton
 d'auth d'un serveur distant est chiffré au repos (`crypto.py`) et **jamais réaffiché** en clair.
 """
+import asyncio
 import json
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import httpx
 
-from . import config, crypto, db
+from . import apis, config, crypto, db
 
 
 @dataclass
@@ -26,6 +27,8 @@ class ServerRecord:
     last_checked_at: str | None
     last_online: bool
     last_models: list[str]
+    last_compat: dict = field(default_factory=dict)   # {famille: [{path,status,served}]}
+    last_compat_at: str | None = None
 
 
 def _row_to_record(row: sqlite3.Row) -> ServerRecord:
@@ -33,12 +36,18 @@ def _row_to_record(row: sqlite3.Row) -> ServerRecord:
         models = json.loads(row["last_models"] or "[]")
     except (ValueError, TypeError):
         models = []
+    try:
+        compat = json.loads(row["last_compat"] or "{}")
+    except (ValueError, TypeError, IndexError):
+        compat = {}
     return ServerRecord(
         id=row["id"], name=row["name"], base_url=row["base_url"],
         has_auth=bool(row["auth_token_enc"]), is_default=bool(row["is_default"]),
         enabled=bool(row["enabled"]), created_at=row["created_at"],
         last_checked_at=row["last_checked_at"], last_online=bool(row["last_online"]),
         last_models=[m for m in models if isinstance(m, str)] if isinstance(models, list) else [],
+        last_compat=compat if isinstance(compat, dict) else {},
+        last_compat_at=row["last_compat_at"] if "last_compat_at" in row.keys() else None,
     )
 
 
@@ -255,6 +264,72 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
     online, models, err = await probe(row["base_url"], row["auth_token_enc"])
     record_probe(server_id, online, models)
     return online, models, err
+
+
+# --- Test de compatibilité d'API (matrice stockée) --------------------------------------------
+
+async def _probe_endpoint(client: httpx.AsyncClient, base: str, method: str, path: str,
+                          headers: dict) -> dict:
+    """Sonde UN endpoint : accessibilité du chemin uniquement (servi vs 404), sans valider le
+    schéma. Corps `{}` pour les POST → l'amont répond 400 avant toute génération. `served` = le
+    chemin est routé (tout sauf 404) ; 404 = absent ; erreur réseau = non concluant."""
+    url = base.rstrip("/") + path
+    try:
+        if method == "GET":
+            r = await client.get(url, headers=headers)
+        else:
+            r = await client.post(url, json={}, headers=headers)
+    except httpx.HTTPError as exc:
+        return {"path": path, "method": method, "status": None,
+                "served": False, "error": exc.__class__.__name__}
+    return {"path": path, "method": method, "status": r.status_code,
+            "served": r.status_code != 404, "error": ""}
+
+
+async def run_compat(server_id: int) -> dict:
+    """Rejoue le catalogue d'endpoints (`apis.CATALOG`) contre un serveur enregistré et **persiste**
+    la matrice de compatibilité (accessibilité des chemins par famille). Les endpoints d'une même
+    famille sont sondés en parallèle. Renvoie la matrice {famille: [{path,method,status,served}]}."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT base_url, auth_token_enc, enabled FROM servers WHERE id = ?",
+            (server_id,)).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return {}
+    headers = {}
+    if row["auth_token_enc"]:
+        token = crypto.decrypt(row["auth_token_enc"])
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+    base = row["base_url"]
+    matrix: dict[str, list[dict]] = {}
+    timeout = httpx.Timeout(config.SERVER_PROBE_TIMEOUT_S, connect=15.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        for family, endpoints in apis.CATALOG.items():
+            results = await asyncio.gather(*[
+                _probe_endpoint(client, base, method, path, headers)
+                for method, path, _label in endpoints
+            ])
+            labels = {p: lbl for _m, p, lbl in endpoints}
+            for res in results:
+                res["label"] = labels.get(res["path"], "")
+            matrix[family] = list(results)
+    record_compat(server_id, matrix)
+    return matrix
+
+
+def record_compat(server_id: int, matrix: dict) -> None:
+    conn = db.connect()
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE servers SET last_compat = ?, last_compat_at = datetime('now') "
+                "WHERE id = ?", (json.dumps(matrix), server_id))
+    finally:
+        conn.close()
 
 
 # --- Chat de test (« Essayer maintenant » du panel) -------------------------------------------

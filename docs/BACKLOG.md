@@ -134,6 +134,24 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   invalide, RDAP mocké, HTTP error), test_admin (route login/loopback, origins_seen, page),
   E2E « origines vues : liste + recherche + WHOIS modale » ; vision : captures 12 + page origines.*
 
+## Phase 8 — Compatibilité d'API, cibles publiques, expiration de clé, recherche (2026-07-09)
+
+- [~] **Compatibilité d'API : matrice par serveur + allowlist par clé** (`app/apis.py` catalogue +
+  `family_for_path`, migration 0005 `key_apis`/`servers.last_compat`, `servers.run_compat` sonde
+  d'accessibilité des chemins **sans validation de schéma**, proxy `403` de chemin hors allowlist,
+  cases à cocher d'API sur la clé, matrice + « Tester la compatibilité » sur la page Serveurs).
+  Reste pour `[x]` : **E2E Playwright dédié + vision (captures)**. — *tests unit/intégration verts :
+  test_apis (mapping, allowlist round-trip, run_compat matrice), test_proxy (allowlist vide = tout,
+  interdit hors famille, listing toujours servi).*
+- [ ] **Cibles publiques (ingress) attachées par clé** : table `targets` (URL publique de la
+  passerelle vue du client, ex. `https://…:port`), rattachement `api_keys.target_id`, la génération
+  de variables d'environnement utilise la cible rattachée ; gestion CRUD dans le panel + sélecteur
+  sur la clé. Distinct des serveurs d'exécution (amont) : n'affecte pas le routage. — *tests à écrire.*
+- [ ] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : plafond **absolu** de
+  tokens, plafond **absolu** de requêtes, **date/heure d'expiration**, **expiration par inactivité**
+  (N jours sans usage → désactivation). Appliqué par le proxy (refus une fois atteint). — *tests à écrire.*
+- [ ] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état). — *tests à écrire.*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

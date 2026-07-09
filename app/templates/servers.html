@@ -36,9 +36,32 @@
   </div>
   {% endif %}
 
+  {% if s.last_compat %}
+  {# Matrice de compatibilité d'API : accessibilité des chemins par famille (servi vs 404),
+     sans validation de schéma. Vert = 2xx, gris = servi mais erreur (4xx/5xx≠404), rouge = absent. #}
+  <details class="edit compat" data-testid="compat-{{ s.id }}">
+    <summary>{{ icon('plug', 14) }} Compatibilité d'API{% if s.last_compat_at %} — testée le {{ s.last_compat_at }}{% endif %}</summary>
+    {% for fam, eps in s.last_compat.items() %}
+    <div class="compat-fam">
+      <div class="compat-fam-name">{{ fam }}</div>
+      <div class="models-tags">
+        {% for e in eps %}
+        <span class="badge {{ 'on' if e.status and e.status < 400 else ('neutral' if e.served else 'off') }} mono"
+              title="{{ e.method }} {{ e.path }} → {{ e.status if e.status else 'erreur réseau' }}">
+          {{ e.path }} · {{ e.status if e.status else '✕' }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </details>
+  {% endif %}
+
   <div class="server-actions">
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/test">
       <button class="btn-secondary btn-sm" type="submit">{{ icon('refresh-cw', 14) }} Tester</button>
+    </form>
+    <form class="inline" method="post" action="/admin/servers/{{ s.id }}/compat">
+      <button class="btn-secondary btn-sm" type="submit" data-testid="compat-test-{{ s.id }}">{{ icon('plug', 14) }} Tester la compatibilité</button>
     </form>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/toggle">
       <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ 'désactiver' if s.enabled else 'activer' }}</button>

@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, bans, config, db, keys, servers, usage, whois
+from . import apis, auth, bans, config, db, keys, servers, usage, whois
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -94,6 +94,11 @@ def _collect_models(form) -> list[str]:
         if m not in out:
             out.append(m)
     return out
+
+
+def _collect_apis(form) -> list[str]:
+    """Familles d'API cochées (allowlist). Vide = toutes les API autorisées."""
+    return [a for a in form.getlist("api_check") if a in apis.FAMILIES]
 
 
 # --- Initialisation / login -------------------------------------------------------------------
@@ -191,7 +196,7 @@ async def create_key(request: Request):
         monthly_token_cap=_parse_int(form.get("monthly_token_cap", "")),
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
-        server_id=server_id, models=_collect_models(form),
+        server_id=server_id, models=_collect_models(form), key_apis=_collect_apis(form),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     # Le secret n'est montré qu'ici, une seule fois (via un flash de session).
     request.session["created_key"] = {"label": rec.label, "secret": secret}
@@ -225,6 +230,7 @@ async def key_update(request: Request, key_id: int):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
+        key_apis=_collect_apis(form),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 
@@ -396,6 +402,19 @@ async def server_test(request: Request, server_id: int):
     else:
         request.session["server_flash"] = {
             "ok": False, "text": f"Serveur injoignable ({err})."}
+    return RedirectResponse("/admin/servers", status_code=303)
+
+
+@app.post("/admin/servers/{server_id}/compat")
+async def server_compat(request: Request, server_id: int):
+    """Rejoue le test de compatibilité d'API (accessibilité des chemins) et stocke la matrice."""
+    if (r := _guard(request)):
+        return r
+    matrix = await servers.run_compat(server_id)
+    served = sum(1 for eps in matrix.values() for e in eps if e.get("served"))
+    total = sum(len(eps) for eps in matrix.values())
+    request.session["server_flash"] = {
+        "ok": bool(total), "text": f"Compatibilité testée — {served}/{total} chemin(s) servi(s)."}
     return RedirectResponse("/admin/servers", status_code=303)
 
 

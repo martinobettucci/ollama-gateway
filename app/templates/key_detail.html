@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
 {% from "_model_picker.html" import model_picker %}
+{% from "_api_picker.html" import api_picker %}
 {% block title %}{{ key.label }} — Passerelle Ollama{% endblock %}
 {% block body %}
 <p><a class="backlink" href="/admin">{{ icon('arrow-left') }} Tableau de bord</a></p>
@@ -197,6 +198,9 @@
 
     <label>Modèles autorisés</label>
     {{ model_picker(key.models) }}
+
+    <label>API autorisées</label>
+    {{ api_picker(key.apis) }}
 
     <label for="origins">Origines autorisées</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>

@@ -6,6 +6,15 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Compatibilité d'API : matrice par serveur + allowlist par clé.** Chaque serveur d'exécution
+  peut être testé (« Tester la compatibilité ») : la passerelle **rejoue un catalogue d'endpoints**
+  des trois familles (Ollama natif `/api/*`, OpenAI-compatible `/v1/*`, Anthropic Messages
+  `/v1/messages`) et **stocke une matrice** d'**accessibilité des chemins** (servi vs 404),
+  affichée sur la page Serveurs. Le test vérifie uniquement l'**accès au chemin**, **sans valider
+  les schémas de réponse**. Côté clé, comme pour les modèles, des **cases à cocher d'API
+  autorisées** : cochées = allowlist appliquée par le proxy (allow/forbid de **chemin**) ;
+  **aucune cochée = toutes les API autorisées**. Les endpoints de listing
+  (`/api/tags`, `/v1/models`) restent toujours servis. Voir `docs/COMPAT_REPORT.md`.
 - **Contenu complet des requêtes archivé sur fichiers (hors base).** Chaque requête
   authentifiée est écrite en clair (secrets `Authorization`/`x-api-key` **retirés**) dans un
   **dossier par clé**, un **fichier JSONL par heure** — jamais en base. La **rétention est

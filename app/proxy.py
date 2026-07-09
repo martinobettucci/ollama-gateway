@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from starlette.background import BackgroundTask
 
-from . import auth, bans, config, db, keys, quotas, reqlog, servers, usage
+from . import apis, auth, bans, config, db, keys, quotas, reqlog, servers, usage
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
 # cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
@@ -229,6 +229,16 @@ async def proxy(request: Request, full_path: str):
         _content_log(403, req_model)
         return JSONResponse(
             {"error": f"modèle non autorisé pour cette clé: {req_model}"}, status_code=403)
+
+    # --- Restriction d'API (allow/forbid de CHEMIN, agnostique du schéma) : allowlist vide =
+    #     toutes les familles autorisées. Les endpoints de listing restent toujours servis
+    #     (déjà filtrés par l'allowlist de modèles). ---
+    family = apis.family_for_path(path)
+    if rec.apis and path not in _LISTING_PATHS and (family is None or family not in set(rec.apis)):
+        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body))
+        _content_log(403, req_model)
+        return JSONResponse(
+            {"error": f"API non autorisée pour cette clé: {family or path}"}, status_code=403)
 
     keys.touch_last_used(rec.id)
 
