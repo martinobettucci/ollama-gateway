@@ -6,6 +6,9 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Recherche & filtres des clés (tableau de bord).** Barre de recherche instantanée (label ou
+  préfixe) + filtres par **serveur**, **famille d'API** et **état** (active/désactivée), appliqués
+  côté navigateur sur la liste des clés.
 - **Expiration & plafonds de VIE d'une clé (« essai à coût plafonné »).** Nouveaux réglages par
   clé, **distincts du rate-limit et du plafond mensuel** (qui se réinitialisent) : **plafond absolu
   de tokens** et **de requêtes** cumulés sur toute la vie de la clé, **date/heure d'expiration**, et

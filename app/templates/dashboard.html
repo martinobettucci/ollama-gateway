@@ -111,13 +111,38 @@
     <span class="chip-ic brand">{{ icon('key-round', 18) }}</span>
     <h2>Clés API ({{ keys|length }})</h2>
   </div>
+  {% if keys %}
+  <div class="key-filters" data-testid="key-filters">
+    <input type="search" id="key-search" data-testid="key-search"
+           placeholder="Rechercher (label ou préfixe)…" autocomplete="off">
+    <select id="filter-server" data-testid="filter-server" aria-label="Filtrer par serveur">
+      <option value="">Tous les serveurs</option>
+      {% for s in servers %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}
+    </select>
+    <select id="filter-api" data-testid="filter-api" aria-label="Filtrer par API">
+      <option value="">Toutes les API</option>
+      <option value="ollama">Ollama</option>
+      <option value="openai">OpenAI</option>
+      <option value="anthropic">Anthropic</option>
+    </select>
+    <select id="filter-state" data-testid="filter-state" aria-label="Filtrer par état">
+      <option value="">Tous les états</option>
+      <option value="active">Actives</option>
+      <option value="disabled">Désactivées</option>
+    </select>
+  </div>
+  {% endif %}
   <div class="table-wrap">
   <table data-testid="keys-table">
     <thead><tr><th>Label</th><th>Préfixe</th><th>État</th><th>Serveur</th><th>Modèles</th><th>Origines</th>
       <th>Quota</th><th>Dernier usage</th><th>Actions</th></tr></thead>
     <tbody>
     {% for k in keys %}
-      <tr data-testid="key-row" data-key-id="{{ k.id }}">
+      <tr data-testid="key-row" data-key-id="{{ k.id }}"
+          data-label="{{ k.label|lower }}" data-prefix="{{ k.key_prefix|lower }}"
+          data-server="{{ k.server_name or '' }}"
+          data-apis="{{ k.apis|join(',') if k.apis else 'all' }}"
+          data-state="{{ 'active' if k.enabled else 'disabled' }}">
         <td><a href="/admin/keys/{{ k.id }}"><strong>{{ k.label }}</strong></a></td>
         <td class="mono">{{ k.key_prefix }}…</td>
         <td>{% if k.enabled %}<span class="badge on">active</span>{% else %}<span class="badge off">désactivée</span>{% endif %}</td>
@@ -149,6 +174,36 @@
     </tbody>
   </table>
   </div>
+  {% if keys %}
+  <p class="hint" id="key-empty" data-testid="key-empty" hidden>Aucune clé ne correspond aux filtres.</p>
+  <script>
+  (function () {
+    const q = document.getElementById('key-search');
+    const fServer = document.getElementById('filter-server');
+    const fApi = document.getElementById('filter-api');
+    const fState = document.getElementById('filter-state');
+    if (!q) return;
+    const rows = Array.from(document.querySelectorAll('[data-testid="key-row"]'));
+    const empty = document.getElementById('key-empty');
+    function apply() {
+      const text = q.value.trim().toLowerCase();
+      const srv = fServer.value, api = fApi.value, state = fState.value;
+      let shown = 0;
+      for (const r of rows) {
+        const apis = (r.dataset.apis || 'all');
+        const match =
+          (!text || r.dataset.label.includes(text) || r.dataset.prefix.includes(text)) &&
+          (!srv || r.dataset.server === srv) &&
+          (!api || apis === 'all' || apis.split(',').includes(api)) &&
+          (!state || r.dataset.state === state);
+        r.hidden = !match; if (match) shown++;
+      }
+      empty.hidden = shown > 0;
+    }
+    [q, fServer, fApi, fState].forEach(el => el.addEventListener('input', apply));
+  })();
+  </script>
+  {% endif %}
 </div>
 
 <div class="card cat-success">

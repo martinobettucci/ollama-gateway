@@ -153,7 +153,9 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   /`lifetime_requests`, `quotas.check` étendu (expiration, inactivité, plafonds absolus), champs de
   formulaire (create+edit). Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_expiry
   (expiration passée/future, plafonds tokens/requêtes, inactivité stale/récente, round-trip).*
-- [ ] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état). — *tests à écrire.*
+- [~] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état) :
+  toolbar + attributs de ligne + filtrage JS. Reste pour `[x]` : **E2E + vision**. — *tests verts :
+  test_admin_pages (toolbar + attributs rendus).*
 - [ ] **Serveur de repli (fallback) optionnel par clé** : `api_keys.fallback_server_id` ; sur
   **erreur serveur** de l'amont primaire (5xx ou erreur de connexion), la requête est **rejouée
   de façon transparente** vers le serveur de repli. — *tests à écrire.*
