@@ -168,6 +168,19 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   vision**. — *tests verts : test_monitor (agrégations, isolation par serveur, graphiques + vide,
   rendu de page).*
 
+## Phase 9 — Génération d'images (Ollama & OpenAI) (2026-07-09)
+
+- [~] **Génération d'images + capacité et modèles séparés** : `apis` familles `ollama-image`/
+  `openai-image` + `is_image_model`/`capability_for_request` ; migration 0009 `key_image_models`
+  (allowlist x/ séparée) ; proxy gate capability + modèle image (x/ sur /api/generate, endpoint
+  /v1/images/generations) ; `keys` image_models (create/update/get) ; `servers.try_image` +
+  route `/admin/keys/{id}/try-image` (image d'entrée base64) ; UI : cases image, sélecteur x/
+  séparé, onglets Texte/Image du « Essayer » avec pièce jointe image ; faux Ollama (x/fakeflux,
+  /v1/images/generations). Reste pour `[x]` : **vision (capture 18) + vérif image RÉELLE en prod
+  (modèle x/ à installer sur l'Ollama)**. — *tests verts : test_images (11 : capability/mapping,
+  allowlist image round-trip, gating proxy ollama/openai + séparation texte, try_image, route
+  admin), E2E images.spec (génération onglet Image + image-to-image).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

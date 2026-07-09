@@ -107,8 +107,19 @@ def _collect_models(form) -> list[str]:
 
 
 def _collect_apis(form) -> list[str]:
-    """Familles d'API cochées (allowlist). Vide = toutes les API autorisées."""
+    """Familles d'API cochées (allowlist, image comprise). Vide = toutes les API autorisées."""
     return [a for a in form.getlist("api_check") if a in apis.FAMILIES]
+
+
+def _collect_image_models(form) -> list[str]:
+    """Modèles d'IMAGE cochés (cases `x/…`) + saisie libre, dédupliqués (allowlist séparée)."""
+    checked = [m.strip() for m in form.getlist("image_model_check") if m.strip()]
+    free = _parse_lines(form.get("image_models", ""))
+    out: list[str] = []
+    for m in checked + free:
+        if m not in out:
+            out.append(m)
+    return out
 
 
 # --- Initialisation / login -------------------------------------------------------------------
@@ -209,6 +220,7 @@ async def create_key(request: Request):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=server_id, models=_collect_models(form), key_apis=_collect_apis(form),
+        image_models=_collect_image_models(form),
         target_id=target_id, fallback_server_id=_parse_int(form.get("fallback_server_id", "")),
         total_token_cap=_parse_int(form.get("total_token_cap", "")),
         total_request_cap=_parse_int(form.get("total_request_cap", "")),
@@ -254,7 +266,8 @@ async def key_update(request: Request, key_id: int):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
-        key_apis=_collect_apis(form), target_id=_parse_int(form.get("target_id", "")),
+        key_apis=_collect_apis(form), image_models=_collect_image_models(form),
+        target_id=_parse_int(form.get("target_id", "")),
         fallback_server_id=_parse_int(form.get("fallback_server_id", "")),
         clear_fallback=("fallback_server_id" in form
                         and not (form.get("fallback_server_id") or "").strip()),
@@ -303,6 +316,45 @@ async def key_try_chat(request: Request, key_id: int):
     if err:
         return JSONResponse({"error": err, "model": model, "api": api}, status_code=502)
     return JSONResponse({"reply": reply, "model": model, "api": api})
+
+
+@app.post("/admin/keys/{key_id}/try-image")
+async def key_try_image(request: Request, key_id: int):
+    """Génération d'IMAGE de test (onglet « Image ») : relais LAN-only. Respecte l'allowlist de
+    modèles d'image de la clé ; accepte une image d'entrée jointe (image-to-image). Jamais Caddy."""
+    if (r := _guard(request)):
+        return r
+    rec = keys.get_key(key_id)
+    if rec is None:
+        return JSONResponse({"error": "clé introuvable"}, status_code=404)
+    try:
+        body = await request.json()
+    except (ValueError, TypeError):
+        body = {}
+    prompt = (body.get("prompt") or "").strip()
+    if not prompt:
+        return JSONResponse({"error": "prompt vide"}, status_code=400)
+    api = (body.get("api") or "ollama-image").strip()
+    if api not in servers.IMAGE_TRY_APIS:
+        return JSONResponse({"error": f"API image inconnue: {api}"}, status_code=400)
+    model = (body.get("model") or "").strip()
+    if model:
+        if rec.image_models and model not in set(rec.image_models):
+            return JSONResponse(
+                {"error": f"modèle d'image « {model} » hors allowlist de la clé"}, status_code=403)
+    elif rec.image_models:
+        model = rec.image_models[0]
+    else:
+        return JSONResponse({"error": "aucun modèle d'image sélectionné"}, status_code=400)
+    # Image d'entrée optionnelle : accepte une data URL ou une base64 brute → on retire le préfixe.
+    image_b64 = (body.get("image") or "").strip()
+    if image_b64.startswith("data:"):
+        image_b64 = image_b64.split(",", 1)[-1]
+    server_id = rec.server_id or servers.default_id(db.connect())
+    b64, err = await servers.try_image(server_id, api, model, prompt, image_b64)
+    if err:
+        return JSONResponse({"error": err, "model": model, "api": api}, status_code=502)
+    return JSONResponse({"image": f"data:image/png;base64,{b64}", "model": model, "api": api})
 
 
 @app.post("/admin/keys/{key_id}/toggle")

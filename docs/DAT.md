@@ -77,6 +77,13 @@ car Ollama est en loopback natif (hors Docker).
   serveur de repli ; le proxy rejoue la requête vers lui sur 5xx/erreur de connexion du primaire
   (`_send_chain`). `usage_events.server_id` — serveur ayant **réellement** traité (repli inclus),
   base du monitoring par serveur/clé (`usage.server_*`, graphiques SVG `app/charts.py`).
+- **Génération d'images (migration 0009).** Capacité séparée du texte, portée par `key_apis`
+  (`ollama-image` / `openai-image`). Les modèles d'image (namespace `x/…`) ont une allowlist
+  **séparée** `key_image_models(key_id, model)`. Le proxy déduit la capability via
+  `apis.capability_for_request(path, model)` : `/v1/images/*` → `openai-image` ; `/api/generate`
+  avec modèle `x/…` → `ollama-image` (Ollama génère l'image sur le MÊME chemin que le texte). Le
+  gating de modèle est alors fait contre `key_image_models` (et non `key_models`). Relais de test
+  `servers.try_image` (onglet « Image » du panel, image d'entrée base64 acceptée).
 - `usage_events(...)` — append-only, une ligne par requête (autorisée ou refusée) : clé, IP,
   méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out, **server_id**.
   **Jamais purgé** ; exposé intégralement par la console de logs (`GET /admin/logs`).

@@ -13,13 +13,30 @@ volontairement **exclus** : la matrice couvre la surface d'inférence/lecture r�
 """
 
 # Identifiants stables des familles (colonnes de la matrice, valeurs de l'allowlist par clé).
-FAMILIES = ("ollama", "openai", "anthropic")
+# Les familles « -image » sont des capacités de GÉNÉRATION D'IMAGES, distinctes du texte :
+# - openai-image : endpoint dédié POST /v1/images/generations ;
+# - ollama-image : PAS de chemin dédié — Ollama génère via POST /api/generate avec un modèle
+#   d'image (préfixe `x/`). La capability est donc déduite du MODÈLE, pas seulement du chemin.
+FAMILIES = ("ollama", "openai", "anthropic", "ollama-image", "openai-image")
+
+# Familles de génération d'images (cases à cocher séparées côté clé).
+IMAGE_FAMILIES = ("ollama-image", "openai-image")
 
 FAMILY_LABELS = {
     "ollama": "Ollama natif",
     "openai": "OpenAI-compatible",
     "anthropic": "Anthropic Messages",
+    "ollama-image": "Ollama image (x/…)",
+    "openai-image": "OpenAI image",
 }
+
+# Préfixe des modèles d'IMAGE dans Ollama (namespace expérimental « x/ », ex. x/flux2-klein:4b).
+IMAGE_MODEL_PREFIX = "x/"
+
+
+def is_image_model(model: str | None) -> bool:
+    """True si le modèle appartient au namespace image d'Ollama (préfixe `x/`)."""
+    return isinstance(model, str) and model.startswith(IMAGE_MODEL_PREFIX)
 
 # Endpoints sondés par famille : (méthode, chemin, libellé). Corps de sonde = {} pour les POST.
 CATALOG: dict[str, list[tuple[str, str, str]]] = {
@@ -44,6 +61,13 @@ CATALOG: dict[str, list[tuple[str, str, str]]] = {
         ("POST", "/v1/messages", "messages"),
         ("POST", "/v1/messages/count_tokens", "comptage de tokens"),
     ],
+    "openai-image": [
+        ("POST", "/v1/images/generations", "génération d'images"),
+    ],
+    "ollama-image": [
+        # Pas de chemin dédié : Ollama génère via /api/generate + modèle `x/…`.
+        ("POST", "/api/generate", "génération d'images (modèle x/…)"),
+    ],
 }
 
 # Endpoints de listing : toujours autorisés quelle que soit l'allowlist d'API (ils sont déjà
@@ -65,3 +89,19 @@ def family_for_path(path: str) -> str | None:
     if path.startswith("/v1/"):
         return "openai"
     return None
+
+
+def capability_for_request(path: str, model: str | None) -> str | None:
+    """Capability requise par une requête, **image comprise** (dépend du chemin ET du modèle) :
+
+    - `POST /v1/images/*`  → `openai-image` (endpoint dédié) ;
+    - `/api/*` avec un modèle `x/…` → `ollama-image` (Ollama génère l'image via /api/generate) ;
+    - sinon → la famille texte du chemin (`family_for_path`).
+
+    C'est cette capability que le proxy confronte à l'allowlist d'API de la clé.
+    """
+    if path.startswith("/v1/images"):
+        return "openai-image"
+    if path.startswith("/api/") and is_image_model(model):
+        return "ollama-image"
+    return family_for_path(path)

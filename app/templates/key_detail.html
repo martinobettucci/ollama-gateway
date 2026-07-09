@@ -24,35 +24,78 @@
     <h2>Essayer « {{ key.label }} »</h2>
     <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
   </div>
-  <div class="chat-controls">
-    <div class="chat-controls-col">
-      <label for="try-model-sel">Modèle</label>
-      {# Allowlist rendue côté serveur si la clé en a une ; sinon peuplée par sonde du serveur. #}
-      <select id="try-model-sel" data-testid="try-model">
-        {% for m in key.models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
-      </select>
-      <label for="try-api-sel">API</label>
-      <select id="try-api-sel" data-testid="try-api">
-        <option value="ollama">Ollama (chat)</option>
-        <option value="openai-chat">OpenAI Chat Completions</option>
-        <option value="openai-responses">OpenAI Responses</option>
-        <option value="anthropic">Anthropic Messages</option>
-      </select>
+  {% set image_enabled = ('ollama-image' in key.apis) or ('openai-image' in key.apis) or key.image_models %}
+  {% if image_enabled %}
+  <div class="try-tabs" role="tablist" data-testid="try-tabs">
+    <button type="button" class="try-tab active" data-tab="text" data-testid="tab-text">{{ icon('message-square', 14) }} Texte</button>
+    <button type="button" class="try-tab" data-tab="image" data-testid="tab-image">{{ icon('bar-chart', 14) }} Image</button>
+  </div>
+  {% endif %}
+
+  <div class="try-panel" data-panel="text">
+    <div class="chat-controls">
+      <div class="chat-controls-col">
+        <label for="try-model-sel">Modèle</label>
+        {# Allowlist rendue côté serveur si la clé en a une ; sinon peuplée par sonde du serveur. #}
+        <select id="try-model-sel" data-testid="try-model">
+          {% for m in key.models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+        </select>
+        <label for="try-api-sel">API</label>
+        <select id="try-api-sel" data-testid="try-api">
+          <option value="ollama">Ollama (chat)</option>
+          <option value="openai-chat">OpenAI Chat Completions</option>
+          <option value="openai-responses">OpenAI Responses</option>
+          <option value="anthropic">Anthropic Messages</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-scroll" id="try-log" data-testid="try-log">
+      <div class="modal-col chat-col" id="try-col">
+        <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
+          rattaché à cette clé et affiche la réponse du modèle.</p>
+      </div>
+    </div>
+    <div class="chat-inputbar">
+      <form class="chat-input" id="try-form">
+        <input id="try-msg" data-testid="try-msg" autocomplete="off"
+               placeholder="Écrivez un message…" required>
+        <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
+      </form>
     </div>
   </div>
-  <div class="modal-scroll" id="try-log" data-testid="try-log">
-    <div class="modal-col chat-col" id="try-col">
-      <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
-        rattaché à cette clé et affiche la réponse du modèle.</p>
+
+  {% if image_enabled %}
+  <div class="try-panel" data-panel="image" hidden>
+    <div class="chat-controls">
+      <div class="chat-controls-col">
+        <label for="img-model-sel">Modèle d'image</label>
+        <select id="img-model-sel" data-testid="img-model">
+          {% for m in key.image_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+        </select>
+        <label for="img-api-sel">API</label>
+        <select id="img-api-sel" data-testid="img-api">
+          {% if ('ollama-image' in key.apis) or not key.apis %}<option value="ollama-image">Ollama image (/api/generate)</option>{% endif %}
+          {% if ('openai-image' in key.apis) or not key.apis %}<option value="openai-image">OpenAI image (/v1/images/generations)</option>{% endif %}
+        </select>
+        <label for="img-attach">Image jointe (optionnel — image-to-image)</label>
+        <input type="file" id="img-attach" accept="image/*" data-testid="img-attach">
+      </div>
+    </div>
+    <div class="modal-scroll" id="img-log" data-testid="img-log">
+      <div class="modal-col" id="img-col">
+        <p class="chat-hint" id="img-hint">Décrivez l'image à générer ; joignez éventuellement une
+          image d'entrée. La passerelle interroge le serveur rattaché et affiche l'image produite.</p>
+      </div>
+    </div>
+    <div class="chat-inputbar">
+      <form class="chat-input" id="img-form">
+        <input id="img-prompt" data-testid="img-prompt" autocomplete="off"
+               placeholder="Décrivez l'image à générer…" required>
+        <button type="submit" id="img-send" data-testid="img-send">{{ icon('send') }} Générer</button>
+      </form>
     </div>
   </div>
-  <div class="chat-inputbar">
-    <form class="chat-input" id="try-form">
-      <input id="try-msg" data-testid="try-msg" autocomplete="off"
-             placeholder="Écrivez un message…" required>
-      <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
-    </form>
-  </div>
+  {% endif %}
 </dialog>
 <script>
 (function () {
@@ -74,9 +117,11 @@
     try {
       const r = await fetch('/admin/servers/' + serverId + '/models');
       const data = r.ok ? await r.json() : { online: false, models: [] };
-      if (data.online && Array.isArray(data.models) && data.models.length) {
+      // Onglet Texte : on exclut les modèles d'IMAGE (préfixe x/), gérés dans l'onglet Image.
+      const textModels = (data.models || []).filter(m => !m.startsWith('x/'));
+      if (data.online && textModels.length) {
         modelSel.innerHTML = '';
-        for (const m of data.models) {
+        for (const m of textModels) {
           const o = document.createElement('option');
           o.value = m; o.textContent = m; modelSel.append(o);
         }
@@ -147,6 +192,100 @@
   });
 })();
 </script>
+
+{% set image_enabled = ('ollama-image' in key.apis) or ('openai-image' in key.apis) or key.image_models %}
+{% if image_enabled %}
+<script>
+(function () {
+  // Onglets Texte / Image.
+  const dlg = document.getElementById('try-dialog');
+  const tabs = Array.from(document.querySelectorAll('.try-tab'));
+  const panels = Array.from(document.querySelectorAll('.try-panel'));
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    panels.forEach(p => { p.hidden = p.dataset.panel !== t.dataset.tab; });
+  }));
+
+  // Onglet Image : génération via /admin/keys/{id}/try-image (relais LAN-only).
+  const form = document.getElementById('img-form');
+  const promptEl = document.getElementById('img-prompt');
+  const send = document.getElementById('img-send');
+  const modelSel = document.getElementById('img-model-sel');
+  const apiSel = document.getElementById('img-api-sel');
+  const attach = document.getElementById('img-attach');
+  const col = document.getElementById('img-col');
+  const log = document.getElementById('img-log');
+  const hint = document.getElementById('img-hint');
+  const serverId = {{ key.server_id or 'null' }};
+  let imgModelsLoaded = modelSel.options.length > 0;
+
+  async function ensureImageModels() {
+    if (imgModelsLoaded || serverId === null) return;
+    modelSel.innerHTML = '<option value="">Sonde du serveur…</option>';
+    try {
+      const r = await fetch('/admin/servers/' + serverId + '/models');
+      const data = r.ok ? await r.json() : { online: false, models: [] };
+      const imgs = (data.models || []).filter(m => m.startsWith('x/'));
+      if (imgs.length) {
+        modelSel.innerHTML = '';
+        for (const m of imgs) { const o = document.createElement('option'); o.value = m; o.textContent = m; modelSel.append(o); }
+        imgModelsLoaded = true;
+      } else {
+        modelSel.innerHTML = '<option value="">(aucun modèle x/ détecté)</option>';
+      }
+    } catch (e) { modelSel.innerHTML = '<option value="">(serveur injoignable)</option>'; }
+  }
+  document.querySelector('[data-tab=image]')?.addEventListener('click', ensureImageModels);
+
+  function readAttached() {
+    return new Promise(resolve => {
+      const f = attach.files && attach.files[0];
+      if (!f) return resolve('');
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);   // data URL (base64)
+      fr.onerror = () => resolve('');
+      fr.readAsDataURL(f);
+    });
+  }
+
+  function block(role) {
+    const b = document.createElement('div'); b.className = 'chat-msg ' + role;
+    const inner = document.createElement('div'); inner.className = 'chat-text'; b.append(inner);
+    col.append(b); log.scrollTop = log.scrollHeight; return { b, inner };
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const prompt = promptEl.value.trim();
+    if (!prompt) return;
+    if (hint) hint.remove();
+    const image = await readAttached();
+    const u = block('user');
+    u.inner.textContent = prompt;
+    if (image) { const im = document.createElement('img'); im.src = image; im.className = 'try-img try-img-in'; u.b.append(im); }
+    promptEl.value = ''; promptEl.disabled = send.disabled = true;
+    const pending = block('bot'); pending.inner.textContent = 'Génération…';
+    try {
+      const r = await fetch('/admin/keys/{{ key.id }}/try-image', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, model: modelSel.value, api: apiSel.value, image }),
+      });
+      const data = await r.json();
+      if (r.ok && data.image) {
+        pending.inner.textContent = (data.model || '?') + ' · ' + (data.api || '');
+        const im = document.createElement('img'); im.src = data.image; im.className = 'try-img';
+        im.setAttribute('data-testid', 'img-result'); pending.b.append(im);
+      } else {
+        pending.b.classList.add('chat-err');
+        pending.inner.textContent = 'Échec : ' + (data.error || ('HTTP ' + r.status));
+      }
+    } catch (err) {
+      pending.b.classList.add('chat-err'); pending.inner.textContent = 'Erreur réseau.';
+    } finally { promptEl.disabled = send.disabled = false; promptEl.focus(); }
+  });
+})();
+</script>
+{% endif %}
 
 <div class="stats">
   <div class="card stat cat-brand">
@@ -240,7 +379,7 @@
     </fieldset>
 
     <label>Modèles autorisés</label>
-    {{ model_picker(key.models) }}
+    {{ model_picker(key.models, key.image_models) }}
 
     <label>API autorisées</label>
     {{ api_picker(key.apis) }}

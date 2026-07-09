@@ -439,3 +439,84 @@ async def try_call(server_id: int, api: str, model: str, message: str) -> tuple[
         return (reply, "") if reply else ("", "réponse vide du serveur")
     except (httpx.HTTPError, ValueError) as exc:
         return "", exc.__class__.__name__
+
+
+# --- Génération d'image de test (onglet « Image » du « Essayer maintenant ») -------------------
+
+def _imgbody_ollama(model, prompt, image_b64):
+    # Ollama : génération via /api/generate ; image d'entrée optionnelle (image-to-image) en base64.
+    b = {"model": model, "prompt": prompt, "stream": False}
+    if image_b64:
+        b["images"] = [image_b64]
+    return b
+
+
+def _imgbody_openai(model, prompt, image_b64):
+    # OpenAI-compat : /v1/images/generations (pas d'image d'entrée sur cet endpoint).
+    return {"model": model, "prompt": prompt, "n": 1}
+
+
+def _img_reply_ollama(d):
+    """Extrait la base64 PNG d'une réponse /api/generate d'un modèle d'image (`image` ou `images`)."""
+    if not isinstance(d, dict):
+        return ""
+    if isinstance(d.get("image"), str) and d["image"]:
+        return d["image"]
+    imgs = d.get("images")
+    if isinstance(imgs, list) and imgs and isinstance(imgs[0], str):
+        return imgs[0]
+    return ""
+
+
+def _img_reply_openai(d):
+    """Extrait la base64 d'une réponse /v1/images/generations (`data[0].b64_json`)."""
+    try:
+        item = d["data"][0]
+        return item.get("b64_json") or ""
+    except (KeyError, IndexError, TypeError):
+        return ""
+
+
+# api → (chemin, fabrique du corps, extracteur base64, libellé).
+IMAGE_TRY_APIS = {
+    "ollama-image": ("/api/generate", _imgbody_ollama, _img_reply_ollama, "Ollama image"),
+    "openai-image": ("/v1/images/generations", _imgbody_openai, _img_reply_openai, "OpenAI image"),
+}
+
+
+async def try_image(server_id: int, api: str, model: str, prompt: str,
+                    image_b64: str = "") -> tuple[str, str]:
+    """Génère une image de test via l'API choisie ; renvoie (base64_png, erreur).
+
+    `image_b64` (optionnel) = image d'entrée jointe (image-to-image, Ollama). Relais LAN-only,
+    même sécurité que `try_call` (jeton distant déchiffré, jamais côté navigateur)."""
+    spec = IMAGE_TRY_APIS.get(api)
+    if spec is None:
+        return "", "API image inconnue"
+    path, make_body, extract, _label = spec
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT base_url, auth_token_enc, enabled FROM servers WHERE id = ?",
+            (server_id,)).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return "", "serveur introuvable"
+    if not row["enabled"]:
+        return "", "serveur désactivé"
+    headers = {}
+    if row["auth_token_enc"]:
+        token = crypto.decrypt(row["auth_token_enc"])
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+    url = row["base_url"].rstrip("/") + path
+    try:
+        async with httpx.AsyncClient(timeout=config.UPSTREAM_TIMEOUT_S) as c:
+            r = await c.post(url, json=make_body(model, prompt, image_b64), headers=headers)
+        if r.status_code != 200:
+            return "", f"HTTP {r.status_code}"
+        b64 = extract(r.json())
+        return (b64, "") if b64 else ("", "aucune image renvoyée par le serveur")
+    except (httpx.HTTPError, ValueError) as exc:
+        return "", exc.__class__.__name__

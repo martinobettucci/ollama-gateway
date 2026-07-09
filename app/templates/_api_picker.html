@@ -14,4 +14,13 @@
   sans validation de schéma). <strong>Aucune cochée = toutes les API autorisées.</strong>
   Les endpoints de listing (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>)
   restent toujours servis.</p>
+<div class="checks" data-testid="api-image-checks">
+  {% for fam, label in [('ollama-image', 'Image via Ollama (modèle x/… sur /api/generate)'),
+                        ('openai-image', 'Image via OpenAI (/v1/images/generations)')] %}
+  <label><input type="checkbox" name="api_check" value="{{ fam }}"
+    {{ 'checked' if fam in selected }}> {{ label }}</label>
+  {% endfor %}
+</div>
+<p class="hint"><strong>Génération d'images</strong> (capacité séparée). Activez la voie voulue et
+  renseignez les <strong>modèles d'image</strong> (<span class="mono">x/…</span>) ci-dessous.</p>
 {%- endmacro %}

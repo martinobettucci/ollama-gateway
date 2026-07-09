@@ -1,30 +1,54 @@
 {# Sélecteur de modèles autorisés (spec « rattachement ») : au rendu du formulaire ET à chaque
    changement de serveur, le serveur choisi est SONDÉ (GET /admin/servers/{id}/models) et les
-   modèles réellement disponibles s'affichent en cases à cocher ; repli en saisie libre si le
-   serveur est hors ligne. Sans JS, la textarea contient l'allowlist complète → toujours valide. #}
-{% macro model_picker(selected, select_id='server_id') -%}
+   modèles réellement disponibles s'affichent en cases à cocher. Les modèles d'IMAGE (préfixe
+   `x/…`) sont présentés dans une **liste séparée** (allowlist d'image distincte). Repli en saisie
+   libre si le serveur est hors ligne. Sans JS, les textareas portent les allowlists → valides. #}
+{% macro model_picker(selected, image_selected=None, select_id='server_id') -%}
 <div class="checks" id="model-checks" data-testid="model-checks"></div>
 <p class="hint" id="model-status" role="status">Sonde du serveur…</p>
 <textarea id="models" name="models"
   placeholder="modèles supplémentaires, un par ligne">{{ selected|join('\n') }}</textarea>
 <p class="hint">Cases cochées + saisie libre = allowlist de la clé. Vide partout = tous les
-  modèles du serveur autorisés.</p>
+  modèles (texte) du serveur autorisés.</p>
+
+<label class="img-models-label">Modèles d'image autorisés (<span class="mono">x/…</span>)</label>
+<div class="checks" id="image-model-checks" data-testid="image-model-checks"></div>
+<textarea id="image_models" name="image_models"
+  placeholder="modèles d'image (x/…) supplémentaires, un par ligne">{{ (image_selected or [])|join('\n') }}</textarea>
+<p class="hint">Allowlist <strong>séparée</strong> des modèles d'image. Vide = tous les modèles
+  d'image autorisés (si la génération d'images est activée ci-dessus).</p>
 <script>
 (function () {
   const sel = document.getElementById('{{ select_id }}');
   const box = document.getElementById('model-checks');
+  const imgBox = document.getElementById('image-model-checks');
   const status = document.getElementById('model-status');
   const ta = document.getElementById('models');
-  const taList = () => ta.value.split('\n').map(s => s.trim()).filter(Boolean);
-  const checkedList = () => Array.from(box.querySelectorAll('input:checked')).map(i => i.value);
+  const imgTa = document.getElementById('image_models');
+  const IMG = 'x/';
+  const listOf = t => t.value.split('\n').map(s => s.trim()).filter(Boolean);
+  const checkedOf = b => Array.from(b.querySelectorAll('input:checked')).map(i => i.value);
+
+  function render(container, models, current, name) {
+    container.innerHTML = '';
+    for (const m of models) {
+      const label = document.createElement('label');
+      const c = document.createElement('input');
+      c.type = 'checkbox'; c.name = name; c.value = m;
+      c.checked = current.includes(m);
+      const span = document.createElement('span');
+      span.className = 'mono'; span.textContent = m;
+      label.append(c, ' ', span);
+      container.append(label);
+    }
+  }
 
   async function refresh() {
-    // Consolide l'allowlist courante (cases + texte) avant de re-sonder (changement de serveur).
-    const current = [...new Set([...checkedList(), ...taList()])];
-    box.innerHTML = '';
-    ta.value = current.join('\n');
-    status.hidden = false;
-    status.textContent = 'Sonde du serveur…';
+    const curText = [...new Set([...checkedOf(box), ...listOf(ta)])];
+    const curImg = [...new Set([...checkedOf(imgBox), ...listOf(imgTa)])];
+    box.innerHTML = ''; imgBox.innerHTML = '';
+    ta.value = curText.join('\n'); imgTa.value = curImg.join('\n');
+    status.hidden = false; status.textContent = 'Sonde du serveur…';
     let data = { online: false, models: [] };
     try {
       const r = await fetch('/admin/servers/' + sel.value + '/models');
@@ -35,18 +59,13 @@
       return;
     }
     status.hidden = true;
-    for (const m of data.models) {
-      const label = document.createElement('label');
-      const c = document.createElement('input');
-      c.type = 'checkbox'; c.name = 'model_check'; c.value = m;
-      c.checked = current.includes(m);
-      const span = document.createElement('span');
-      span.className = 'mono'; span.textContent = m;
-      label.append(c, ' ', span);
-      box.append(label);
-    }
-    // Ne laisse en saisie libre que les modèles hors de la liste détectée.
-    ta.value = current.filter(m => !data.models.includes(m)).join('\n');
+    const textModels = data.models.filter(m => !m.startsWith(IMG));
+    const imageModels = data.models.filter(m => m.startsWith(IMG));
+    render(box, textModels, curText, 'model_check');
+    render(imgBox, imageModels, curImg, 'image_model_check');
+    // Ne laisse en saisie libre que les modèles hors des listes détectées.
+    ta.value = curText.filter(m => !textModels.includes(m)).join('\n');
+    imgTa.value = curImg.filter(m => !imageModels.includes(m)).join('\n');
   }
 
   sel.addEventListener('change', refresh);

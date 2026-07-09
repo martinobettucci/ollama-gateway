@@ -226,21 +226,27 @@ async def proxy(request: Request, full_path: str):
         reqlog.record(key_id=rec.id, ip=ip, method=method, path=path,
                       headers=request.headers, body=body, status=status, model=model)
 
-    if rec.models and req_model and req_model not in set(rec.models):
+    # Génération d'IMAGE = endpoint dédié /v1/images/* OU modèle du namespace `x/…` (Ollama génère
+    # alors via /api/generate). Ces requêtes sont gatées par l'allowlist d'image, pas de texte.
+    req_is_image = path.startswith("/v1/images") or apis.is_image_model(req_model)
+    model_allow = rec.image_models if req_is_image else rec.models
+    if model_allow and req_model and req_model not in set(model_allow):
         _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(403, req_model)
+        kind = "modèle d'image" if req_is_image else "modèle"
         return JSONResponse(
-            {"error": f"modèle non autorisé pour cette clé: {req_model}"}, status_code=403)
+            {"error": f"{kind} non autorisé pour cette clé: {req_model}"}, status_code=403)
 
-    # --- Restriction d'API (allow/forbid de CHEMIN, agnostique du schéma) : allowlist vide =
-    #     toutes les familles autorisées. Les endpoints de listing restent toujours servis
-    #     (déjà filtrés par l'allowlist de modèles). ---
-    family = apis.family_for_path(path)
-    if rec.apis and path not in _LISTING_PATHS and (family is None or family not in set(rec.apis)):
+    # --- Restriction d'API (allow/forbid de CHEMIN + capability image, agnostique du schéma) :
+    #     allowlist vide = toutes les familles autorisées. Les endpoints de listing restent
+    #     toujours servis (déjà filtrés par l'allowlist de modèles). La capability image
+    #     (ollama-image / openai-image) est déduite du chemin ET du modèle `x/…`. ---
+    cap = apis.capability_for_request(path, req_model)
+    if rec.apis and path not in _LISTING_PATHS and (cap is None or cap not in set(rec.apis)):
         _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(403, req_model)
         return JSONResponse(
-            {"error": f"API non autorisée pour cette clé: {family or path}"}, status_code=403)
+            {"error": f"API non autorisée pour cette clé: {cap or path}"}, status_code=403)
 
     keys.touch_last_used(rec.id)
 

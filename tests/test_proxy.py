@@ -221,7 +221,7 @@ async def test_unrestricted_key_sees_all_models(fake_upstream):
     async with proxy_client(fake_upstream) as c:
         r = await c.get("/api/tags", headers=_auth(key))
     names = {m.get("name") for m in r.json()["models"]}
-    assert names == {"demo:latest", "autre:latest"}
+    assert names == {"demo:latest", "autre:latest", "x/fakeflux:1b"}
 
 
 async def test_disabled_server_returns_503(fake_upstream):

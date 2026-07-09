@@ -30,6 +30,7 @@ class KeyRecord:
     target_name: str | None = None
     target_base_url: str | None = None
     models: list[str] = field(default_factory=list)
+    image_models: list[str] = field(default_factory=list)  # allowlist modèles image x/ (vide=tous)
     apis: list[str] = field(default_factory=list)  # allowlist de familles d'API (vide = toutes)
     log_retention_days: int | None = None  # NULL → rétention globale par défaut
     # Plafonds/expiration de VIE (distinct du rate-limit et du plafond mensuel) ; NULL = aucun.
@@ -71,6 +72,12 @@ def apis_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
         "SELECT api FROM key_apis WHERE key_id = ? ORDER BY id", (key_id,))]
 
 
+def image_models_for(key_id: int, conn: sqlite3.Connection) -> list[str]:
+    """Allowlist de modèles d'IMAGE de la clé (vide = tous les modèles image autorisés)."""
+    return [r["model"] for r in conn.execute(
+        "SELECT model FROM key_image_models WHERE key_id = ? ORDER BY id", (key_id,))]
+
+
 def origin_allowed(client_ip: str, cidrs: list[str]) -> bool:
     """True si aucune restriction (liste vide) ou si client_ip ∈ l'un des CIDR."""
     if not cidrs:
@@ -105,7 +112,7 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                rpm_limit: int | None, note: str = "", key_value: str | None = None,
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
-               fallback_server_id: int | None = None,
+               fallback_server_id: int | None = None, image_models: list[str] | None = None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
@@ -140,6 +147,10 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                 if a.strip() in apis.FAMILIES:
                     conn.execute("INSERT INTO key_apis(key_id, api) VALUES (?,?)",
                                  (kid, a.strip()))
+            for m in (image_models or []):
+                if m.strip():
+                    conn.execute("INSERT INTO key_image_models(key_id, model) VALUES (?,?)",
+                                 (kid, m.strip()))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(
                     "INSERT INTO key_quotas(key_id, monthly_token_cap, rpm_limit) VALUES (?,?,?)",
@@ -181,6 +192,7 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             target_id=target_id, target_name=tgt["name"] if tgt else None,
             target_base_url=tgt["base_url"] if tgt else None,
             models=models_for(key_id, conn),
+            image_models=image_models_for(key_id, conn),
             apis=apis_for(key_id, conn),
             log_retention_days=row["log_retention_days"],
             total_token_cap=row["total_token_cap"] if "total_token_cap" in row.keys() else None,
@@ -218,6 +230,7 @@ def update_key(key_id: int, label: str, origins: list[str],
                server_id: int | None = None, models: list[str] | None = None,
                key_apis: list[str] | None = None, target_id: int | None = None,
                fallback_server_id: int | None = None, clear_fallback: bool = False,
+               image_models: list[str] | None = None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None) -> None:
@@ -263,6 +276,12 @@ def update_key(key_id: int, label: str, origins: list[str],
                     if a.strip() in apis.FAMILIES:
                         conn.execute("INSERT INTO key_apis(key_id, api) VALUES (?,?)",
                                      (key_id, a.strip()))
+            if image_models is not None:
+                conn.execute("DELETE FROM key_image_models WHERE key_id = ?", (key_id,))
+                for m in image_models:
+                    if m.strip():
+                        conn.execute("INSERT INTO key_image_models(key_id, model) VALUES (?,?)",
+                                     (key_id, m.strip()))
             conn.execute("DELETE FROM key_quotas WHERE key_id = ?", (key_id,))
             if monthly_token_cap is not None or rpm_limit is not None:
                 conn.execute(

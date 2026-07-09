@@ -6,6 +6,15 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Génération d'images (Ollama & OpenAI) — capacité et modèles séparés.** Nouvelle capacité de
+  **génération d'images**, distincte du texte, avec **cases à cocher dédiées** par voie : *Image via
+  Ollama* (modèles du namespace `x/…` sur `POST /api/generate`) et *Image via OpenAI*
+  (`POST /v1/images/generations`). Les **modèles d'image** (`x/…`) forment une **allowlist séparée**
+  de celle des modèles texte (le proxy gate la requête selon la nature — image vs texte). Le bouton
+  **« Essayer maintenant »** d'une clé où l'image est activée présente désormais **deux onglets,
+  Texte et Image** ; l'onglet Image permet de choisir le modèle et la voie (Ollama/OpenAI), de
+  saisir un prompt et de **joindre une image d'entrée** (image-to-image) — l'image produite
+  s'affiche dans le panel. Aucun schéma n'est validé : la passerelle reste un relais transparent.
 - **Monitoring par serveur d'exécution (consommation & erreurs par clé, graphiques).** Chaque
   serveur dispose d'une page **Monitor** : totaux (requêtes, tokens, erreurs, clés), **répartition
   des statuts** (camembert), **séries journalières** (requêtes & tokens / jour, 30 j), **top clés**

@@ -22,12 +22,18 @@ async def root() -> PlainTextResponse:
     return PlainTextResponse("Ollama is running")
 
 
+# PNG 1×1 transparent (base64) — image de test déterministe renvoyée par les endpoints d'image.
+_TINY_PNG = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk"
+             "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
+
+
 @app.get("/api/tags")
 async def tags() -> JSONResponse:
-    # Deux modèles → permet de tester le filtrage de listing par l'allowlist d'une clé.
+    # Modèles texte + un modèle d'IMAGE (préfixe x/) → teste le filtrage et la séparation image.
     return JSONResponse({"models": [
         {"name": "demo:latest", "model": "demo:latest"},
         {"name": "autre:latest", "model": "autre:latest"},
+        {"name": "x/fakeflux:1b", "model": "x/fakeflux:1b"},
     ]})
 
 
@@ -38,6 +44,14 @@ async def openai_models() -> JSONResponse:
         {"id": "demo:latest", "object": "model"},
         {"id": "autre:latest", "object": "model"},
     ]})
+
+
+@app.post("/v1/images/generations")
+async def openai_images(request: Request):
+    # OpenAI-compat : {"created":…, "data":[{"b64_json":…}]}.
+    body = await request.json()
+    return JSONResponse({"created": 1783000000, "data": [
+        {"b64_json": _TINY_PNG}], "model": body.get("model", "x/fakeflux:1b")})
 
 
 @app.post("/v1/chat/completions")
@@ -128,6 +142,10 @@ async def chat(request: Request):
 async def generate(request: Request):
     body = await request.json()
     model = body.get("model", "demo:latest")
+    # Modèle d'IMAGE (x/…) : réponse non-stream avec `image` (base64 PNG), comme Ollama.
+    if str(model).startswith("x/"):
+        return JSONResponse({"model": model, "created_at": "2026-01-01T00:00:00Z",
+                             "done": True, "done_reason": "stop", "image": _TINY_PNG})
     if body.get("stream", True):
         async def gen():
             for c in _CHUNKS:

@@ -246,6 +246,27 @@ OpenAI-compatible, Anthropic Messages. On coche les API voulues à la création 
 (sans valider les schémas) : une requête vers une famille non autorisée est refusée (403). Les
 endpoints de listing (`/api/tags`, `/v1/models`) restent toujours servis.
 
+### Génération d'images
+
+La génération d'images est une **capacité séparée** du texte, avec ses propres cases à cocher :
+
+- **Image via Ollama** — les modèles d'image d'Ollama vivent dans le namespace expérimental
+  `x/…` (ex. `x/flux2-klein:4b`) et se génèrent via `POST /api/generate` (même chemin que le texte,
+  distingué par le **modèle**). L'image produite revient en PNG (base64).
+- **Image via OpenAI** — endpoint dédié `POST /v1/images/generations` (réponse `data[].b64_json`).
+
+Les **modèles d'image** (`x/…`) forment une **liste d'autorisation séparée** de celle des modèles
+texte : dans l'édition d'une clé, ils apparaissent dans leur propre bloc « Modèles d'image
+autorisés ». Vide = tous les modèles d'image autorisés (si la capacité est activée). Comme pour le
+reste, le proxy ne fait que **relayer** — il ne valide aucun schéma.
+
+Quand une clé a la génération d'images activée, le bouton **« Essayer maintenant »** affiche deux
+onglets — **Texte** et **Image**. L'onglet Image permet de choisir le modèle et la voie
+(Ollama/OpenAI), d'écrire un prompt et de **joindre une image d'entrée** (image-to-image) ; l'image
+générée s'affiche directement dans le panel.
+
+![Essayer une clé — onglet Image (génération + image jointe)](../app/static/manual/18-image-trynow.jpg)
+
 ### Serveur de repli (fallback)
 
 Une clé peut désigner un **serveur de repli**. Si le serveur primaire répond en **erreur serveur
