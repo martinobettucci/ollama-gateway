@@ -33,7 +33,7 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   sur :11435, clé client-exemple migrée, agent client-exemple basculé sur `https://llm.example.com:21434` (pin
   `/etc/hosts`→IPv4 côté client-exemple car l'IPv6 n'est pas routé par le forward). Preuves : HTTPS externe 200,
   chat streaming + embed réels via l'agent (embed corrigé vs 403 nginx), usage journalisé (tokens).
-- [~] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
+- [x] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
 ## Phase 3 — Conformité charte P2Enjoy & règles de repo (2026-07-07)
 
@@ -136,32 +136,32 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 
 ## Phase 8 — Compatibilité d'API, cibles publiques, expiration de clé, recherche (2026-07-09)
 
-- [~] **Compatibilité d'API : matrice par serveur + allowlist par clé** (`app/apis.py` catalogue +
+- [x] **Compatibilité d'API : matrice par serveur + allowlist par clé** (`app/apis.py` catalogue +
   `family_for_path`, migration 0005 `key_apis`/`servers.last_compat`, `servers.run_compat` sonde
   d'accessibilité des chemins **sans validation de schéma**, proxy `403` de chemin hors allowlist,
   cases à cocher d'API sur la clé, matrice + « Tester la compatibilité » sur la page Serveurs).
-  Reste pour `[x]` : **E2E Playwright dédié + vision (captures)**. — *tests unit/intégration verts :
+  E2E `phase8.spec.ts` + **vision** (capture 13) faits. — *tests unit/intégration verts :
   test_apis (mapping, allowlist round-trip, run_compat matrice), test_proxy (allowlist vide = tout,
   interdit hors famille, listing toujours servi).*
-- [~] **Cibles publiques (ingress) attachées par clé** : `app/targets.py` (+ migration 0006
+- [x] **Cibles publiques (ingress) attachées par clé** : `app/targets.py` (+ migration 0006
   `targets`/`api_keys.target_id`), CRUD + `ensure_default` (seedé de `PUBLIC_BASE_URL`), onglet
   **Cibles**, sélecteur sur la clé, env-gen utilise l'URL de la cible rattachée. N'affecte pas le
-  routage. Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_targets (défaut/placeholder,
+  routage. E2E `phase8.spec.ts` + **vision** (captures 13-17) faits. — *tests unit verts : test_targets (défaut/placeholder,
   idempotence, rattachement, round-trip env-url, suppression défaut/rattachée bloquée).*
-- [~] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : migration 0007
+- [x] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : migration 0007
   (`total_token_cap`/`total_request_cap`/`expires_at`/`idle_expiry_days`), `usage.lifetime_tokens`
   /`lifetime_requests`, `quotas.check` étendu (expiration, inactivité, plafonds absolus), champs de
-  formulaire (create+edit). Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_expiry
+  formulaire (create+edit). E2E `phase8.spec.ts` + **vision** (captures 13-17) faits. — *tests unit verts : test_expiry
   (expiration passée/future, plafonds tokens/requêtes, inactivité stale/récente, round-trip).*
-- [~] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état) :
-  toolbar + attributs de ligne + filtrage JS. Reste pour `[x]` : **E2E + vision**. — *tests verts :
+- [x] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état) :
+  toolbar + attributs de ligne + filtrage JS. E2E `phase8.spec.ts` + **vision** (captures 13-17) faits. — *tests verts :
   test_admin_pages (toolbar + attributs rendus).*
-- [~] **Serveur de repli (fallback) optionnel par clé** : migration 0008 (`fallback_server_id` +
+- [x] **Serveur de repli (fallback) optionnel par clé** : migration 0008 (`fallback_server_id` +
   `usage_events.server_id`), proxy `_send_chain` (repli sur 5xx/erreur connexion, streaming inclus),
   attribution serveur des logs, sélecteur sur la clé (create+edit, avec `clear_fallback`). Reste
   pour `[x]` : **E2E + vision**. — *tests verts : test_fallback (repli sur 500, sans repli 500 relayé,
   primaire OK non replié, round-trip + clear).*
-- [~] **Monitoring par serveur + stats intensives** : agrégations `usage.server_summary`/
+- [x] **Monitoring par serveur + stats intensives** : agrégations `usage.server_summary`/
   `server_per_key`/`server_status_breakdown`/`server_daily` (via `usage_events.server_id`), module
   `app/charts.py` (SVG purs : barres/camembert/série, charte P2Enjoy), page **Monitor** par serveur
   (tuiles + graphiques + tableau par clé), lien depuis la page Serveurs. Reste pour `[x]` : **E2E +

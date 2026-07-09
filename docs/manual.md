@@ -61,6 +61,38 @@ Depuis la page **Serveurs** :
 
 ![Page Serveurs](../app/static/manual/06-servers.jpg)
 
+### Vérifier la compatibilité d'API d'un serveur
+
+Chaque serveur peut être **sondé** pour savoir quelles **familles d'API** il sert réellement :
+**Ollama natif** (`/api/*`), **OpenAI-compatible** (`/v1/*`) et **Anthropic Messages**
+(`/v1/messages`). Le bouton **« Vérifier la compatibilité »** rejoue un catalogue d'endpoints et
+enregistre une **matrice** d'accessibilité des chemins (servi / non servi), affichée sous le
+serveur. Le test vérifie uniquement que le **chemin répond** — il **ne valide pas les schémas**
+de réponse. Vert = réponse 2xx, gris = chemin servi mais en erreur, rouge = chemin absent.
+
+![Matrice de compatibilité d'API par serveur](../app/static/manual/13-compat.jpg)
+
+### Monitoring d'un serveur (consommation & erreurs par clé)
+
+Le bouton **« Monitor »** d'un serveur ouvre un tableau de bord dédié : totaux (requêtes, tokens,
+erreurs, clés), **répartition des statuts** (camembert), **séries journalières** (requêtes et
+tokens par jour), **top des clés** (barres) et un **tableau de consommation par clé**.
+L'attribution est **réelle** : chaque requête est comptée sur le serveur qui l'a effectivement
+traitée (y compris en cas de **repli**).
+
+![Monitoring d'un serveur — graphiques et consommation par clé](../app/static/manual/17-monitor.jpg)
+
+## Cibles publiques (URL vues par les clients)
+
+Une **cible** est l'**URL publique** de la passerelle telle que la voit un client (par exemple
+`https://passerelle.example:port`). Chaque clé pointe vers une cible : c'est cette URL qui est
+injectée dans les **variables d'environnement** générées à la création de la clé
+(`OLLAMA_HOST` / `OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL`). Une cible **ne change pas le routage**
+(l'amont reste choisi par le serveur d'exécution) — elle décrit seulement « où le client se
+connecte ». Utile quand plusieurs noms/entrées publics mènent à la même passerelle.
+
+![Gestion des cibles publiques](../app/static/manual/14-targets.jpg)
+
 ### Restreindre les modèles d'une clé
 
 Sur une clé (à la création comme à l'édition), on choisit son **serveur** ; le formulaire
@@ -205,6 +237,37 @@ une fenêtre indiquant à qui appartient l'IP (via RDAP) ; une adresse privée/l
 signalée comme telle sans interrogation publique.
 
 ![WHOIS d'une origine](../app/static/manual/12-origins-whois.jpg)
+
+### Restreindre les API d'une clé
+
+Comme pour les modèles, une clé peut n'autoriser que **certaines familles d'API** : Ollama natif,
+OpenAI-compatible, Anthropic Messages. On coche les API voulues à la création ou dans l'édition ;
+**aucune case cochée = toutes les API autorisées**. Le proxy applique un **allow/forbid de chemin**
+(sans valider les schémas) : une requête vers une famille non autorisée est refusée (403). Les
+endpoints de listing (`/api/tags`, `/v1/models`) restent toujours servis.
+
+### Serveur de repli (fallback)
+
+Une clé peut désigner un **serveur de repli**. Si le serveur primaire répond en **erreur serveur
+(5xx)** ou est **injoignable**, la passerelle **rejoue automatiquement la même requête** vers le
+repli, de façon transparente pour le client. La consommation est attribuée au serveur qui a
+réellement traité la requête.
+
+### Expiration & plafonds de vie (essai à coût plafonné)
+
+Distincts du rate-limit et du plafond **mensuel** (qui se réinitialisent), ces réglages plafonnent
+la **vie** d'une clé et la refusent définitivement une fois atteints : **plafond total de tokens**,
+**plafond total de requêtes**, **date/heure d'expiration**, et **expiration par inactivité**
+(refus après N jours sans usage). Idéal pour offrir un essai à budget maîtrisé.
+
+![Clé — API autorisées, repli, expiration/plafonds de vie](../app/static/manual/15-key-advanced.jpg)
+
+### Rechercher & filtrer les clés
+
+Le tableau de bord propose une **recherche** instantanée (label ou préfixe) et des **filtres** par
+**serveur**, **famille d'API** et **état** (active / désactivée) pour retrouver rapidement une clé.
+
+![Recherche et filtres des clés](../app/static/manual/16-key-filters.jpg)
 
 ### Essayer une clé en direct
 

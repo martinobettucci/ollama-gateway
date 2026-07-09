@@ -216,10 +216,13 @@ async def create_key(request: Request):
         idle_expiry_days=_parse_int(form.get("idle_expiry_days", "")),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     # Le secret n'est montré qu'ici, une seule fois (via un flash de session). L'URL de la cible
-    # rattachée sert à générer les variables d'environnement (repli sur PUBLIC_BASE_URL).
+    # rattachée sert à générer les variables d'environnement ; si la cible est restée sur le
+    # placeholder, on préfère l'URL publique configurée (robuste quel que soit l'ordre de démarrage).
+    turl = rec.target_base_url
+    if not turl or turl == targets.PLACEHOLDER_URL:
+        turl = config.PUBLIC_BASE_URL or turl
     request.session["created_key"] = {
-        "label": rec.label, "secret": secret,
-        "target_url": rec.target_base_url or config.PUBLIC_BASE_URL}
+        "label": rec.label, "secret": secret, "target_url": turl}
     return RedirectResponse("/admin", status_code=303)
 
 

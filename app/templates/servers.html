@@ -63,7 +63,7 @@
       <button class="btn-secondary btn-sm" type="submit">{{ icon('refresh-cw', 14) }} Tester</button>
     </form>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/compat">
-      <button class="btn-secondary btn-sm" type="submit" data-testid="compat-test-{{ s.id }}">{{ icon('plug', 14) }} Tester la compatibilité</button>
+      <button class="btn-secondary btn-sm" type="submit" data-testid="compat-test-{{ s.id }}">{{ icon('plug', 14) }} Vérifier la compatibilité</button>
     </form>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/toggle">
       <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ 'désactiver' if s.enabled else 'activer' }}</button>

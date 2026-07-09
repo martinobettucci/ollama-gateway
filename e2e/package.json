@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "rm -rf e2e-data output && playwright test",
-    "sync-manual": "cp output/00-login.jpg output/01-dashboard.jpg output/02-key-created.jpg output/03-key-detail.jpg output/04-usage.jpg output/06-servers.jpg output/07-key-restricted.jpg output/08-create-model-checks.jpg output/09-env-modal.jpg output/10-try-chat.jpg output/11-logs.jpg output/12-origins-whois.jpg ../app/static/manual/"
+    "sync-manual": "cp output/00-login.jpg output/01-dashboard.jpg output/02-key-created.jpg output/03-key-detail.jpg output/04-usage.jpg output/06-servers.jpg output/07-key-restricted.jpg output/08-create-model-checks.jpg output/09-env-modal.jpg output/10-try-chat.jpg output/11-logs.jpg output/12-origins-whois.jpg output/13-compat.jpg output/14-targets.jpg output/15-key-advanced.jpg output/16-key-filters.jpg output/17-monitor.jpg ../app/static/manual/"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0"

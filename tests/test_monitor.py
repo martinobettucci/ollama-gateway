@@ -1,7 +1,7 @@
 """Monitoring par serveur : agrégations d'usage (attribution serveur), graphiques SVG purs,
 et rendu de la page Monitor."""
-from app import charts, db, keys, servers, usage
-from tests.conftest import admin_client  # noqa: F401 (fixture)
+from app import charts, keys, servers, usage
+from tests.conftest import admin_client  # noqa: F401,F811 (fixture)
 
 PW = "admin-mdp"
 
@@ -22,7 +22,7 @@ def test_server_summary_and_per_key():
     _emit(k1.id, srv.id, 500, tokens=0)
     _emit(k2.id, srv.id, 200, tokens=50)
     s = usage.server_summary(srv.id)
-    assert s["requests"] == 3 and s["tokens"] == 150 and s["errors"] == 1 and s["keys"] == 2
+    assert s["requests"] == 3 and s["tokens"] == 150 and s["errors"] == 1 and s["key_count"] == 2
     per_key = usage.server_per_key(srv.id)
     assert per_key[0]["label"] == "a" and per_key[0]["tokens"] == 100
     assert per_key[0]["errors"] == 1

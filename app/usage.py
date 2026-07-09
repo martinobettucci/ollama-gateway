@@ -208,12 +208,12 @@ def server_summary(server_id: int, conn: sqlite3.Connection | None = None) -> di
             "SELECT COUNT(*) AS reqs, "
             "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens, "
             "SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) AS errors, "
-            "COUNT(DISTINCT key_id) AS keys, "
+            "COUNT(DISTINCT key_id) AS key_count, "
             "SUM(CASE WHEN ts >= datetime('now','-24 hours') THEN 1 ELSE 0 END) AS reqs_24h "
             "FROM usage_events WHERE server_id = ?", (server_id,)).fetchone()
         return {
             "requests": int(row["reqs"] or 0), "tokens": int(row["tokens"] or 0),
-            "errors": int(row["errors"] or 0), "keys": int(row["keys"] or 0),
+            "errors": int(row["errors"] or 0), "key_count": int(row["key_count"] or 0),
             "requests_24h": int(row["reqs_24h"] or 0),
         }
     finally:

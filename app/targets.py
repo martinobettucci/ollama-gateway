@@ -56,6 +56,12 @@ def ensure_default() -> int:
                             "INSERT INTO targets(name, base_url, is_default) VALUES (?,?,1)",
                             ("Passerelle publique", config.PUBLIC_BASE_URL or PLACEHOLDER_URL))
                         did = cur.lastrowid
+                # Auto-réparation : si la cible par défaut est restée sur le placeholder (seed sans
+                # PUBLIC_BASE_URL) et qu'une URL publique est désormais configurée, on l'adopte.
+                if config.PUBLIC_BASE_URL:
+                    conn.execute(
+                        "UPDATE targets SET base_url = ? WHERE id = ? AND base_url = ?",
+                        (config.PUBLIC_BASE_URL, did, PLACEHOLDER_URL))
                 conn.execute("UPDATE api_keys SET target_id = ? WHERE target_id IS NULL", (did,))
             return did
         finally:
