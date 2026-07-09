@@ -6,6 +6,12 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Monitoring par serveur d'exécution (consommation & erreurs par clé, graphiques).** Chaque
+  serveur dispose d'une page **Monitor** : totaux (requêtes, tokens, erreurs, clés), **répartition
+  des statuts** (camembert), **séries journalières** (requêtes & tokens / jour, 30 j), **top clés**
+  (barres tokens & requêtes) et un **tableau consommation par clé** (requêtes, tokens, erreurs,
+  dernier usage). Graphiques **SVG rendus serveur** à la charte P2Enjoy (aucun build front ni CDN).
+  L'attribution est **réelle** (repli inclus) via l'enregistrement du serveur ayant traité.
 - **Serveur de repli (fallback) transparent par clé.** Une clé peut désigner un **serveur de
   repli** : si l'amont primaire répond en **erreur serveur (5xx)** ou est **injoignable**, le proxy
   **rejoue la même requête** vers le repli, de façon transparente pour le client. L'événement

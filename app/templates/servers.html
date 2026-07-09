@@ -57,6 +57,8 @@
   {% endif %}
 
   <div class="server-actions">
+    <a class="btn-secondary btn-sm" href="/admin/servers/{{ s.id }}/monitor"
+       data-testid="monitor-link-{{ s.id }}">{{ icon('bar-chart', 14) }} Monitor</a>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/test">
       <button class="btn-secondary btn-sm" type="submit">{{ icon('refresh-cw', 14) }} Tester</button>
     </form>

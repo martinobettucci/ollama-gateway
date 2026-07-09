@@ -195,3 +195,82 @@ def global_summary(conn: sqlite3.Connection | None = None) -> dict:
     finally:
         if own:
             conn.close()
+
+
+# --- Monitoring par serveur d'exécution (attribution réelle, repli inclus) --------------------
+
+def server_summary(server_id: int, conn: sqlite3.Connection | None = None) -> dict:
+    """Totaux d'un serveur : requêtes, tokens, erreurs (≥400), clés distinctes, requêtes 24 h."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) AS reqs, "
+            "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens, "
+            "SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) AS errors, "
+            "COUNT(DISTINCT key_id) AS keys, "
+            "SUM(CASE WHEN ts >= datetime('now','-24 hours') THEN 1 ELSE 0 END) AS reqs_24h "
+            "FROM usage_events WHERE server_id = ?", (server_id,)).fetchone()
+        return {
+            "requests": int(row["reqs"] or 0), "tokens": int(row["tokens"] or 0),
+            "errors": int(row["errors"] or 0), "keys": int(row["keys"] or 0),
+            "requests_24h": int(row["reqs_24h"] or 0),
+        }
+    finally:
+        if own:
+            conn.close()
+
+
+def server_per_key(server_id: int, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Consommation et erreurs PAR CLÉ sur un serveur : requêtes, tokens, erreurs, dernier usage."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT e.key_id AS key_id, COALESCE(k.label, '(clé supprimée)') AS label, "
+            "k.key_prefix AS key_prefix, COUNT(*) AS reqs, "
+            "COALESCE(SUM(e.tokens_prompt + e.tokens_completion),0) AS tokens, "
+            "SUM(CASE WHEN e.status >= 400 THEN 1 ELSE 0 END) AS errors, MAX(e.ts) AS last_seen "
+            "FROM usage_events e LEFT JOIN api_keys k ON k.id = e.key_id "
+            "WHERE e.server_id = ? GROUP BY e.key_id "
+            "ORDER BY tokens DESC, reqs DESC", (server_id,)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
+def server_status_breakdown(server_id: int, conn: sqlite3.Connection | None = None) -> dict:
+    """Répartition des statuts d'un serveur par classe : 2xx / 3xx / 4xx / 5xx (camembert)."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT (status/100) AS cls, COUNT(*) AS n FROM usage_events "
+            "WHERE server_id = ? GROUP BY cls", (server_id,)).fetchall()
+        out = {"2xx": 0, "3xx": 0, "4xx": 0, "5xx": 0}
+        for r in rows:
+            key = f"{int(r['cls'])}xx"
+            if key in out:
+                out[key] += int(r["n"])
+        return out
+    finally:
+        if own:
+            conn.close()
+
+
+def server_daily(server_id: int, days: int = 30,
+                 conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Série journalière (N derniers jours) d'un serveur : requêtes et tokens par jour."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT substr(ts,1,10) AS day, COUNT(*) AS reqs, "
+            "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens "
+            "FROM usage_events WHERE server_id = ? AND ts >= datetime('now', ?) "
+            "GROUP BY day ORDER BY day", (server_id, f"-{int(days)} days")).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()

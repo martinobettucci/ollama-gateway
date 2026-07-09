@@ -161,9 +161,12 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   attribution serveur des logs, sélecteur sur la clé (create+edit, avec `clear_fallback`). Reste
   pour `[x]` : **E2E + vision**. — *tests verts : test_fallback (repli sur 500, sans repli 500 relayé,
   primaire OK non replié, round-trip + clear).*
-- [ ] **Monitoring par serveur + stats intensives** : `usage_events.server_id` (attribution réelle,
-  repli inclus), page **Monitor** par serveur (consommation/erreurs **par clé**), onglet de stats
-  intensives (par serveur ET par clé) avec graphiques (barres, camemberts, séries temporelles). — *tests à écrire.*
+- [~] **Monitoring par serveur + stats intensives** : agrégations `usage.server_summary`/
+  `server_per_key`/`server_status_breakdown`/`server_daily` (via `usage_events.server_id`), module
+  `app/charts.py` (SVG purs : barres/camembert/série, charte P2Enjoy), page **Monitor** par serveur
+  (tuiles + graphiques + tableau par clé), lien depuis la page Serveurs. Reste pour `[x]` : **E2E +
+  vision**. — *tests verts : test_monitor (agrégations, isolation par serveur, graphiques + vide,
+  rendu de page).*
 
 ## Idées ultérieures (non planifiées)
 

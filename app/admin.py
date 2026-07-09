@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import apis, auth, bans, config, db, keys, servers, targets, usage, whois
+from . import apis, auth, bans, charts, config, db, keys, servers, targets, usage, whois
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -444,6 +444,40 @@ async def server_compat(request: Request, server_id: int):
     request.session["server_flash"] = {
         "ok": bool(total), "text": f"Compatibilité testée — {served}/{total} chemin(s) servi(s)."}
     return RedirectResponse("/admin/servers", status_code=303)
+
+
+@app.get("/admin/servers/{server_id}/monitor", response_class=HTMLResponse)
+async def server_monitor(request: Request, server_id: int):
+    """Monitoring d'un serveur : consommation/erreurs PAR CLÉ + graphiques (barres, camembert,
+    séries temporelles). Attribution réelle via `usage_events.server_id` (repli inclus)."""
+    if (r := _guard(request)):
+        return r
+    srv = servers.get_server(server_id)
+    if srv is None:
+        return RedirectResponse("/admin/servers", status_code=303)
+    conn = db.connect()
+    try:
+        summary = usage.server_summary(server_id, conn)
+        per_key = usage.server_per_key(server_id, conn)
+        status = usage.server_status_breakdown(server_id, conn)
+        daily = usage.server_daily(server_id, 30, conn)
+    finally:
+        conn.close()
+    svg = {
+        "tokens_bar": charts.hbar([(r["label"], r["tokens"]) for r in per_key[:10]],
+                                  "Tokens par clé", unit=" tok"),
+        "reqs_bar": charts.hbar([(r["label"], r["reqs"]) for r in per_key[:10]],
+                                "Requêtes par clé", color=charts.SUCCESS),
+        "status_donut": charts.donut(
+            [(k, v, charts.STATUS_COLORS[k]) for k, v in status.items()], "Statuts"),
+        "reqs_line": charts.line([(d["day"][5:], d["reqs"]) for d in daily], "Requêtes / jour"),
+        "tokens_line": charts.line([(d["day"][5:], d["tokens"]) for d in daily],
+                                   "Tokens / jour", color=charts.ACCENT),
+    }
+    return TEMPLATES.TemplateResponse(request, "monitor.html", {
+        "server": srv, "summary": summary, "per_key": per_key,
+        "status": status, "svg": svg,
+    })
 
 
 @app.post("/admin/servers/{server_id}/toggle")
