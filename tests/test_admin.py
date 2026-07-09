@@ -169,6 +169,46 @@ async def test_try_chat_unknown_api_400(admin_client, probe_via_fake):
     assert r.status_code == 400
 
 
+async def test_whois_requires_login(admin_client):
+    keys.set_admin_password("mdp")
+    async with admin_client as c:
+        r = await c.get("/admin/whois?ip=127.0.0.1")
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+
+
+async def test_whois_loopback_is_local_no_network(admin_client):
+    keys.set_admin_password("mdp")
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "mdp"})
+        r = await c.get("/admin/whois?ip=127.0.0.1")
+    assert r.status_code == 200
+    assert r.json()["kind"] == "local"
+
+
+def test_origins_seen_lists_unique_ips_by_frequency():
+    from app import usage
+    rec, _ = keys.create_key("k", [], None, None)
+    for ip in ("1.2.3.4", "1.2.3.4", "5.6.7.8"):
+        usage.record(key_id=rec.id, client_ip=ip, method="POST", path="/api/chat",
+                     model="m", status=200, duration_ms=1)
+    seen = usage.origins_seen(rec.id)
+    assert [o["ip"] for o in seen] == ["1.2.3.4", "5.6.7.8"]
+    assert seen[0]["hits"] == 2 and seen[1]["hits"] == 1
+
+
+async def test_key_detail_shows_origins_and_retention(admin_client):
+    from app import usage
+    keys.set_admin_password("mdp")
+    rec, _ = keys.create_key("k", [], None, None, log_retention_days=7)
+    usage.record(key_id=rec.id, client_ip="9.9.9.9", method="POST", path="/api/chat",
+                 model="m", status=200, duration_ms=1)
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "mdp"})
+        page = await c.get(f"/admin/keys/{rec.id}")
+    assert "9.9.9.9" in page.text and "Origines vues" in page.text
+    assert 'data-testid="retention-input"' in page.text and 'value="7"' in page.text
+
+
 async def test_guard_blocks_key_creation_without_session(admin_client):
     keys.set_admin_password("x")
     async with admin_client as c:

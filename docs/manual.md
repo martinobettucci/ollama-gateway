@@ -194,10 +194,17 @@ Ollama et OpenAI) **et** en en-tête `x-api-key` (comportement du SDK Anthropic 
 ### Détail et édition d'une clé
 
 Chaque clé a sa page : statistiques dédiées (requêtes, tokens total et du mois, erreurs),
-formulaire d'édition (label, quotas, origines, note), usage des 30 derniers jours et
-dernières erreurs :
+formulaire d'édition (label, quotas, origines, note, **rétention des logs**), usage des 30
+derniers jours, dernières erreurs, et la liste des **origines vues** :
 
 ![Détail d'une clé](../app/static/manual/03-key-detail.jpg)
+
+La carte **Origines vues** liste les **IP uniques** ayant utilisé la clé (nombre de requêtes,
+dernière apparition), avec une **recherche** instantanée. Le bouton **WHOIS** d'une ligne ouvre
+une fenêtre indiquant à qui appartient l'IP (via RDAP) ; une adresse privée/locale (LAN) est
+signalée comme telle sans interrogation publique.
+
+![WHOIS d'une origine](../app/static/manual/12-origins-whois.jpg)
 
 ### Essayer une clé en direct
 
@@ -229,6 +236,18 @@ blocage réseau global, indépendant des allowlists d'origine *par clé*. Utile 
 scanner ou un abus repéré dans le journal, en un clic.
 
 ![Console de logs et bannissements](../app/static/manual/11-logs.jpg)
+
+### Contenu complet des requêtes (fichiers, hors base)
+
+En plus du journal de métadonnées (ci-dessus, en base), la passerelle peut conserver le
+**contenu complet** de chaque requête authentifiée **sur le système de fichiers** (jamais en
+base) : un **dossier par clé**, un **fichier par heure** (une ligne JSON par requête). Les
+**secrets** (clé cliente : en-têtes `Authorization`/`x-api-key`) sont **retirés** avant écriture.
+
+La **rétention est réglable par clé** (champ « Rétention des logs » sur la page de la clé ;
+vide = valeur par défaut globale). Une tâche planifiée (**cron**) `python -m app.reqlog compact`
+**compacte** les fichiers des heures passées (gzip) et **purge** au-delà de la rétention. La
+conservation du contenu est activée uniquement si l'exploitant configure un répertoire dédié.
 
 ### Suivi de l'usage
 

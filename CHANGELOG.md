@@ -6,6 +6,16 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Contenu complet des requêtes archivé sur fichiers (hors base).** Chaque requête
+  authentifiée est écrite en clair (secrets `Authorization`/`x-api-key` **retirés**) dans un
+  **dossier par clé**, un **fichier JSONL par heure** — jamais en base. La **rétention est
+  réglable par clé** (champ « Rétention des logs » ; vide = défaut global `REQUEST_LOG_RETENTION_DAYS`).
+  Un cron `python -m app.reqlog compact` **compacte** (gzip) les heures passées et **purge** au-delà
+  de la rétention. Activé seulement si `REQUEST_LOG_DIR` est configuré.
+- **Panel d'une clé : origines vues + recherche + WHOIS.** La page d'une clé liste les **IP
+  uniques** qui l'ont utilisée (nombre de requêtes, dernière apparition), avec une **recherche**
+  instantanée et un bouton **WHOIS** par origine (résolution RDAP ; les IP privées/locales sont
+  signalées sans interrogation publique).
 - **Console de logs & bannissement d'origines.** Nouvelle page **Logs** : journal complet des
   requêtes (une ligne par requête, autorisée ou refusée, conservé intégralement — jamais purgé)
   avec horodatage, origine, clé, méthode, chemin, modèle, statut, tokens et durée. Chaque ligne

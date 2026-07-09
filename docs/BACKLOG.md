@@ -116,6 +116,24 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   API inconnue → 400), E2E admin.spec (select modèle sondé + API OpenAI, réponse étiquetée) ;
   vision : capture 10 (selects).*
 
+## Phase 7 — Contenu des requêtes sur fichiers + origines/WHOIS (2026-07-09)
+
+- [x] **Journal de CONTENU complet des requêtes hors base** (`app/reqlog.py`) : un dossier par
+  clé, un fichier JSONL par heure, secrets (`Authorization`/`x-api-key`) retirés ; écrit par le
+  proxy pour toute requête authentifiée. `REQUEST_LOG_DIR` (vide = désactivé), câblé dev/staging
+  (volume `/data/reqlogs`) + prod (`.env.prod`) — *tests : test_reqlog (écriture + secrets
+  masqués + désactivation), E2E (fichiers réellement écrits, `authorization: «masqué»`, zéro clé
+  en clair).*
+- [x] **Cron de compaction/purge, rétention PAR CLÉ** (`reqlog.compact_and_purge` + CLI
+  `python -m app.reqlog compact`) : gzip des heures passées, purge au-delà de la rétention
+  (`api_keys.log_retention_days`, migration 0004 ; NULL → `REQUEST_LOG_RETENTION_DAYS`) ; champ
+  « Rétention des logs » sur la clé — *tests : test_reqlog (compaction gzip, purge rétention par
+  clé + défaut global), test_admin (champ rendu, valeur).*
+- [x] **Origines vues + recherche + WHOIS** sur la page d'une clé (`usage.origins_seen`,
+  `app/whois.py` RDAP + court-circuit local, `GET /admin/whois`) — *tests : test_whois (local,
+  invalide, RDAP mocké, HTTP error), test_admin (route login/loopback, origins_seen, page),
+  E2E « origines vues : liste + recherche + WHOIS modale » ; vision : captures 12 + page origines.*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

@@ -172,6 +172,41 @@ test('console de logs : journal + bannir une origine bloque le proxy (403 avant 
   await expect(page.locator('[data-testid=bans-table]')).toHaveCount(0);
 });
 
+test('origines vues : liste + recherche + WHOIS (modale)', async ({ page, request }) => {
+  const PROXY = 'http://127.0.0.1:8791';
+  const DEMO = 'sk-ollama-devdemokey000000000000000000000000000000000000000000000000';
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+
+  // Génère une requête pour peupler les origines de la clé de démo (depuis 127.0.0.1).
+  const ok = await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}` }, data: { model: 'demo:latest' },
+  });
+  expect(ok.status()).toBe(200);
+
+  await page.getByRole('link', { name: 'demo (dev)' }).click();
+  const table = page.locator('[data-testid=origins-table]');
+  await expect(table).toContainText('127.0.0.1');
+
+  // Recherche : un terme qui ne correspond pas masque toutes les lignes.
+  await page.locator('[data-testid=origin-search]').fill('203.0.199');
+  await expect(page.locator('.origin-row:visible')).toHaveCount(0);
+  await expect(page.locator('#origin-empty')).toBeVisible();
+  await page.locator('[data-testid=origin-search]').fill('127');
+  await expect(page.locator('.origin-row:visible').first()).toContainText('127.0.0.1');
+
+  // WHOIS d'une origine loopback → modale, résumé « local » (aucun appel réseau).
+  await page.locator('.origin-row', { hasText: '127.0.0.1' }).first()
+    .locator('[data-testid=origin-whois]').click();
+  const dlg = page.locator('[data-testid=whois-dialog]');
+  await expect(dlg).toBeVisible();
+  await expect(page.locator('[data-testid=whois-summary]')).toContainText('loopback');
+  await page.screenshot({ path: `${OUT}/12-origins-whois.jpg`, type: 'jpeg' });
+  await page.locator('#whois-close').click();
+  await expect(dlg).toBeHidden();
+});
+
 test('plein viewport : le layout occupe toute la largeur, pas de colonne centrée', async ({ page }) => {
   // Règle dure : l'app remplit 100 % du viewport (largeur ET hauteur), login compris.
   await page.goto('/admin/login');

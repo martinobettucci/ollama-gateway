@@ -3,6 +3,27 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-09 — Contenu des requêtes sur fichiers + origines/WHOIS
+
+- **Contenu complet hors base, par choix explicite.** Le corps des requêtes peut être volumineux
+  et sensible ; on ne le met **pas** dans SQLite (la base garde les métadonnées `usage_events`).
+  `reqlog.record` écrit un JSONL par heure sous `key-<id>/` : un dossier par clé, rotation
+  horaire naturelle. Les en-têtes secrets (`Authorization`, `x-api-key`, `cookie`) sont
+  **masqués** avant écriture — garde-fou « zéro clé en clair au repos ». Best-effort : toute
+  erreur d'E/S est avalée pour ne jamais faire échouer une requête proxy.
+- **Rétention par clé + cron.** `api_keys.log_retention_days` (migration 0004, NULL → défaut
+  global). `reqlog.compact_and_purge` gzip les heures **passées** (l'heure courante reste
+  ouverte) et purge au-delà de la rétention ; exposé en CLI `python -m app.reqlog compact` pour
+  un cron. Testé de façon déterministe en injectant `ts`/`now` (pas d'horloge réelle).
+- **WHOIS = RDAP over HTTPS, pas de binaire.** `whois.lookup` interroge `rdap.org/ip/<ip>`
+  (RDAP, remplaçant du whois:43) → JSON structuré, aucune dépendance système. Les adresses
+  **privées/loopback/réservées** court-circuitent sans réseau → déterministe et testable (l'E2E
+  fait un WHOIS sur 127.0.0.1). Le parsing RDAP public est couvert par un client mocké.
+- **Piège XFF dev/prod (rappel).** En dev via docker-compose, les origines vues affichent
+  l'IP du bridge (172.18.0.1) car le XFF de l'hôte n'est pas de confiance ; en prod
+  (`network_mode: host`) c'est l'IP client réelle. L'E2E valide le vrai chemin (uvicorn direct,
+  pair 127.0.0.1 de confiance).
+
 ## 2026-07-08 (suite 2) — Console de logs, bannissement d'origines, try-me multi-API
 
 - **Bannissement = DENY global avant l'auth (choix d'architecture).** Le bannissement d'origine

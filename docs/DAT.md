@@ -44,6 +44,11 @@ car Ollama est en loopback natif (hors Docker).
 - `crypto.py` — **chiffrement réversible au repos** (Fernet, clé dérivée de `$P2E_MASTER_KEY`)
   du jeton Bearer d'un serveur distant. Réversible (à réémettre vers l'amont), contrairement aux
   hachages one-way de `auth.py`.
+- `bans.py` — liste de bannissement **globale** d'origines (IP/CIDR), appliquée par le proxy
+  avant l'auth ; pilotée depuis la console de logs.
+- `reqlog.py` — journal de **contenu** des requêtes **sur fichiers** (hors base), secrets
+  masqués ; CLI `compact` (cron) : gzip des heures passées + purge (rétention par clé).
+- `whois.py` — résolution **RDAP** d'une IP (bouton WHOIS des origines) ; court-circuit local.
 
 ## 3. Données (SQLite)
 
@@ -59,6 +64,10 @@ car Ollama est en loopback natif (hors Docker).
 - `usage_events(...)` — append-only, une ligne par requête (autorisée ou refusée) : clé, IP,
   méthode, chemin, modèle, statut, durée, tokens prompt/complétion, octets in/out. **Jamais
   purgé** ; exposé intégralement par la console de logs (`GET /admin/logs`).
+- **Contenu complet des requêtes = HORS BASE** (`app/reqlog.py`) : fichiers `$REQUEST_LOG_DIR/
+  key-<id>/<YYYY-MM-DD_HH>.jsonl` (un dossier par clé, un fichier par heure), secrets masqués.
+  `api_keys.log_retention_days` (migration 0004, NULL → `REQUEST_LOG_RETENTION_DAYS`) pilote le
+  cron `python -m app.reqlog compact` (gzip des heures passées + purge). `''` = désactivé.
 - `banned_origins(id, cidr, reason, created_at)` (migration 0003) — liste de bannissement
   **globale** d'origines (IP `/32`·`/128` ou CIDR), appliquée par le proxy **avant l'auth** (403).
   Pilotée depuis la console de logs (`bans.py`). Distincte des `key_origins` (ALLOW par clé).
@@ -85,7 +94,12 @@ car Ollama est en loopback natif (hors Docker).
 4. Sinon : relais streaming vers **le serveur rattaché** (`server.base_url`), **sans** l'en-tête
    `Authorization` client (jeton du serveur distant injecté à la place, déchiffré) ; les listings
    `/api/tags` et `/v1/models` sont filtrés à l'allowlist ; comptage des tokens dans le payload de
-   fin (`prompt_eval_count`/`eval_count` ou `usage`) ; journalisation.
+   fin (`prompt_eval_count`/`eval_count` ou `usage`) ; journalisation (métadonnées en base **et**,
+   si `REQUEST_LOG_DIR` est défini, contenu complet sur fichiers via `reqlog`, secrets masqués).
+
+**Cron de logs** (prod) : planifier `python -m app.reqlog compact` (p. ex. horaire) pour gzip les
+heures passées et purger au-delà de la rétention par clé — via crontab hôte ou un service
+périodique appelant `docker compose exec admin python -m app.reqlog compact`.
 
 ## 5. Lancement
 
@@ -95,7 +109,7 @@ car Ollama est en loopback natif (hors Docker).
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
 ```
 
-Tests : `python -m pytest` (82) ; `cd e2e && npm test` (11 E2E + captures `e2e/output/`).
+Tests : `python -m pytest` (96) ; `cd e2e && npm test` (12 E2E + captures `e2e/output/`).
 
 ## 6. Déploiement hôte self-hosted & migration (procédure)
 
