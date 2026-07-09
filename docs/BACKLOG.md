@@ -176,10 +176,15 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   /v1/images/generations) ; `keys` image_models (create/update/get) ; `servers.try_image` +
   route `/admin/keys/{id}/try-image` (image d'entrée base64) ; UI : cases image, sélecteur x/
   séparé, onglets Texte/Image du « Essayer » avec pièce jointe image ; faux Ollama (x/fakeflux,
-  /v1/images/generations). Reste pour `[x]` : **vision (capture 18) + vérif image RÉELLE en prod
-  (modèle x/ à installer sur l'Ollama)**. — *tests verts : test_images (11 : capability/mapping,
-  allowlist image round-trip, gating proxy ollama/openai + séparation texte, try_image, route
-  admin), E2E images.spec (génération onglet Image + image-to-image).*
+  /v1/images/generations). **Vision faite (capture 18)** ; **relais réel vérifié de bout en bout**
+  (déployé, `x/flux2-klein:4b` pull sur l'Ollama, clé test dotée du modèle image → la requête est
+  **autorisée, gatée et relayée** jusqu'à l'amont). ⚠️ **Génération réelle KO sur CE matériel** :
+  Ollama 0.30.11 utilise le runner **MLX (Apple Silicon uniquement)** pour l'image ; le hôte self-hosted est
+  Linux ARM64/CUDA → l'amont renvoie `mlx runner failed` (500), **relayé fidèlement** par la
+  passerelle. Limite AMONT/matériel, pas passerelle ; la génération réelle nécessite un upstream
+  Apple Silicon (ou un runner image compatible CUDA quand Ollama le fournira). — *tests verts :
+  test_images (11 : capability/mapping, allowlist image round-trip, gating proxy ollama/openai +
+  séparation texte, try_image, route admin), E2E images.spec (onglet Image + image-to-image).*
 
 ## Idées ultérieures (non planifiées)
 
