@@ -259,6 +259,8 @@
          href="/admin">{{ icon('layout-dashboard') }} Tableau de bord</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/servers') %} active{% endif %}"
          href="/admin/servers">{{ icon('server') }} Serveurs</a>
+      <a class="pill-link{% if request.url.path.startswith('/admin/targets') %} active{% endif %}"
+         href="/admin/targets">{{ icon('globe') }} Cibles</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/logs') or request.url.path.startswith('/admin/bans') %} active{% endif %}"
          href="/admin/logs">{{ icon('scroll-text') }} Logs</a>
       <button type="button" class="pill-link" id="manual-open" data-testid="manual-open"

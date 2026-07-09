@@ -6,6 +6,13 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Cibles publiques (ingress) rattachées par clé.** Nouvel onglet **Cibles** : gestion des URL
+  **publiques** de la passerelle telles que vues par les clients (ex. `https://…:port`). Chaque
+  clé pointe vers une cible ; la **génération des variables d'environnement** (post-création)
+  utilise l'**URL de la cible rattachée** (repli sur `PUBLIC_BASE_URL`). Une cible **ne change pas
+  le routage** (l'amont reste le serveur d'exécution) — c'est purement l'URL côté client. Cible
+  par défaut indélébile, seedée depuis `PUBLIC_BASE_URL` ; suppression bloquée si des clés y sont
+  rattachées.
 - **Compatibilité d'API : matrice par serveur + allowlist par clé.** Chaque serveur d'exécution
   peut être testé (« Tester la compatibilité ») : la passerelle **rejoue un catalogue d'endpoints**
   des trois familles (Ollama natif `/api/*`, OpenAI-compatible `/v1/*`, Anthropic Messages

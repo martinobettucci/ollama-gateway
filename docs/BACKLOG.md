@@ -143,14 +143,21 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   Reste pour `[x]` : **E2E Playwright dédié + vision (captures)**. — *tests unit/intégration verts :
   test_apis (mapping, allowlist round-trip, run_compat matrice), test_proxy (allowlist vide = tout,
   interdit hors famille, listing toujours servi).*
-- [ ] **Cibles publiques (ingress) attachées par clé** : table `targets` (URL publique de la
-  passerelle vue du client, ex. `https://…:port`), rattachement `api_keys.target_id`, la génération
-  de variables d'environnement utilise la cible rattachée ; gestion CRUD dans le panel + sélecteur
-  sur la clé. Distinct des serveurs d'exécution (amont) : n'affecte pas le routage. — *tests à écrire.*
+- [~] **Cibles publiques (ingress) attachées par clé** : `app/targets.py` (+ migration 0006
+  `targets`/`api_keys.target_id`), CRUD + `ensure_default` (seedé de `PUBLIC_BASE_URL`), onglet
+  **Cibles**, sélecteur sur la clé, env-gen utilise l'URL de la cible rattachée. N'affecte pas le
+  routage. Reste pour `[x]` : **E2E + vision**. — *tests unit verts : test_targets (défaut/placeholder,
+  idempotence, rattachement, round-trip env-url, suppression défaut/rattachée bloquée).*
 - [ ] **Expiration/plafonds de vie d'une clé** (distinct du rate-limit) : plafond **absolu** de
   tokens, plafond **absolu** de requêtes, **date/heure d'expiration**, **expiration par inactivité**
   (N jours sans usage → désactivation). Appliqué par le proxy (refus une fois atteint). — *tests à écrire.*
 - [ ] **Recherche/filtre des clés sur le tableau de bord** (label/préfixe/serveur/API/état). — *tests à écrire.*
+- [ ] **Serveur de repli (fallback) optionnel par clé** : `api_keys.fallback_server_id` ; sur
+  **erreur serveur** de l'amont primaire (5xx ou erreur de connexion), la requête est **rejouée
+  de façon transparente** vers le serveur de repli. — *tests à écrire.*
+- [ ] **Monitoring par serveur + stats intensives** : `usage_events.server_id` (attribution réelle,
+  repli inclus), page **Monitor** par serveur (consommation/erreurs **par clé**), onglet de stats
+  intensives (par serveur ET par clé) avec graphiques (barres, camemberts, séries temporelles). — *tests à écrire.*
 
 ## Idées ultérieures (non planifiées)
 

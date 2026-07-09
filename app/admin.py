@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import apis, auth, bans, config, db, keys, servers, usage, whois
+from . import apis, auth, bans, config, db, keys, servers, targets, usage, whois
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -24,6 +24,7 @@ MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
 async def lifespan(app: FastAPI):
     db.init_db()
     servers.ensure_default()  # serveur local par défaut + réassignation des clés orphelines
+    targets.ensure_default()  # cible publique par défaut + rattachement des clés orphelines
     yield
 
 
@@ -179,6 +180,7 @@ async def dashboard(request: Request):
         "keys": keys.list_keys(),
         "totals": usage.global_summary(),
         "servers": servers.list_servers(),
+        "targets": targets.list_targets(),
         "created": request.session.pop("created_key", None),
         "public_base_url": config.PUBLIC_BASE_URL,
     })
@@ -190,6 +192,7 @@ async def create_key(request: Request):
         return r
     form = await request.form()
     server_id = _parse_int(form.get("server_id", "")) or servers.default_id(db.connect())
+    target_id = _parse_int(form.get("target_id", ""))
     rec, secret = keys.create_key(
         label=(form.get("label", "").strip() or "sans-nom"),
         origins=_parse_origins(form.get("origins", "")),
@@ -197,9 +200,13 @@ async def create_key(request: Request):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=server_id, models=_collect_models(form), key_apis=_collect_apis(form),
+        target_id=target_id,
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
-    # Le secret n'est montré qu'ici, une seule fois (via un flash de session).
-    request.session["created_key"] = {"label": rec.label, "secret": secret}
+    # Le secret n'est montré qu'ici, une seule fois (via un flash de session). L'URL de la cible
+    # rattachée sert à générer les variables d'environnement (repli sur PUBLIC_BASE_URL).
+    request.session["created_key"] = {
+        "label": rec.label, "secret": secret,
+        "target_url": rec.target_base_url or config.PUBLIC_BASE_URL}
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -213,6 +220,7 @@ async def key_detail(request: Request, key_id: int):
     return TEMPLATES.TemplateResponse(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
         "servers": servers.list_servers(),
+        "targets": targets.list_targets(),
         "origins_seen": usage.origins_seen(key_id),
         "retention_default": config.REQUEST_LOG_RETENTION_DAYS,
     })
@@ -230,7 +238,7 @@ async def key_update(request: Request, key_id: int):
         rpm_limit=_parse_int(form.get("rpm_limit", "")),
         note=form.get("note", "").strip(),
         server_id=_parse_int(form.get("server_id", "")), models=_collect_models(form),
-        key_apis=_collect_apis(form),
+        key_apis=_collect_apis(form), target_id=_parse_int(form.get("target_id", "")),
         log_retention_days=_parse_retention(form.get("log_retention_days", "")))
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 
@@ -436,3 +444,48 @@ async def server_delete(request: Request, server_id: int):
     if err:
         request.session["server_flash"] = {"ok": False, "text": err}
     return RedirectResponse("/admin/servers", status_code=303)
+
+
+# --- Cibles publiques (ingress) ---------------------------------------------------------------
+
+@app.get("/admin/targets", response_class=HTMLResponse)
+async def targets_page(request: Request):
+    if (r := _guard(request)):
+        return r
+    return TEMPLATES.TemplateResponse(request, "targets.html", {
+        "targets": targets.list_targets(),
+        "keys_by_target": {t.id: targets.keys_count(t.id) for t in targets.list_targets()},
+        "flash": request.session.pop("target_flash", None),
+        "public_base_url": config.PUBLIC_BASE_URL,
+    })
+
+
+@app.post("/admin/targets")
+async def target_create(request: Request):
+    if (r := _guard(request)):
+        return r
+    form = await request.form()
+    base = form.get("base_url", "").strip()
+    if base:
+        targets.create_target(name=form.get("name", "").strip() or "cible", base_url=base)
+    return RedirectResponse("/admin/targets", status_code=303)
+
+
+@app.post("/admin/targets/{target_id}")
+async def target_update(request: Request, target_id: int):
+    if (r := _guard(request)):
+        return r
+    form = await request.form()
+    targets.update_target(target_id, name=form.get("name", "").strip() or "cible",
+                          base_url=form.get("base_url", "").strip())
+    return RedirectResponse("/admin/targets", status_code=303)
+
+
+@app.post("/admin/targets/{target_id}/delete")
+async def target_delete(request: Request, target_id: int):
+    if (r := _guard(request)):
+        return r
+    err = targets.delete_target(target_id)
+    if err:
+        request.session["target_flash"] = {"ok": False, "text": err}
+    return RedirectResponse("/admin/targets", status_code=303)

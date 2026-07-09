@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Cibles — Passerelle Ollama{% endblock %}
+{% block body %}
+<h1>Cibles publiques</h1>
+<p class="page-meta">Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit
+  un client (ex. <span class="mono">https://llm.example:21434</span>). Elle sert à générer les
+  variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong>
+  (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible
+  par défaut est indélébile.</p>
+
+{% if flash %}
+<div class="flash" role="status" style="border-top-color:{{ 'var(--color-success)' if flash.ok else 'var(--color-danger)' }}">
+  <span class="chip-ic {{ 'success' if flash.ok else 'danger' }}">{{ icon('check' if flash.ok else 'circle-alert', 18) }}</span>
+  <div>{{ flash.text }}</div>
+</div>
+{% endif %}
+
+<div class="grid-cards">
+{% for t in targets %}
+<div class="card {{ 'cat-brand' if t.is_default else 'cat-success' }}" data-testid="target-card">
+  <div class="card-head">
+    <span class="chip-ic {{ 'brand' if t.is_default else 'success' }}">{{ icon('globe', 18) }}</span>
+    <h2>{{ t.name }}</h2>
+  </div>
+  <div class="server-meta">
+    <span class="mono">{{ t.base_url }}</span>
+    {% if t.is_default %}<span class="badge accent">par défaut</span>{% endif %}
+    <span class="badge neutral">{{ keys_by_target[t.id] }} clé(s)</span>
+  </div>
+
+  <details class="edit">
+    <summary>{{ icon('pencil', 14) }} Modifier</summary>
+    <form method="post" action="/admin/targets/{{ t.id }}">
+      <div class="row">
+        <div><label for="tname-{{ t.id }}">Nom</label>
+          <input id="tname-{{ t.id }}" name="name" value="{{ t.name }}"></div>
+        <div><label for="turl-{{ t.id }}">URL publique</label>
+          <input id="turl-{{ t.id }}" name="base_url" value="{{ t.base_url }}"></div>
+      </div>
+      <p class="actions">
+        <button class="btn-sm" type="submit">{{ icon('check', 14) }} Enregistrer</button>
+        {% if not t.is_default %}
+        <span> </span>
+        {% endif %}
+      </p>
+    </form>
+    {% if not t.is_default %}
+    <form class="inline" method="post" action="/admin/targets/{{ t.id }}/delete"
+          onsubmit="return confirm('Supprimer la cible « {{ t.name }} » ?');">
+      <button class="btn-danger-outline btn-sm" type="submit">{{ icon('trash', 14) }} Supprimer</button>
+    </form>
+    {% endif %}
+  </details>
+</div>
+{% endfor %}
+
+<div class="card cat-success">
+  <div class="card-head">
+    <span class="chip-ic success">{{ icon('plus', 18) }}</span>
+    <h2>Ajouter une cible</h2>
+  </div>
+  <form method="post" action="/admin/targets" data-testid="target-create-form">
+    <div class="row">
+      <div><label for="new-tname">Nom *</label>
+        <input id="new-tname" name="name" placeholder="Passerelle prod" required></div>
+      <div><label for="new-turl">URL publique *</label>
+        <input id="new-turl" name="base_url" placeholder="https://llm.example:21434" required></div>
+    </div>
+    <p class="hint">Sans slash final. C'est l'URL que le client mettra dans
+      <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> /
+      <span class="mono">ANTHROPIC_BASE_URL</span>.</p>
+    <p class="actions"><button type="submit">{{ icon('plus') }} Ajouter la cible</button></p>
+  </form>
+</div>
+</div>
+{% endblock %}

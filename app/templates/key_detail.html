@@ -185,6 +185,14 @@
           {% endfor %}
         </select>
         <p class="hint">Changer de serveur re-sonde ses modèles disponibles ci-dessous.</p></div>
+      <div><label for="target_id">Cible publique (env-gen)</label>
+        <select id="target_id" name="target_id" data-testid="target-select">
+          {% for t in targets %}
+          <option value="{{ t.id }}"{{ ' selected' if t.id == key.target_id }}>
+            {{ t.name }} — {{ t.base_url }}{{ ' (par défaut)' if t.is_default }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">URL publique utilisée pour générer les variables d'environnement.</p></div>
     </div>
     <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>

@@ -49,7 +49,8 @@
 (function () {
   const dlg = document.getElementById('env-dialog');
   const out = document.getElementById('env-output');
-  const base = {{ (public_base_url or '')|tojson }} || 'https://PASSERELLE-A-REMPLACER';
+  // URL de la cible rattachée à la clé créée (repli : PUBLIC_BASE_URL, puis placeholder).
+  const base = {{ (created.target_url or public_base_url or '')|tojson }} || 'https://PASSERELLE-A-REMPLACER';
   const secret = {{ created.secret|tojson }};
   // Variables standard de chaque SDK ; la passerelle accepte Bearer ET x-api-key (Anthropic).
   const gen = {
@@ -166,6 +167,16 @@
             {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
           {% endfor %}
         </select></div>
+    </div>
+    <div class="row">
+      <div><label for="target_id">Cible publique (env-gen)</label>
+        <select id="target_id" name="target_id" data-testid="target-select">
+          {% for t in targets %}
+          <option value="{{ t.id }}"{{ ' selected' if t.is_default }}>
+            {{ t.name }} — {{ t.base_url }}{{ ' (par défaut)' if t.is_default }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">URL publique injectée dans les variables d'environnement de la clé.</p></div>
     </div>
     <div class="row">
       <div><label for="monthly_token_cap">Plafond tokens / mois</label>
