@@ -13,6 +13,15 @@ def fresh_db(tmp_path, monkeypatch):
     yield
 
 
+@pytest.fixture(autouse=True)
+def reset_login_throttle():
+    """Vide l'état mémoire du throttle de login entre les tests (évite la pollution inter-tests)."""
+    from app import admin
+    admin._LOGIN_FAILS.clear()
+    yield
+    admin._LOGIN_FAILS.clear()
+
+
 @pytest.fixture
 def fake_upstream():
     """Client httpx branché sur le faux Ollama (ASGI in-process)."""

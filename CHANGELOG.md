@@ -6,6 +6,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Sécurité — CSRF same-origin & anti-brute-force du login admin.** Toute requête mutante vers
+  `/admin/*` dont le navigateur fournit un `Origin`/`Referer` d'un **autre hôte** est refusée
+  (403), en complément du cookie de session `SameSite=Lax`. Le login admin applique un
+  **verrouillage temporaire** après plusieurs échecs consécutifs depuis une même IP.
+
 - **Sécurité — conteneur non-root & borne de taille de requête.** L'image applicative tourne
   désormais sous un **utilisateur non privilégié** (défense en profondeur). Le proxy **refuse
   (413)** un corps dont la taille déclarée dépasse `MAX_REQUEST_BYTES` (défaut 100 Mio, `0` =

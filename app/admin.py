@@ -4,8 +4,10 @@ Rendu serveur (Jinja2), formulaires HTML classiques (POST → redirect) : aucun 
 CDN, entièrement pilotable en E2E. Bind sur l'IP LAN uniquement, jamais forwardé à l'extérieur.
 """
 import re
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import markdown
 from fastapi import FastAPI, Form, Request
@@ -33,6 +35,54 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
 app.add_middleware(SessionMiddleware, secret_key=config.ADMIN_SESSION_SECRET,
                    session_cookie="ollama_gw_admin", same_site="lax", https_only=False)
 app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
+
+_SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
+
+
+@app.middleware("http")
+async def csrf_same_origin(request: Request, call_next):
+    """Protection CSRF par **same-origin strict** (complète le cookie `SameSite=Lax`).
+
+    Sur toute requête MUTANTE vers `/admin/*`, si le navigateur fournit un `Origin`/`Referer`, son
+    hôte doit correspondre au `Host` de la requête : un POST cross-site (page attaquante) porte un
+    `Origin` étranger → refusé (403). Les clients non-navigateur (sans `Origin`/`Referer`, ex.
+    tests, curl) ne sont pas concernés (pas de session de navigateur = pas de vecteur CSRF)."""
+    if request.method not in _SAFE_METHODS and request.url.path.startswith("/admin"):
+        source = request.headers.get("origin") or request.headers.get("referer")
+        if source:
+            src_host = urlsplit(source).netloc.split("@")[-1]
+            host = request.headers.get("host", "")
+            if src_host and host and src_host != host:
+                return JSONResponse(
+                    {"error": "requête cross-origin refusée (CSRF)"}, status_code=403)
+    return await call_next(request)
+
+
+# --- Limitation des tentatives de login (anti-brute-force) ------------------------------------
+# Fenêtre glissante d'échecs par IP source (admin mono-process par rôle → état mémoire suffisant).
+_LOGIN_FAILS: dict[str, list[float]] = {}
+_LOGIN_MAX_FAILS = 5          # au-delà, verrouillage temporaire
+_LOGIN_WINDOW_S = 300         # fenêtre d'observation des échecs (5 min)
+
+
+def _login_client_ip(request: Request) -> str:
+    return request.client.host if request.client else ""
+
+
+def _login_locked(ip: str, now: float | None = None) -> bool:
+    now = now if now is not None else time.monotonic()
+    fails = [t for t in _LOGIN_FAILS.get(ip, []) if now - t < _LOGIN_WINDOW_S]
+    _LOGIN_FAILS[ip] = fails
+    return len(fails) >= _LOGIN_MAX_FAILS
+
+
+def _login_record_fail(ip: str, now: float | None = None) -> None:
+    now = now if now is not None else time.monotonic()
+    _LOGIN_FAILS.setdefault(ip, []).append(now)
+
+
+def _login_clear(ip: str) -> None:
+    _LOGIN_FAILS.pop(ip, None)
 
 
 def _guard(request: Request) -> RedirectResponse | None:
@@ -159,10 +209,17 @@ async def login_form(request: Request):
 
 @app.post("/admin/login")
 async def login_submit(request: Request, password: str = Form(...)):
+    ip = _login_client_ip(request)
+    if _login_locked(ip):
+        return TEMPLATES.TemplateResponse(
+            request, "login.html",
+            {"error": "Trop de tentatives — réessayez dans quelques minutes."}, status_code=429)
     stored = keys.get_admin_hash()
     if stored and auth.verify_password(password, stored):
+        _login_clear(ip)
         request.session["admin"] = True
         return RedirectResponse("/admin", status_code=303)
+    _login_record_fail(ip)
     return TEMPLATES.TemplateResponse(
         request, "login.html", {"error": "Mot de passe incorrect."}, status_code=401)
 

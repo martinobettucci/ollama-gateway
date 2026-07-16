@@ -259,3 +259,53 @@ async def test_manual_rendered_with_screenshots(admin_client):
     assert "<h1>Manuel" in r.text and "<h2" in r.text
     assert 'src="/static/manual/01-dashboard.jpg"' in r.text
     assert "mermaid" not in r.text and "```" not in r.text
+
+
+# --- Sécurité : CSRF same-origin + throttle de login ------------------------------------------
+
+async def test_csrf_rejects_cross_origin_post(admin_client):
+    """Un POST mutant vers /admin avec un Origin étranger est refusé (403)."""
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.post("/admin/login", data={"password": "admin-mdp"},
+                         headers={"origin": "http://evil.example", "host": "admin"})
+    assert r.status_code == 403 and "cross-origin" in r.text
+
+
+async def test_csrf_allows_same_origin_post(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.post("/admin/login", data={"password": "admin-mdp"},
+                         headers={"origin": "http://admin", "host": "admin"})
+    assert r.status_code == 303  # même origine → traité normalement
+
+
+async def test_csrf_allows_missing_origin(admin_client):
+    """Client non-navigateur (sans Origin/Referer) : non concerné (pas de vecteur CSRF)."""
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        r = await c.post("/admin/login", data={"password": "admin-mdp"})
+    assert r.status_code == 303
+
+
+async def test_login_throttle_locks_after_repeated_failures(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        for _ in range(5):
+            bad = await c.post("/admin/login", data={"password": "faux"})
+            assert bad.status_code == 401
+        # 6e tentative : verrouillage temporaire
+        locked = await c.post("/admin/login", data={"password": "faux"})
+        assert locked.status_code == 429
+        # même le bon mot de passe est bloqué pendant le verrou
+        good = await c.post("/admin/login", data={"password": "admin-mdp"})
+        assert good.status_code == 429
+
+
+async def test_login_success_clears_throttle(admin_client):
+    keys.set_admin_password("admin-mdp")
+    async with admin_client as c:
+        for _ in range(3):
+            await c.post("/admin/login", data={"password": "faux"})
+        ok = await c.post("/admin/login", data={"password": "admin-mdp"})
+        assert ok.status_code == 303  # succès avant le seuil → compteur remis à zéro
