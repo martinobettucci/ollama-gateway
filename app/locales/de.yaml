@@ -1,0 +1,322 @@
+# Locale de (Deutsch) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama-Gateway
+  tagline: Schlüsselverwaltung
+common:
+  close: Schließen
+  save: Speichern
+  cancel: Abbrechen
+  delete: Löschen
+  edit: Bearbeiten
+  'yes': ja
+  'no': nein
+  none: keine
+  all: alle
+  never: nie
+  unlimited: unbegrenzt
+  optional: optional
+  enabled: aktiviert
+  disabled: deaktiviert
+  online: online
+  offline: offline
+  default: Standard
+nav:
+  aria: Hauptnavigation
+  dashboard: Dashboard
+  servers: Server
+  targets: Ziele
+  logs: Logs
+  manual: Handbuch
+  logout: Abmelden
+  language: Sprache
+manual:
+  title: Benutzerhandbuch
+  close_aria: Handbuch schließen
+  loading: Handbuch wird geladen…
+  load_error: Handbuch kann nicht geladen werden.
+login:
+  title: Anmeldung
+  heading: Admin-Anmeldung
+  password: Passwort
+  submit: Anmelden
+  wrong: Falsches Passwort.
+  throttled: Zu viele Versuche — bitte in einigen Minuten erneut versuchen.
+setup:
+  title: Einrichtung
+  heading: Erste Verwendung
+  subtitle: Admin-Passwort des Gateways festlegen
+  password: Admin-Passwort
+  hint: Mindestens 8 Zeichen.
+  confirm: Bestätigung
+  submit: Festlegen und anmelden
+  error_pw: Passwort zu kurz (min. 8) oder nicht identisch.
+dash:
+  created:
+    created: Schlüssel „{label}“ erstellt.
+    copy_now: Jetzt kopieren
+    never: 'er wird nie wieder angezeigt:'
+  env:
+    aria: Client konfigurieren
+    title: Schlüssel „{label}“ erstellt — Client konfigurieren
+    copy_desc: Kopieren Sie diese Umgebungsvariablen auf den Client-Rechner.
+    never: Der Schlüssel wird nie wieder angezeigt.
+    api_ollama: Ollama-API
+    api_openai: OpenAI-API
+    api_anthropic: Anthropic-API
+    no_public_url: '`PUBLIC_BASE_URL` ist am Gateway nicht konfiguriert: Ersetzen Sie den Platzhalter vor der Verwendung durch die echte öffentliche URL.'
+    copy_btn: Variablen kopieren
+    copied: Kopiert!
+    copy_fail: Kopieren fehlgeschlagen
+  stat:
+    total_reqs: Anfragen gesamt
+    last24h: letzte 24 h
+    tokens: gelieferte Tokens
+    errors: Fehler (≥ 400)
+  keys:
+    title: API-Schlüssel ({count})
+    search_ph: Suchen (Label oder Präfix)…
+    filter_server_aria: Nach Server filtern
+    all_servers: Alle Server
+    filter_api_aria: Nach API filtern
+    all_apis: Alle APIs
+    filter_state_aria: Nach Status filtern
+    all_states: Alle Status
+    active: Aktiv
+    disabled: Deaktiviert
+    th:
+      label: Label
+      prefix: Präfix
+      state: Status
+      server: Server
+      models: Modelle
+      origins: Ursprünge
+      quota: Kontingent
+      last_used: Zuletzt verwendet
+      actions: Aktionen
+    badge_active: aktiv
+    badge_disabled: deaktiviert
+    n_allowed: '{count} erlaubt'
+    all_origins: alle
+    tok_month: Tok/Monat
+    req_min: Anf./min
+    deactivate: deaktivieren
+    activate: aktivieren
+    delete_confirm: Schlüssel „{label}“ löschen?
+    delete_short: lösch.
+    empty: Noch keine Schlüssel — erstellen Sie den ersten mit dem Formular unten.
+    no_match: Kein Schlüssel entspricht den Filtern.
+  new:
+    title: Neuer Schlüssel
+    label: Label *
+    server: Ausführungsserver
+    default: Standard
+    target: Öffentliches Ziel (env-gen)
+    target_hint: Öffentliche URL, die in die Umgebungsvariablen des Schlüssels eingesetzt wird.
+    fallback: Ausweichserver (Fallback)
+    none_option: — keiner —
+    fallback_hint: Transparenter Fallback bei Serverfehler (5xx / Verbindung).
+    monthly_cap: Token-Limit / Monat
+    empty_unlimited: Leer = unbegrenzt.
+    rpm: Rate-Limit (Anf./min)
+    expiry_legend: Ablauf / Lebensdauer-Limits
+    expiry_hint: (kostengedeckelter Test — getrennt vom Rate-Limit)
+    total_tokens: Gesamt-Token-Limit
+    total_tokens_hint: Absolutes Budget über die Lebensdauer des Schlüssels. Leer = unbegrenzt.
+    total_reqs: Gesamt-Anfragen-Limit
+    total_reqs_hint: Absolute Anzahl von Anfragen. Leer = unbegrenzt.
+    expires_at: Läuft ab am
+    expires_hint: Stichdatum/-zeit. Leer = nie.
+    idle: Ablauf bei Inaktivität (Tage)
+    idle_hint: Ablehnung nach N Tagen ohne Nutzung. Leer = nie.
+    models: Erlaubte Modelle
+    apis: Erlaubte APIs
+    origins: Erlaubte Ursprünge
+    origins_hint: Eine IP oder ein CIDR pro Zeile; leer = alle Ursprünge.
+    note: Notiz
+    submit: Schlüssel erstellen
+tgt:
+  title: Öffentliche Ziele
+  intro: Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways, wie ein Client sie sieht (z. B. <span class="mono">https://llm.example:21434</span>). Es dient zum Erzeugen der Umgebungsvariablen des zugeordneten Schlüssels — <strong>es ändert nicht das Routing</strong> (das Upstream wird weiterhin vom Ausführungsserver gewählt). Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist unlöschbar.
+  keys_count: '{count} Schlüssel'
+  edit:
+    name: Name
+    url: Öffentliche URL
+  delete_confirm: Ziel „{name}“ löschen?
+  add:
+    title: Ziel hinzufügen
+    name: Name *
+    url: Öffentliche URL *
+    hint: Ohne abschließenden Schrägstrich. Dies ist die URL, die der Client in <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span> einträgt.
+    submit: Ziel hinzufügen
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: Anfragen
+    active_keys: aktive Schlüssel
+  reqs_day: Anfragen / Tag (30 T)
+  tokens_day: Tokens / Tag (30 T)
+  status_dist: Statusverteilung
+  tokens_key: Tokens pro Schlüssel (Top 10)
+  reqs_key: Anfragen pro Schlüssel (Top 10)
+  consumption: Verbrauch pro Schlüssel
+  th:
+    key: Schlüssel
+    reqs: Anfragen
+    tokens: Tokens
+    errors: Fehler
+    last_used: Zuletzt verwendet
+  empty: Diesem Server ist noch keine Anfrage zugeordnet.
+logs:
+  title: Journal & Sperren
+  intro: Vollständiges Anfrage-Journal (vollständig aufbewahrt, nie bereinigt) — insgesamt {total} Ereignis(se), {shown} angezeigt. Sperren Sie einen Ursprung mit einem Klick aus einer Zeile; ein gesperrter Ursprung wird vom Proxy vor jedem Schlüssel abgewiesen (403).
+  bans:
+    title: Gesperrte Ursprünge ({count})
+    cidr_label: Zu sperrende IP oder CIDR
+    reason_label: Grund (optional)
+    reason_ph: Missbrauch, Scan…
+    ban_btn: Sperren
+    th:
+      origin: Ursprung
+      reason: Grund
+      since: Seit
+    unban: Entsperren
+    empty: Kein gesperrter Ursprung.
+  journal:
+    title: Anfrage-Journal
+    th:
+      ts: Zeitstempel
+      origin: Ursprung
+      key: Schlüssel
+      method: Methode
+      path: Pfad
+      model: Modell
+      status: Status
+      tokens: Tokens
+      duration: Dauer
+      action: Aktion
+    banned: gesperrt
+    ban_reason: gesperrt über die Log-Konsole
+    empty: Noch keine Anfrage protokolliert.
+srv:
+  title: Ausführungsserver
+  intro: Jeder Schlüssel ist genau einem Server zugeordnet. Der Standardserver (lokal) wird automatisch erstellt und kann nicht gelöscht werden.
+  untested: nicht getestet
+  auth_badge: Auth
+  tested_on: getestet am {date}
+  compat:
+    title: API-Kompatibilität
+    tested: — getestet am {date}
+    net_error: Netzwerkfehler
+  actions:
+    monitor: Monitor
+    test: Testen
+    check_compat: Kompatibilität prüfen
+  delete_confirm: Server „{name}“ löschen?
+  edit:
+    name: Name
+    url: Basis-URL
+    token: Remote-Auth-Token (Bearer)
+    token_ph_set: gesetzt — leer lassen zum Beibehalten
+    enabled_check: Server aktiviert
+    clear_token: Token entfernen
+  add:
+    title: Server hinzufügen
+    name: Name *
+    url: Basis-URL *
+    token_hint: Verschlüsselt gespeichert; nie wieder angezeigt. Wird verwendet, wenn der Remote-Server einen Bearer verlangt.
+    submit: Server hinzufügen
+api:
+  fam:
+    ollama: Natives Ollama (/api/*)
+    openai: OpenAI-kompatibel (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Angekreuzte Kästchen = für den Schlüssel erlaubte API-Familien (Pfad erlauben/verbieten, ohne Schemaprüfung). <strong>Keins angekreuzt = alle APIs erlaubt.</strong> Listing-Endpunkte (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) werden immer bedient.
+  img:
+    ollama-image: Bild über Ollama (Modell x/… auf /api/generate)
+    openai-image: Bild über OpenAI (/v1/images/generations)
+  img_hint: <strong>Bildgenerierung</strong> (separate Fähigkeit). Aktivieren Sie den gewünschten Weg und tragen Sie die <strong>Bildmodelle</strong> (<span class="mono">x/…</span>) unten ein.
+mdl:
+  probing: Server wird abgefragt…
+  extra_ph: zusätzliche Modelle, eines pro Zeile
+  hint: Angekreuzte Kästchen + Freitext = Allowlist des Schlüssels. Überall leer = alle (Text-)Modelle des Servers erlaubt.
+  img_label: Erlaubte Bildmodelle (<span class="mono">x/…</span>)
+  img_extra_ph: zusätzliche Bildmodelle (x/…), eines pro Zeile
+  img_hint: <strong>Separate</strong> Allowlist für Bildmodelle. Leer = alle Bildmodelle erlaubt (wenn die Bildgenerierung oben aktiviert ist).
+  offline: Server nicht erreichbar oder ohne Modelle — Freitext unten.
+kd:
+  meta: '{prefix}… · erstellt am {created} · zuletzt verwendet: {last_used}'
+  try:
+    open: Jetzt testen
+    aria: Schlüssel testen
+    title: „{label}“ testen
+    tab_text: Text
+    tab_image: Bild
+    model: Modell
+    api_label: API
+    api_ollama: Ollama (Chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Senden Sie eine Nachricht: Das Gateway fragt den diesem Schlüssel zugeordneten Server ab und zeigt die Antwort des Modells an.'
+    msg_ph: Nachricht schreiben…
+    send: Senden
+    img_model: Bildmodell
+    img_api_ollama: Ollama-Bild (/api/generate)
+    img_api_openai: OpenAI-Bild (/v1/images/generations)
+    img_attach: Angehängtes Bild (optional — Bild-zu-Bild)
+    img_hint: Beschreiben Sie das zu erzeugende Bild; hängen Sie optional ein Eingabebild an. Das Gateway fragt den zugeordneten Server ab und zeigt das erzeugte Bild an.
+    img_ph: Beschreiben Sie das zu erzeugende Bild…
+    img_send: Erzeugen
+  js:
+    no_model: (kein Modell erkannt)
+    unreachable: (Server nicht erreichbar)
+    no_img_model: (kein x/-Modell erkannt)
+    failed: 'Fehlgeschlagen: '
+    net_error: Netzwerkfehler.
+    generating: Wird erzeugt…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Wird aufgelöst…
+    whois_unavailable: WHOIS nicht verfügbar.
+  opt:
+    default: ' (Standard)'
+    disabled: ' — deaktiviert'
+  edit:
+    server_hint: Ein Serverwechsel fragt dessen verfügbare Modelle unten erneut ab.
+    target_hint: Öffentliche URL zum Erzeugen der Umgebungsvariablen.
+    fallback_hint: Bei einem Serverfehler (5xx / Verbindung) des primären Upstreams wird die Anfrage transparent an diesen Server weitergeleitet.
+    retention: Log-Aufbewahrung (Tage)
+    retention_hint: Vollständiger Anfrageinhalt (Dateien außerhalb der Datenbank). Leer = globaler Standard ({days} T); 0 = Bereinigung der vergangenen Stunden.
+  stat:
+    requests: Anfragen
+    tokens_total: Tokens (gesamt)
+    tokens_month: Tokens diesen Monat
+    errors: Fehler
+  usage:
+    title: Nutzung (letzte 30 Tage)
+    th_day: Tag
+    th_reqs: Anfragen
+    th_tokens: Tokens
+    empty: Keine Anfrage im Zeitraum — die Nutzung erscheint hier ab dem ersten Aufruf.
+  origins:
+    title: Gesehene Ursprünge ({count})
+    search_ph: IP suchen…
+    th_ip: IP
+    th_reqs: Anfragen
+    th_last: Zuletzt gesehen
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Kein Ursprung entspricht der Suche.
+    empty: Für diesen Schlüssel wurde noch kein Ursprung gesehen.
+  errors:
+    title: Letzte Fehler
+    th_ts: Zeitstempel
+    th_ip: IP
+    th_path: Pfad
+    th_status: Status
+  whois:
+    aria: WHOIS eines Ursprungs
+    title: WHOIS
+foot:
+  heart_aria: Liebe

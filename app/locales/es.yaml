@@ -1,0 +1,322 @@
+# Locale es (Español) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Puerta de enlace Ollama
+  tagline: gestión de claves
+common:
+  close: Cerrar
+  save: Guardar
+  cancel: Cancelar
+  delete: Eliminar
+  edit: Editar
+  'yes': sí
+  'no': 'no'
+  none: ninguno
+  all: todos
+  never: nunca
+  unlimited: ilimitado
+  optional: opcional
+  enabled: activado
+  disabled: desactivado
+  online: en línea
+  offline: fuera de línea
+  default: predeterminado
+nav:
+  aria: Navegación principal
+  dashboard: Panel
+  servers: Servidores
+  targets: Destinos
+  logs: Registros
+  manual: Manual
+  logout: Cerrar sesión
+  language: Idioma
+manual:
+  title: Manual de usuario
+  close_aria: Cerrar el manual
+  loading: Cargando el manual…
+  load_error: No se puede cargar el manual.
+login:
+  title: Iniciar sesión
+  heading: Acceso de administrador
+  password: Contraseña
+  submit: Entrar
+  wrong: Contraseña incorrecta.
+  throttled: Demasiados intentos — vuelva a intentarlo en unos minutos.
+setup:
+  title: Inicialización
+  heading: Primer uso
+  subtitle: Defina la contraseña de administrador de la puerta de enlace
+  password: Contraseña de administrador
+  hint: 8 caracteres como mínimo.
+  confirm: Confirmación
+  submit: Definir y entrar
+  error_pw: Contraseña demasiado corta (mín. 8) o no idéntica.
+dash:
+  created:
+    created: Clave «{label}» creada.
+    copy_now: Cópiela ahora
+    never: 'no se volverá a mostrar nunca:'
+  env:
+    aria: Configurar el cliente
+    title: Clave «{label}» creada — configurar el cliente
+    copy_desc: Copie estas variables de entorno en la máquina cliente.
+    never: La clave no se volverá a mostrar nunca.
+    api_ollama: API de Ollama
+    api_openai: API de OpenAI
+    api_anthropic: API de Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` no está configurada en la puerta de enlace: sustituya el marcador por la URL pública real antes de usarla.'
+    copy_btn: Copiar las variables
+    copied: ¡Copiado!
+    copy_fail: Error al copiar
+  stat:
+    total_reqs: solicitudes totales
+    last24h: últimas 24 h
+    tokens: tokens servidos
+    errors: errores (≥ 400)
+  keys:
+    title: Claves API ({count})
+    search_ph: Buscar (etiqueta o prefijo)…
+    filter_server_aria: Filtrar por servidor
+    all_servers: Todos los servidores
+    filter_api_aria: Filtrar por API
+    all_apis: Todas las API
+    filter_state_aria: Filtrar por estado
+    all_states: Todos los estados
+    active: Activas
+    disabled: Desactivadas
+    th:
+      label: Etiqueta
+      prefix: Prefijo
+      state: Estado
+      server: Servidor
+      models: Modelos
+      origins: Orígenes
+      quota: Cuota
+      last_used: Último uso
+      actions: Acciones
+    badge_active: activa
+    badge_disabled: desactivada
+    n_allowed: '{count} permitido(s)'
+    all_origins: todos
+    tok_month: tok/mes
+    req_min: sol./min
+    deactivate: desactivar
+    activate: activar
+    delete_confirm: ¿Eliminar la clave «{label}»?
+    delete_short: elim.
+    empty: Aún no hay claves — cree la primera con el formulario de abajo.
+    no_match: Ninguna clave coincide con los filtros.
+  new:
+    title: Nueva clave
+    label: Etiqueta *
+    server: Servidor de ejecución
+    default: predeterminado
+    target: Destino público (env-gen)
+    target_hint: URL pública inyectada en las variables de entorno de la clave.
+    fallback: Servidor de reserva (fallback)
+    none_option: — ninguno —
+    fallback_hint: Reserva transparente en caso de error del servidor (5xx / conexión).
+    monthly_cap: Límite de tokens / mes
+    empty_unlimited: Vacío = ilimitado.
+    rpm: Límite de tasa (sol./min)
+    expiry_legend: Caducidad / límites de vida
+    expiry_hint: (prueba con coste limitado — distinto del límite de tasa)
+    total_tokens: Límite total de tokens
+    total_tokens_hint: Presupuesto absoluto durante la vida de la clave. Vacío = ilimitado.
+    total_reqs: Límite total de solicitudes
+    total_reqs_hint: Número absoluto de solicitudes. Vacío = ilimitado.
+    expires_at: Caduca el
+    expires_hint: Fecha/hora límite. Vacío = nunca.
+    idle: Caducidad por inactividad (días)
+    idle_hint: Rechazo tras N días sin uso. Vacío = nunca.
+    models: Modelos permitidos
+    apis: API permitidas
+    origins: Orígenes permitidos
+    origins_hint: Una IP o un CIDR por línea; vacío = todos los orígenes.
+    note: Nota
+    submit: Crear la clave
+tgt:
+  title: Destinos públicos
+  intro: Un <strong>destino</strong> es la URL pública de la puerta de enlace tal como la ve un cliente (p. ej. <span class="mono">https://llm.example:21434</span>). Sirve para generar las variables de entorno de la clave asociada — <strong>no cambia el enrutamiento</strong> (el upstream lo sigue eligiendo el servidor de ejecución). Cada clave apunta a un destino; el destino predeterminado no se puede eliminar.
+  keys_count: '{count} clave(s)'
+  edit:
+    name: Nombre
+    url: URL pública
+  delete_confirm: ¿Eliminar el destino «{name}»?
+  add:
+    title: Añadir un destino
+    name: Nombre *
+    url: URL pública *
+    hint: Sin barra final. Es la URL que el cliente pondrá en <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Añadir el destino
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: solicitudes
+    active_keys: claves activas
+  reqs_day: Solicitudes / día (30 d)
+  tokens_day: Tokens / día (30 d)
+  status_dist: Distribución de estados
+  tokens_key: Tokens por clave (top 10)
+  reqs_key: Solicitudes por clave (top 10)
+  consumption: Consumo por clave
+  th:
+    key: Clave
+    reqs: Solicitudes
+    tokens: Tokens
+    errors: Errores
+    last_used: Último uso
+  empty: Aún no hay ninguna solicitud atribuida a este servidor.
+logs:
+  title: Registro y bloqueos
+  intro: Registro completo de solicitudes (conservado íntegramente, nunca purgado) — {total} evento(s) en total, {shown} mostrado(s). Bloquee un origen con un clic desde una fila; un origen bloqueado es rechazado (403) por el proxy antes de cualquier clave.
+  bans:
+    title: Orígenes bloqueados ({count})
+    cidr_label: IP o CIDR a bloquear
+    reason_label: Motivo (opcional)
+    reason_ph: abuso, escaneo…
+    ban_btn: Bloquear
+    th:
+      origin: Origen
+      reason: Motivo
+      since: Desde
+    unban: Desbloquear
+    empty: Ningún origen bloqueado.
+  journal:
+    title: Registro de solicitudes
+    th:
+      ts: Marca de tiempo
+      origin: Origen
+      key: Clave
+      method: Método
+      path: Ruta
+      model: Modelo
+      status: Estado
+      tokens: Tokens
+      duration: Duración
+      action: Acción
+    banned: bloqueado
+    ban_reason: bloqueado desde la consola de registros
+    empty: Aún no hay ninguna solicitud registrada.
+srv:
+  title: Servidores de ejecución
+  intro: Cada clave está asociada a exactamente un servidor. El servidor predeterminado (local) se crea automáticamente y no se puede eliminar.
+  untested: no probado
+  auth_badge: auth
+  tested_on: probado el {date}
+  compat:
+    title: Compatibilidad de API
+    tested: — probada el {date}
+    net_error: error de red
+  actions:
+    monitor: Monitor
+    test: Probar
+    check_compat: Comprobar la compatibilidad
+  delete_confirm: ¿Eliminar el servidor «{name}»?
+  edit:
+    name: Nombre
+    url: URL base
+    token: Token de auth remoto (Bearer)
+    token_ph_set: definido — dejar vacío para conservar
+    enabled_check: servidor activado
+    clear_token: quitar el token
+  add:
+    title: Añadir un servidor
+    name: Nombre *
+    url: URL base *
+    token_hint: Cifrado en reposo; nunca se vuelve a mostrar. Se usa si el servidor remoto exige un Bearer.
+    submit: Añadir el servidor
+api:
+  fam:
+    ollama: Ollama nativo (/api/*)
+    openai: Compatible con OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Casillas marcadas = familias de API permitidas para la clave (permitir/prohibir por ruta, sin validación de esquema). <strong>Ninguna marcada = todas las API permitidas.</strong> Los endpoints de listado (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) siempre se sirven.
+  img:
+    ollama-image: Imagen vía Ollama (modelo x/… en /api/generate)
+    openai-image: Imagen vía OpenAI (/v1/images/generations)
+  img_hint: <strong>Generación de imágenes</strong> (capacidad separada). Active la vía deseada e indique los <strong>modelos de imagen</strong> (<span class="mono">x/…</span>) abajo.
+mdl:
+  probing: Sondeando el servidor…
+  extra_ph: modelos adicionales, uno por línea
+  hint: Casillas marcadas + entrada libre = lista de permitidos de la clave. Vacío en todo = todos los modelos (de texto) del servidor permitidos.
+  img_label: Modelos de imagen permitidos (<span class="mono">x/…</span>)
+  img_extra_ph: modelos de imagen (x/…) adicionales, uno por línea
+  img_hint: Lista de permitidos <strong>separada</strong> para modelos de imagen. Vacío = todos los modelos de imagen permitidos (si la generación de imágenes está activada arriba).
+  offline: Servidor inaccesible o sin modelos — entrada libre abajo.
+kd:
+  meta: '{prefix}… · creada el {created} · último uso: {last_used}'
+  try:
+    open: Probar ahora
+    aria: Probar la clave
+    title: Probar «{label}»
+    tab_text: Texto
+    tab_image: Imagen
+    model: Modelo
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Envíe un mensaje: la puerta de enlace consulta el servidor asociado a esta clave y muestra la respuesta del modelo.'
+    msg_ph: Escriba un mensaje…
+    send: Enviar
+    img_model: Modelo de imagen
+    img_api_ollama: Imagen Ollama (/api/generate)
+    img_api_openai: Imagen OpenAI (/v1/images/generations)
+    img_attach: Imagen adjunta (opcional — imagen a imagen)
+    img_hint: Describa la imagen a generar; adjunte opcionalmente una imagen de entrada. La puerta de enlace consulta el servidor asociado y muestra la imagen producida.
+    img_ph: Describa la imagen a generar…
+    img_send: Generar
+  js:
+    no_model: (ningún modelo detectado)
+    unreachable: (servidor inaccesible)
+    no_img_model: (ningún modelo x/ detectado)
+    failed: 'Error: '
+    net_error: Error de red.
+    generating: Generando…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Resolviendo…
+    whois_unavailable: WHOIS no disponible.
+  opt:
+    default: ' (predeterminado)'
+    disabled: ' — desactivado'
+  edit:
+    server_hint: Cambiar de servidor vuelve a sondear sus modelos disponibles abajo.
+    target_hint: URL pública usada para generar las variables de entorno.
+    fallback_hint: Ante un error del servidor (5xx / conexión) del upstream primario, la solicitud se reintenta de forma transparente hacia este servidor.
+    retention: Retención de registros (días)
+    retention_hint: Contenido completo de las solicitudes (archivos fuera de la base de datos). Vacío = predeterminado global ({days} d); 0 = purga de las horas pasadas.
+  stat:
+    requests: solicitudes
+    tokens_total: tokens (total)
+    tokens_month: tokens este mes
+    errors: errores
+  usage:
+    title: Uso (últimos 30 días)
+    th_day: Día
+    th_reqs: Solicitudes
+    th_tokens: Tokens
+    empty: Ninguna solicitud en el período — el uso aparecerá aquí desde la primera llamada.
+  origins:
+    title: Orígenes vistos ({count})
+    search_ph: Buscar una IP…
+    th_ip: IP
+    th_reqs: Solicitudes
+    th_last: Visto por última vez
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Ningún origen coincide con la búsqueda.
+    empty: Aún no se ha visto ningún origen para esta clave.
+  errors:
+    title: Últimos errores
+    th_ts: Marca de tiempo
+    th_ip: IP
+    th_path: Ruta
+    th_status: Estado
+  whois:
+    aria: WHOIS de un origen
+    title: WHOIS
+foot:
+  heart_aria: amor

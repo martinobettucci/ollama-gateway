@@ -1,0 +1,322 @@
+# Locale nl (Nederlands) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama-gateway
+  tagline: sleutelbeheer
+common:
+  close: Sluiten
+  save: Opslaan
+  cancel: Annuleren
+  delete: Verwijderen
+  edit: Bewerken
+  'yes': ja
+  'no': nee
+  none: geen
+  all: alle
+  never: nooit
+  unlimited: onbeperkt
+  optional: optioneel
+  enabled: ingeschakeld
+  disabled: uitgeschakeld
+  online: online
+  offline: offline
+  default: standaard
+nav:
+  aria: Hoofdnavigatie
+  dashboard: Dashboard
+  servers: Servers
+  targets: Bestemmingen
+  logs: Logs
+  manual: Handleiding
+  logout: Afmelden
+  language: Taal
+manual:
+  title: Gebruikershandleiding
+  close_aria: Handleiding sluiten
+  loading: Handleiding laden…
+  load_error: Kan de handleiding niet laden.
+login:
+  title: Aanmelden
+  heading: Beheerdersaanmelding
+  password: Wachtwoord
+  submit: Enter
+  wrong: Onjuist wachtwoord.
+  throttled: Te veel pogingen — probeer het over enkele minuten opnieuw.
+setup:
+  title: Initialisatie
+  heading: Eerste gebruik
+  subtitle: Stel het beheerderswachtwoord van de gateway in
+  password: Beheerderswachtwoord
+  hint: Minimaal 8 tekens.
+  confirm: Bevestiging
+  submit: Instellen en aanmelden
+  error_pw: Wachtwoord te kort (min. 8) of niet identiek.
+dash:
+  created:
+    created: Sleutel “{label}” aangemaakt.
+    copy_now: Kopieer hem nu
+    never: 'hij wordt nooit meer getoond:'
+  env:
+    aria: Client configureren
+    title: Sleutel “{label}” aangemaakt — client configureren
+    copy_desc: Kopieer deze omgevingsvariabelen naar de clientmachine.
+    never: De sleutel wordt nooit meer getoond.
+    api_ollama: Ollama-API
+    api_openai: OpenAI-API
+    api_anthropic: Anthropic-API
+    no_public_url: '`PUBLIC_BASE_URL` is niet geconfigureerd op de gateway: vervang de placeholder door de echte openbare URL vóór gebruik.'
+    copy_btn: Variabelen kopiëren
+    copied: Gekopieerd!
+    copy_fail: Kopiëren mislukt
+  stat:
+    total_reqs: totaal aantal aanvragen
+    last24h: laatste 24 u
+    tokens: geleverde tokens
+    errors: fouten (≥ 400)
+  keys:
+    title: API-sleutels ({count})
+    search_ph: Zoeken (label of prefix)…
+    filter_server_aria: Filteren op server
+    all_servers: Alle servers
+    filter_api_aria: Filteren op API
+    all_apis: Alle API's
+    filter_state_aria: Filteren op status
+    all_states: Alle statussen
+    active: Actief
+    disabled: Uitgeschakeld
+    th:
+      label: Label
+      prefix: Prefix
+      state: Status
+      server: Server
+      models: Modellen
+      origins: Oorsprongen
+      quota: Quotum
+      last_used: Laatst gebruikt
+      actions: Acties
+    badge_active: actief
+    badge_disabled: uitgeschakeld
+    n_allowed: '{count} toegestaan'
+    all_origins: alle
+    tok_month: tok/maand
+    req_min: aanvr./min
+    deactivate: deactiveren
+    activate: activeren
+    delete_confirm: Sleutel “{label}” verwijderen?
+    delete_short: verw.
+    empty: Nog geen sleutels — maak de eerste aan met het formulier hieronder.
+    no_match: Geen sleutel komt overeen met de filters.
+  new:
+    title: Nieuwe sleutel
+    label: Label *
+    server: Uitvoeringsserver
+    default: standaard
+    target: Openbare bestemming (env-gen)
+    target_hint: Openbare URL die in de omgevingsvariabelen van de sleutel wordt ingevoegd.
+    fallback: Fallbackserver
+    none_option: — geen —
+    fallback_hint: Transparante fallback bij serverfout (5xx / verbinding).
+    monthly_cap: Tokenlimiet / maand
+    empty_unlimited: Leeg = onbeperkt.
+    rpm: Snelheidslimiet (aanvr./min)
+    expiry_legend: Vervaldatum / levensduurlimieten
+    expiry_hint: (kostengelimiteerde proef — los van de snelheidslimiet)
+    total_tokens: Totale tokenlimiet
+    total_tokens_hint: Absoluut budget over de levensduur van de sleutel. Leeg = onbeperkt.
+    total_reqs: Totale aanvraaglimiet
+    total_reqs_hint: Absoluut aantal aanvragen. Leeg = onbeperkt.
+    expires_at: Verloopt op
+    expires_hint: Uiterste datum/tijd. Leeg = nooit.
+    idle: Verval bij inactiviteit (dagen)
+    idle_hint: Weigering na N dagen zonder gebruik. Leeg = nooit.
+    models: Toegestane modellen
+    apis: Toegestane API's
+    origins: Toegestane oorsprongen
+    origins_hint: Eén IP of CIDR per regel; leeg = alle oorsprongen.
+    note: Notitie
+    submit: Sleutel aanmaken
+tgt:
+  title: Openbare bestemmingen
+  intro: Een <strong>bestemming</strong> is de openbare URL van de gateway zoals een client die ziet (bijv. <span class="mono">https://llm.example:21434</span>). Ze dient om de omgevingsvariabelen van de gekoppelde sleutel te genereren — <strong>ze wijzigt de routering niet</strong> (de upstream wordt nog steeds door de uitvoeringsserver gekozen). Elke sleutel wijst naar een bestemming; de standaardbestemming kan niet worden verwijderd.
+  keys_count: '{count} sleutel(s)'
+  edit:
+    name: Naam
+    url: Openbare URL
+  delete_confirm: Bestemming “{name}” verwijderen?
+  add:
+    title: Een bestemming toevoegen
+    name: Naam *
+    url: Openbare URL *
+    hint: Zonder afsluitende schuine streep. Dit is de URL die de client in <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span> zet.
+    submit: Bestemming toevoegen
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: aanvragen
+    active_keys: actieve sleutels
+  reqs_day: Aanvragen / dag (30 d)
+  tokens_day: Tokens / dag (30 d)
+  status_dist: Statusverdeling
+  tokens_key: Tokens per sleutel (top 10)
+  reqs_key: Aanvragen per sleutel (top 10)
+  consumption: Verbruik per sleutel
+  th:
+    key: Sleutel
+    reqs: Aanvragen
+    tokens: Tokens
+    errors: Fouten
+    last_used: Laatst gebruikt
+  empty: Nog geen aanvraag aan deze server toegewezen.
+logs:
+  title: Journaal & blokkades
+  intro: Volledig aanvraagjournaal (integraal bewaard, nooit gewist) — {total} gebeurtenis(sen) in totaal, {shown} getoond. Blokkeer een oorsprong met één klik vanuit een rij; een geblokkeerde oorsprong wordt door de proxy geweigerd (403) vóór elke sleutel.
+  bans:
+    title: Geblokkeerde oorsprongen ({count})
+    cidr_label: Te blokkeren IP of CIDR
+    reason_label: Reden (optioneel)
+    reason_ph: misbruik, scan…
+    ban_btn: Blokkeren
+    th:
+      origin: Oorsprong
+      reason: Reden
+      since: Sinds
+    unban: Deblokkeren
+    empty: Geen geblokkeerde oorsprong.
+  journal:
+    title: Aanvraagjournaal
+    th:
+      ts: Tijdstempel
+      origin: Oorsprong
+      key: Sleutel
+      method: Methode
+      path: Pad
+      model: Model
+      status: Status
+      tokens: Tokens
+      duration: Duur
+      action: Actie
+    banned: geblokkeerd
+    ban_reason: geblokkeerd vanuit de logconsole
+    empty: Nog geen aanvraag gelogd.
+srv:
+  title: Uitvoeringsservers
+  intro: Elke sleutel is aan precies één server gekoppeld. De standaardserver (lokaal) wordt automatisch aangemaakt en kan niet worden verwijderd.
+  untested: niet getest
+  auth_badge: auth
+  tested_on: getest op {date}
+  compat:
+    title: API-compatibiliteit
+    tested: — getest op {date}
+    net_error: netwerkfout
+  actions:
+    monitor: Monitor
+    test: Testen
+    check_compat: Compatibiliteit controleren
+  delete_confirm: Server “{name}” verwijderen?
+  edit:
+    name: Naam
+    url: Basis-URL
+    token: Externe auth-token (Bearer)
+    token_ph_set: ingesteld — leeg laten om te behouden
+    enabled_check: server ingeschakeld
+    clear_token: token verwijderen
+  add:
+    title: Een server toevoegen
+    name: Naam *
+    url: Basis-URL *
+    token_hint: Versleuteld opgeslagen; nooit meer getoond. Gebruikt als de externe server een Bearer vereist.
+    submit: Server toevoegen
+api:
+  fam:
+    ollama: Native Ollama (/api/*)
+    openai: OpenAI-compatibel (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Aangevinkte vakjes = voor de sleutel toegestane API-families (pad toestaan/verbieden, zonder schemavalidatie). <strong>Geen aangevinkt = alle API's toegestaan.</strong> Listing-endpoints (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) worden altijd bediend.
+  img:
+    ollama-image: Afbeelding via Ollama (model x/… op /api/generate)
+    openai-image: Afbeelding via OpenAI (/v1/images/generations)
+  img_hint: <strong>Beeldgeneratie</strong> (afzonderlijke functie). Schakel de gewenste route in en vul de <strong>beeldmodellen</strong> (<span class="mono">x/…</span>) hieronder in.
+mdl:
+  probing: Server wordt bevraagd…
+  extra_ph: extra modellen, één per regel
+  hint: Aangevinkte vakjes + vrije invoer = allowlist van de sleutel. Overal leeg = alle (tekst)modellen van de server toegestaan.
+  img_label: Toegestane beeldmodellen (<span class="mono">x/…</span>)
+  img_extra_ph: extra beeldmodellen (x/…), één per regel
+  img_hint: <strong>Afzonderlijke</strong> allowlist voor beeldmodellen. Leeg = alle beeldmodellen toegestaan (als beeldgeneratie hierboven is ingeschakeld).
+  offline: Server onbereikbaar of zonder modellen — vrije invoer hieronder.
+kd:
+  meta: '{prefix}… · aangemaakt op {created} · laatst gebruikt: {last_used}'
+  try:
+    open: Nu proberen
+    aria: De sleutel proberen
+    title: “{label}” proberen
+    tab_text: Tekst
+    tab_image: Afbeelding
+    model: Model
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Stuur een bericht: de gateway bevraagt de aan deze sleutel gekoppelde server en toont het antwoord van het model.'
+    msg_ph: Schrijf een bericht…
+    send: Verzenden
+    img_model: Beeldmodel
+    img_api_ollama: Ollama-afbeelding (/api/generate)
+    img_api_openai: OpenAI-afbeelding (/v1/images/generations)
+    img_attach: Bijgevoegde afbeelding (optioneel — afbeelding-naar-afbeelding)
+    img_hint: Beschrijf de te genereren afbeelding; voeg eventueel een invoerafbeelding toe. De gateway bevraagt de gekoppelde server en toont de geproduceerde afbeelding.
+    img_ph: Beschrijf de te genereren afbeelding…
+    img_send: Genereren
+  js:
+    no_model: (geen model gedetecteerd)
+    unreachable: (server onbereikbaar)
+    no_img_model: (geen x/-model gedetecteerd)
+    failed: 'Mislukt: '
+    net_error: Netwerkfout.
+    generating: Genereren…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Oplossen…
+    whois_unavailable: WHOIS niet beschikbaar.
+  opt:
+    default: ' (standaard)'
+    disabled: ' — uitgeschakeld'
+  edit:
+    server_hint: Van server wisselen bevraagt de beschikbare modellen hieronder opnieuw.
+    target_hint: Openbare URL gebruikt om de omgevingsvariabelen te genereren.
+    fallback_hint: Bij een serverfout (5xx / verbinding) van de primaire upstream wordt de aanvraag transparant naar deze server doorgestuurd.
+    retention: Logbewaring (dagen)
+    retention_hint: Volledige aanvraaginhoud (bestanden buiten de database). Leeg = globale standaard ({days} d); 0 = wissen van de voorbije uren.
+  stat:
+    requests: aanvragen
+    tokens_total: tokens (totaal)
+    tokens_month: tokens deze maand
+    errors: fouten
+  usage:
+    title: Gebruik (laatste 30 dagen)
+    th_day: Dag
+    th_reqs: Aanvragen
+    th_tokens: Tokens
+    empty: Geen aanvraag in de periode — het gebruik verschijnt hier vanaf de eerste aanroep.
+  origins:
+    title: Geziene oorsprongen ({count})
+    search_ph: Een IP zoeken…
+    th_ip: IP
+    th_reqs: Aanvragen
+    th_last: Laatst gezien
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Geen oorsprong komt overeen met de zoekopdracht.
+    empty: Nog geen oorsprong gezien voor deze sleutel.
+  errors:
+    title: Laatste fouten
+    th_ts: Tijdstempel
+    th_ip: IP
+    th_path: Pad
+    th_status: Status
+  whois:
+    aria: WHOIS van een oorsprong
+    title: WHOIS
+foot:
+  heart_aria: liefde
