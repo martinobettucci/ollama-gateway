@@ -21,6 +21,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'on',                    // .webm pour l'observation en vision
     trace: 'retain-on-failure',
+    // Environnements où seul un Chromium pré-installé est disponible (révision ≠ celle épinglée) :
+    // pointer PW_CHROMIUM_PATH vers le binaire. Inerte en dev normal (variable absente).
+    ...(process.env.PW_CHROMIUM_PATH
+      ? { launchOptions: { executablePath: process.env.PW_CHROMIUM_PATH } }
+      : {}),
   },
   webServer: [
     {
