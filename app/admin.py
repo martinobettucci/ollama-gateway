@@ -22,6 +22,7 @@ MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    config.check_runtime_secrets()  # fail-closed prod (secrets par défaut publics refusés)
     db.init_db()
     servers.ensure_default()  # serveur local par défaut + réassignation des clés orphelines
     targets.ensure_default()  # cible publique par défaut + rattachement des clés orphelines

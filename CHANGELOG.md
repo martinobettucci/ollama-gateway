@@ -6,6 +6,12 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Sécurité — démarrage prod « fail-closed » sur les secrets.** En production, la passerelle
+  **refuse de démarrer** si `ADMIN_SESSION_SECRET` ou `P2E_MASTER_KEY` sont absents ou laissés à
+  leur valeur de développement (non secrète). Empêche qu'une prod mal configurée signe ses
+  sessions admin avec un secret connu (forge de cookie) ou chiffre les jetons distants avec une
+  clé prévisible. Sans effet en dev/staging self-contained.
+
 - **Sécurité — `X-Forwarded-For` résistant à l'usurpation.** L'IP source réelle est désormais
   lue à la **droite** de la chaîne `X-Forwarded-For` (l'entrée ajoutée par l'edge de confiance),
   en sautant les proxys de confiance. Un client externe ne peut plus forger une IP à gauche du

@@ -16,13 +16,14 @@ Variables d'import (import-key) — la clé n'apparaît jamais dans le repo, seu
 import os
 import sys
 
-from . import auth, db, keys, servers
+from . import auth, config, db, keys, servers
 
 # Clé de démo dev DÉTERMINISTE (non secrète, jamais en prod) : sert aux tests E2E du proxy.
 DEV_DEMO_KEY = "sk-ollama-devdemokey000000000000000000000000000000000000000000000000"
 
 
 def cmd_init() -> None:
+    config.check_runtime_secrets()  # fail-closed prod : pas de secret par défaut public
     applied = db.apply_migrations()
     print(f"migrations appliquées: {applied or 'aucune (à jour)'}")
     servers.ensure_default()  # serveur local par défaut + réassignation des clés orphelines

@@ -31,6 +31,7 @@ _LISTING_PATHS = {"/api/tags", "/v1/models"}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    config.check_runtime_secrets()  # fail-closed prod (secrets par défaut publics refusés)
     db.init_db()
     servers.ensure_default()  # serveur local par défaut + réassignation des clés orphelines
     # Client sans base_url : chaque requête cible l'URL absolue du serveur rattaché à la clé.

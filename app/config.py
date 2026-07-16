@@ -32,12 +32,16 @@ TRUSTED_PROXY_IPS = {
     ip.strip() for ip in os.environ.get("TRUSTED_PROXY_IPS", "127.0.0.1,::1").split(",") if ip.strip()
 }
 
+# Défauts dev NON SECRETS (publics dans le dépôt) : refusés en prod par `check_runtime_secrets`.
+DEV_SESSION_SECRET = "dev-insecure-session-secret"
+DEV_MASTER_KEY = "dev-insecure-master-key"
+
 # Secret de signature des sessions admin (cookie). OBLIGATOIRE en prod ; défaut dev non secret.
-ADMIN_SESSION_SECRET = os.environ.get("ADMIN_SESSION_SECRET", "dev-insecure-session-secret")
+ADMIN_SESSION_SECRET = os.environ.get("ADMIN_SESSION_SECRET", DEV_SESSION_SECRET)
 
 # Clé maître de chiffrement au repos (jetons d'auth des serveurs distants, cf. crypto.py).
 # OBLIGATOIRE en prod ; défaut dev non secret. Changer cette clé rend les jetons stockés illisibles.
-P2E_MASTER_KEY = os.environ.get("P2E_MASTER_KEY", "dev-insecure-master-key")
+P2E_MASTER_KEY = os.environ.get("P2E_MASTER_KEY", DEV_MASTER_KEY)
 
 # Délai max d'un test de disponibilité d'un serveur d'exécution (GET /api/tags).
 SERVER_PROBE_TIMEOUT_S = float(os.environ.get("SERVER_PROBE_TIMEOUT_S", "5"))
@@ -63,3 +67,25 @@ REQUEST_LOG_RETENTION_DAYS = int(os.environ.get("REQUEST_LOG_RETENTION_DAYS", "3
 ALLOWED_PATH_PREFIXES = ("/api/", "/v1/")
 
 IS_PROD = APP_ENV == "prod"
+
+
+def check_runtime_secrets() -> None:
+    """Fail-closed en prod : refuse de démarrer si un secret critique est absent ou laissé au
+    défaut dev (ces défauts sont publics dans le dépôt open-source). Sans ce garde-fou, une prod
+    mal configurée signerait ses sessions admin avec un secret connu de tous → forge du cookie
+    `{"admin": true}` et prise de contrôle du panel. No-op hors prod (dev/staging self-contained).
+
+    Appelé au démarrage (`bootstrap init`, avant uvicorn) et dans le lifespan des deux rôles.
+    """
+    if not IS_PROD:
+        return
+    missing = []
+    if ADMIN_SESSION_SECRET in ("", DEV_SESSION_SECRET):
+        missing.append("ADMIN_SESSION_SECRET")
+    if P2E_MASTER_KEY in ("", DEV_MASTER_KEY):
+        missing.append("P2E_MASTER_KEY")
+    if missing:
+        raise RuntimeError(
+            "Secret(s) de production absent(s) ou laissé(s) au défaut dev (publics) : "
+            + ", ".join(missing)
+            + ". Renseignez-les dans .env.prod (ex. `openssl rand -hex 32`) avant de démarrer.")
