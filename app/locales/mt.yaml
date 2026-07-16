@@ -1,0 +1,322 @@
+# Locale mt (Malti) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Gateway Ollama
+  tagline: ġestjoni taċ-ċwievet
+common:
+  close: Agħlaq
+  save: Issejvja
+  cancel: Ikkanċella
+  delete: Ħassar
+  edit: Editja
+  'yes': iva
+  'no': le
+  none: xejn
+  all: kollha
+  never: qatt
+  unlimited: bla limitu
+  optional: mhux obbligatorju
+  enabled: attivat
+  disabled: diżattivat
+  online: onlajn
+  offline: offlajn
+  default: difolt
+nav:
+  aria: Navigazzjoni prinċipali
+  dashboard: Dashboard
+  servers: Servers
+  targets: Miri
+  logs: Logs
+  manual: Manwal
+  logout: Oħroġ
+  language: Lingwa
+manual:
+  title: Manwal tal-utent
+  close_aria: Agħlaq il-manwal
+  loading: Qed jitgħabba l-manwal…
+  load_error: Ma jistax jitgħabba l-manwal.
+login:
+  title: Idħol
+  heading: Dħul tal-amministratur
+  password: Password
+  submit: Idħol
+  wrong: Password żbaljata.
+  throttled: Wisq tentattivi — erġa' pprova fi ftit minuti.
+setup:
+  title: Inizjalizzazzjoni
+  heading: L-ewwel użu
+  subtitle: Issettja l-password tal-amministratur tal-gateway
+  password: Password tal-amministratur
+  hint: Minimu 8 karattri.
+  confirm: Konferma
+  submit: Issettja u idħol
+  error_pw: Password qasira wisq (min. 8) jew mhux identika.
+dash:
+  created:
+    created: Iċ-ċavetta „{label}“ inħolqot.
+    copy_now: Ikkopjaha issa
+    never: 'qatt aktar mhi se tintwera:'
+  env:
+    aria: Ikkonfigura l-klijent
+    title: Iċ-ċavetta „{label}“ inħolqot — ikkonfigura l-klijent
+    copy_desc: Ikkopja dawn il-varjabbli tal-ambjent fuq il-magna tal-klijent.
+    never: Iċ-ċavetta qatt aktar mhi se tintwera.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` mhux ikkonfigurat fuq il-gateway: issostitwixxi l-placeholder bl-URL pubbliku reali qabel l-użu.'
+    copy_btn: Ikkopja l-varjabbli
+    copied: Ikkupjat!
+    copy_fail: L-ikkupjar falla
+  stat:
+    total_reqs: total talbiet
+    last24h: l-aħħar 24 s
+    tokens: tokens moqdija
+    errors: żbalji (≥ 400)
+  keys:
+    title: Ċwievet API ({count})
+    search_ph: Fittex (tikketta jew prefiss)…
+    filter_server_aria: Iffiltra skont is-server
+    all_servers: Is-servers kollha
+    filter_api_aria: Iffiltra skont l-API
+    all_apis: L-APIs kollha
+    filter_state_aria: Iffiltra skont l-istat
+    all_states: L-istati kollha
+    active: Attivi
+    disabled: Diżattivati
+    th:
+      label: Tikketta
+      prefix: Prefiss
+      state: Stat
+      server: Server
+      models: Mudelli
+      origins: Oriġini
+      quota: Kwota
+      last_used: L-aħħar użu
+      actions: Azzjonijiet
+    badge_active: attiva
+    badge_disabled: diżattivata
+    n_allowed: '{count} permessi'
+    all_origins: kollha
+    tok_month: tok/xahar
+    req_min: talbiet/min
+    deactivate: diżattiva
+    activate: attiva
+    delete_confirm: Ħassar iċ-ċavetta „{label}“?
+    delete_short: ħassar
+    empty: L-ebda ċavetta għadha — oħloq l-ewwel waħda bil-formola hawn taħt.
+    no_match: L-ebda ċavetta ma taqbel mal-filtri.
+  new:
+    title: Ċavetta ġdida
+    label: Tikketta *
+    server: Server tal-eżekuzzjoni
+    default: difolt
+    target: Mira pubblika (env-gen)
+    target_hint: URL pubbliku mdaħħal fil-varjabbli tal-ambjent taċ-ċavetta.
+    fallback: Server ta' riżerva (fallback)
+    none_option: — xejn —
+    fallback_hint: Fallback trasparenti fuq żball tas-server (5xx / konnessjoni).
+    monthly_cap: Limitu ta' tokens / xahar
+    empty_unlimited: Vojt = bla limitu.
+    rpm: Limitu tar-rata (talbiet/min)
+    expiry_legend: Skadenza / limiti taċ-ċiklu tal-ħajja
+    expiry_hint: (prova b'kost limitat — separata mil-limitu tar-rata)
+    total_tokens: Limitu totali ta' tokens
+    total_tokens_hint: Baġit assolut matul iċ-ċiklu tal-ħajja taċ-ċavetta. Vojt = bla limitu.
+    total_reqs: Limitu totali ta' talbiet
+    total_reqs_hint: Numru assolut ta' talbiet. Vojt = bla limitu.
+    expires_at: Tiskadi fi
+    expires_hint: Data/ħin tal-iskadenza. Vojt = qatt.
+    idle: Skadenza minħabba inattività (jiem)
+    idle_hint: Rifjut wara N jiem mingħajr użu. Vojt = qatt.
+    models: Mudelli permessi
+    apis: APIs permessi
+    origins: Oriġini permessi
+    origins_hint: IP jew CIDR wieħed kull linja; vojt = l-oriġini kollha.
+    note: Nota
+    submit: Oħloq iċ-ċavetta
+tgt:
+  title: Miri pubbliċi
+  intro: <strong>Mira</strong> hija l-URL pubbliku tal-gateway kif jarah klijent (eż. <span class="mono">https://llm.example:21434</span>). Isservi biex jiġġenera l-varjabbli tal-ambjent taċ-ċavetta assoċjata — <strong>ma jbiddilx ir-rotting</strong> (l-upstream għadu jintgħażel mis-server tal-eżekuzzjoni). Kull ċavetta tindika mira; il-mira difolt ma tistax titħassar.
+  keys_count: '{count} ċavetta/ċwievet'
+  edit:
+    name: Isem
+    url: URL pubbliku
+  delete_confirm: Ħassar il-mira „{name}“?
+  add:
+    title: Żid mira
+    name: Isem *
+    url: URL pubbliku *
+    hint: Mingħajr slash finali. Din hija l-URL li l-klijent se jdaħħal f' <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Żid il-mira
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: talbiet
+    active_keys: ċwievet attivi
+  reqs_day: Talbiet / jum (30 j)
+  tokens_day: Tokens / jum (30 j)
+  status_dist: Distribuzzjoni tal-istatus
+  tokens_key: Tokens għal kull ċavetta (top 10)
+  reqs_key: Talbiet għal kull ċavetta (top 10)
+  consumption: Konsum għal kull ċavetta
+  th:
+    key: Ċavetta
+    reqs: Talbiet
+    tokens: Tokens
+    errors: Żbalji
+    last_used: L-aħħar użu
+  empty: L-ebda talba għadha attribwita lil dan is-server.
+logs:
+  title: Ġurnal u projbizzjonijiet
+  intro: Ġurnal sħiħ tat-talbiet (miżmum kollu, qatt ma jitnaddaf) — {total} avveniment(i) b'kollox, {shown} murija. Ipprojbixxi oriġini bi klikk wieħed minn ringiela; oriġini pprojbita tiġi rrifjutata (403) mill-proxy qabel kwalunkwe ċavetta.
+  bans:
+    title: Oriġini pprojbiti ({count})
+    cidr_label: IP jew CIDR biex jiġi pprojbit
+    reason_label: Raġuni (mhux obbligatorja)
+    reason_ph: abbuż, skennjar…
+    ban_btn: Ipprojbixxi
+    th:
+      origin: Oriġini
+      reason: Raġuni
+      since: Minn
+    unban: Neħħi l-projbizzjoni
+    empty: L-ebda oriġini pprojbita.
+  journal:
+    title: Ġurnal tat-talbiet
+    th:
+      ts: Marka tal-ħin
+      origin: Oriġini
+      key: Ċavetta
+      method: Metodu
+      path: Mogħdija
+      model: Mudell
+      status: Stat
+      tokens: Tokens
+      duration: Tul
+      action: Azzjoni
+    banned: ipprojbita
+    ban_reason: ipprojbita mill-konsol tal-logs
+    empty: L-ebda talba għadha rreġistrata.
+srv:
+  title: Servers tal-eżekuzzjoni
+  intro: Kull ċavetta hija assoċjata ma' server wieħed eżatt. Is-server difolt (lokali) jinħoloq awtomatikament u ma jistax jitħassar.
+  untested: mhux ittestjat
+  auth_badge: auth
+  tested_on: ittestjat fi {date}
+  compat:
+    title: Kompatibbiltà tal-API
+    tested: — ittestjata fi {date}
+    net_error: żball tan-netwerk
+  actions:
+    monitor: Monitor
+    test: Ittestja
+    check_compat: Iċċekkja l-kompatibbiltà
+  delete_confirm: Ħassar is-server „{name}“?
+  edit:
+    name: Isem
+    url: URL bażi
+    token: Token ta' awtentikazzjoni remota (Bearer)
+    token_ph_set: issettjat — ħalli vojt biex iżżomm
+    enabled_check: server attivat
+    clear_token: neħħi t-token
+  add:
+    title: Żid server
+    name: Isem *
+    url: URL bażi *
+    token_hint: Kriptat waqt il-mistrieħ; qatt aktar mhu jintwera. Jintuża jekk is-server remot jeħtieġ Bearer.
+    submit: Żid is-server
+api:
+  fam:
+    ollama: Ollama nattiv (/api/*)
+    openai: Kompatibbli ma' OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Kaxxi mmarkati = familji ta' API permessi għaċ-ċavetta (permetti/ipprojbixxi mogħdija, mingħajr validazzjoni tal-iskema). <strong>L-ebda mmarkat = l-APIs kollha permessi.</strong> Il-punti tat-tmiem tal-listi (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) dejjem jiġu moqdija.
+  img:
+    ollama-image: Immaġni permezz ta' Ollama (mudell x/… fuq /api/generate)
+    openai-image: Immaġni permezz ta' OpenAI (/v1/images/generations)
+  img_hint: <strong>Ġenerazzjoni ta' immaġni</strong> (kapaċità separata). Attiva l-mogħdija mixtieqa u imla l-<strong>mudelli tal-immaġni</strong> (<span class="mono">x/…</span>) hawn taħt.
+mdl:
+  probing: Qed jiġi sondat is-server…
+  extra_ph: mudelli addizzjonali, wieħed kull linja
+  hint: Kaxxi mmarkati + input ħieles = lista permessa taċ-ċavetta. Vojt kullimkien = il-mudelli (tat-test) kollha tas-server permessi.
+  img_label: Mudelli tal-immaġni permessi (<span class="mono">x/…</span>)
+  img_extra_ph: mudelli tal-immaġni addizzjonali (x/…), wieħed kull linja
+  img_hint: Lista permessa <strong>separata</strong> għall-mudelli tal-immaġni. Vojt = il-mudelli tal-immaġni kollha permessi (jekk il-ġenerazzjoni tal-immaġni hija attivata hawn fuq).
+  offline: Server mhux aċċessibbli jew mingħajr mudelli — input ħieles hawn taħt.
+kd:
+  meta: '{prefix}… · maħluqa fi {created} · l-aħħar użu: {last_used}'
+  try:
+    open: Ipprova issa
+    aria: Ipprova ċ-ċavetta
+    title: Ipprova „{label}“
+    tab_text: Test
+    tab_image: Immaġni
+    model: Mudell
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Ibgħat messaġġ: il-gateway jistaqsi lis-server assoċjat ma'' din iċ-ċavetta u juri t-tweġiba tal-mudell.'
+    msg_ph: Ikteb messaġġ…
+    send: Ibgħat
+    img_model: Mudell tal-immaġni
+    img_api_ollama: Immaġni Ollama (/api/generate)
+    img_api_openai: Immaġni OpenAI (/v1/images/generations)
+    img_attach: Immaġni mehmuża (mhux obbligatorja — immaġni għal immaġni)
+    img_hint: Iddeskrivi l-immaġni li trid tiġġenera; ehmeż immaġni tal-input jekk trid. Il-gateway jistaqsi lis-server assoċjat u juri l-immaġni prodotta.
+    img_ph: Iddeskrivi l-immaġni li trid tiġġenera…
+    img_send: Iġġenera
+  js:
+    no_model: (l-ebda mudell ma nstab)
+    unreachable: (server mhux aċċessibbli)
+    no_img_model: (l-ebda mudell x/ ma nstab)
+    failed: 'Falla: '
+    net_error: Żball tan-netwerk.
+    generating: Qed jiġi ġġenerat…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Qed jiġi solvut…
+    whois_unavailable: WHOIS mhux disponibbli.
+  opt:
+    default: ' (difolt)'
+    disabled: ' — diżattivat'
+  edit:
+    server_hint: Il-bidla tas-server terġa' tissonda l-mudelli disponibbli tiegħu hawn taħt.
+    target_hint: URL pubbliku użat biex jiġġenera l-varjabbli tal-ambjent.
+    fallback_hint: Fuq żball tas-server (5xx / konnessjoni) tal-upstream primarju, it-talba tiġi mgħoddija b'mod trasparenti lil dan is-server.
+    retention: Żamma tal-logs (jiem)
+    retention_hint: Kontenut sħiħ tat-talbiet (fajls barra mid-database). Vojt = difolt globali ({days} j); 0 = tindif tas-sigħat li għaddew.
+  stat:
+    requests: talbiet
+    tokens_total: tokens (total)
+    tokens_month: tokens dan ix-xahar
+    errors: żbalji
+  usage:
+    title: Użu (l-aħħar 30 jum)
+    th_day: Jum
+    th_reqs: Talbiet
+    th_tokens: Tokens
+    empty: L-ebda talba fil-perjodu — l-użu se jidher hawn mill-ewwel sejħa.
+  origins:
+    title: Oriġini li dehru ({count})
+    search_ph: Fittex IP…
+    th_ip: IP
+    th_reqs: Talbiet
+    th_last: L-aħħar li deher
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: L-ebda oriġini ma taqbel mat-tfittxija.
+    empty: L-ebda oriġini għadha ma dehret għal din iċ-ċavetta.
+  errors:
+    title: L-aħħar żbalji
+    th_ts: Marka tal-ħin
+    th_ip: IP
+    th_path: Mogħdija
+    th_status: Stat
+  whois:
+    aria: WHOIS ta' oriġini
+    title: WHOIS
+foot:
+  heart_aria: imħabba

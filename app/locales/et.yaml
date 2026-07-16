@@ -1,0 +1,322 @@
+# Locale et (Eesti) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama lüüs
+  tagline: võtmehaldus
+common:
+  close: Sulge
+  save: Salvesta
+  cancel: Tühista
+  delete: Kustuta
+  edit: Muuda
+  'yes': jah
+  'no': ei
+  none: puudub
+  all: kõik
+  never: mitte kunagi
+  unlimited: piiramatu
+  optional: valikuline
+  enabled: lubatud
+  disabled: keelatud
+  online: võrgus
+  offline: võrguühenduseta
+  default: vaikimisi
+nav:
+  aria: Peamine navigeerimine
+  dashboard: Töölaud
+  servers: Serverid
+  targets: Sihtmärgid
+  logs: Logid
+  manual: Käsiraamat
+  logout: Logi välja
+  language: Keel
+manual:
+  title: Kasutusjuhend
+  close_aria: Sulge käsiraamat
+  loading: Käsiraamatu laadimine…
+  load_error: Käsiraamatut ei saa laadida.
+login:
+  title: Sisselogimine
+  heading: Administraatori sisselogimine
+  password: Parool
+  submit: Sisene
+  wrong: Vale parool.
+  throttled: Liiga palju katseid — proovige mõne minuti pärast uuesti.
+setup:
+  title: Lähtestamine
+  heading: Esmakordne kasutamine
+  subtitle: Määrake lüüsi administraatori parool
+  password: Administraatori parool
+  hint: Vähemalt 8 tähemärki.
+  confirm: Kinnitus
+  submit: Määra ja sisene
+  error_pw: Parool on liiga lühike (min 8) või ei ühti.
+dash:
+  created:
+    created: Võti „{label}“ loodud.
+    copy_now: Kopeerige see kohe
+    never: 'seda ei kuvata enam kunagi:'
+  env:
+    aria: Kliendi seadistamine
+    title: Võti „{label}“ loodud — seadistage klient
+    copy_desc: Kopeerige need keskkonnamuutujad kliendiarvutisse.
+    never: Võtit ei kuvata enam kunagi.
+    api_ollama: Ollama API
+    api_openai: OpenAI API
+    api_anthropic: Anthropic API
+    no_public_url: '`PUBLIC_BASE_URL` ei ole lüüsis seadistatud: asendage kohatäide enne kasutamist tegeliku avaliku URL-iga.'
+    copy_btn: Kopeeri muutujad
+    copied: Kopeeritud!
+    copy_fail: Kopeerimine ebaõnnestus
+  stat:
+    total_reqs: päringuid kokku
+    last24h: viimased 24 h
+    tokens: teenindatud tokenid
+    errors: vead (≥ 400)
+  keys:
+    title: API-võtmed ({count})
+    search_ph: Otsi (silt või eesliide)…
+    filter_server_aria: Filtreeri serveri järgi
+    all_servers: Kõik serverid
+    filter_api_aria: Filtreeri API järgi
+    all_apis: Kõik API-d
+    filter_state_aria: Filtreeri oleku järgi
+    all_states: Kõik olekud
+    active: Aktiivsed
+    disabled: Keelatud
+    th:
+      label: Silt
+      prefix: Eesliide
+      state: Olek
+      server: Server
+      models: Mudelid
+      origins: Päritolud
+      quota: Kvoot
+      last_used: Viimati kasutatud
+      actions: Toimingud
+    badge_active: aktiivne
+    badge_disabled: keelatud
+    n_allowed: '{count} lubatud'
+    all_origins: kõik
+    tok_month: tok/kuus
+    req_min: päringut/min
+    deactivate: keela
+    activate: luba
+    delete_confirm: Kas kustutada võti „{label}“?
+    delete_short: kustuta
+    empty: Võtmeid veel pole — looge esimene alloleva vormiga.
+    no_match: Ükski võti ei vasta filtritele.
+  new:
+    title: Uus võti
+    label: Silt *
+    server: Täitmisserver
+    default: vaikimisi
+    target: Avalik sihtmärk (env-gen)
+    target_hint: Avalik URL, mis lisatakse võtme keskkonnamuutujatesse.
+    fallback: Varuserver (fallback)
+    none_option: — puudub —
+    fallback_hint: Läbipaistev varulahendus serveri vea korral (5xx / ühendus).
+    monthly_cap: Tokenite piirmäär / kuus
+    empty_unlimited: Tühi = piiramatu.
+    rpm: Kiiruspiirang (päringut/min)
+    expiry_legend: Aegumine / eluea piirangud
+    expiry_hint: (kulupiiranguga proov — eraldi kiiruspiirangust)
+    total_tokens: Tokenite kogupiirmäär
+    total_tokens_hint: Absoluutne eelarve võtme eluea jooksul. Tühi = piiramatu.
+    total_reqs: Päringute kogupiirmäär
+    total_reqs_hint: Absoluutne päringute arv. Tühi = piiramatu.
+    expires_at: Aegub
+    expires_hint: Tähtaja kuupäev/kellaaeg. Tühi = mitte kunagi.
+    idle: Aegumine tegevusetuse tõttu (päeva)
+    idle_hint: Keeldumine pärast N päeva kasutamiseta. Tühi = mitte kunagi.
+    models: Lubatud mudelid
+    apis: Lubatud API-d
+    origins: Lubatud päritolud
+    origins_hint: Üks IP või CIDR rea kohta; tühi = kõik päritolud.
+    note: Märkus
+    submit: Loo võti
+tgt:
+  title: Avalikud sihtmärgid
+  intro: <strong>Sihtmärk</strong> on lüüsi avalik URL nii, nagu klient seda näeb (nt <span class="mono">https://llm.example:21434</span>). Seda kasutatakse seotud võtme keskkonnamuutujate genereerimiseks — <strong>see ei muuda marsruutimist</strong> (upstream'i valib endiselt täitmisserver). Iga võti osutab sihtmärgile; vaikesihtmärki ei saa kustutada.
+  keys_count: '{count} võti/võtit'
+  edit:
+    name: Nimi
+    url: Avalik URL
+  delete_confirm: Kas kustutada sihtmärk „{name}“?
+  add:
+    title: Lisa sihtmärk
+    name: Nimi *
+    url: Avalik URL *
+    hint: Ilma lõpukaldkriipsuta. See on URL, mille klient sisestab väljadele <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Lisa sihtmärk
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: päringud
+    active_keys: aktiivsed võtmed
+  reqs_day: Päringud / päev (30 p)
+  tokens_day: Tokenid / päev (30 p)
+  status_dist: Olekute jaotus
+  tokens_key: Tokenid võtme kohta (top 10)
+  reqs_key: Päringud võtme kohta (top 10)
+  consumption: Tarbimine võtme kohta
+  th:
+    key: Võti
+    reqs: Päringud
+    tokens: Tokenid
+    errors: Vead
+    last_used: Viimati kasutatud
+  empty: Sellele serverile pole veel ühtegi päringut omistatud.
+logs:
+  title: Logi ja keelud
+  intro: Täielik päringulogi (säilitatakse tervikuna, ei puhastata kunagi) — kokku {total} sündmust, kuvatud {shown}. Keelake päritolu ühe klõpsuga real; keelatud päritolu lükkab puhverserver (403) tagasi enne iga võtit.
+  bans:
+    title: Keelatud päritolud ({count})
+    cidr_label: Keelatav IP või CIDR
+    reason_label: Põhjus (valikuline)
+    reason_ph: kuritarvitus, skaneerimine…
+    ban_btn: Keela
+    th:
+      origin: Päritolu
+      reason: Põhjus
+      since: Alates
+    unban: Tühista keeld
+    empty: Keelatud päritolusid pole.
+  journal:
+    title: Päringulogi
+    th:
+      ts: Ajatempel
+      origin: Päritolu
+      key: Võti
+      method: Meetod
+      path: Tee
+      model: Mudel
+      status: Olek
+      tokens: Tokenid
+      duration: Kestus
+      action: Toiming
+    banned: keelatud
+    ban_reason: keelatud logikonsoolist
+    empty: Ühtegi päringut pole veel logitud.
+srv:
+  title: Täitmisserverid
+  intro: Iga võti on seotud täpselt ühe serveriga. Vaikeserver (kohalik) luuakse automaatselt ja seda ei saa kustutada.
+  untested: testimata
+  auth_badge: auth
+  tested_on: testitud {date}
+  compat:
+    title: API ühilduvus
+    tested: — testitud {date}
+    net_error: võrguviga
+  actions:
+    monitor: Monitor
+    test: Testi
+    check_compat: Kontrolli ühilduvust
+  delete_confirm: Kas kustutada server „{name}“?
+  edit:
+    name: Nimi
+    url: Baas-URL
+    token: Kaugautentimise token (Bearer)
+    token_ph_set: määratud — jätke tühjaks säilitamiseks
+    enabled_check: server lubatud
+    clear_token: eemalda token
+  add:
+    title: Lisa server
+    name: Nimi *
+    url: Baas-URL *
+    token_hint: Krüpteeritud puhkeolekus; ei kuvata enam kunagi. Kasutatakse, kui kaugserver nõuab Bearerit.
+    submit: Lisa server
+api:
+  fam:
+    ollama: Native Ollama (/api/*)
+    openai: OpenAI-ühilduv (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Märgitud ruudud = võtmele lubatud API-perekonnad (tee lubamine/keelamine, ilma skeemi valideerimiseta). <strong>Ükski märgitud = kõik API-d lubatud.</strong> Loendi lõpp-punktid (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) teenindatakse alati.
+  img:
+    ollama-image: Pilt Ollama kaudu (mudel x/… teel /api/generate)
+    openai-image: Pilt OpenAI kaudu (/v1/images/generations)
+  img_hint: <strong>Piltide genereerimine</strong> (eraldi võimalus). Lubage soovitud tee ja sisestage <strong>pildimudelid</strong> (<span class="mono">x/…</span>) allpool.
+mdl:
+  probing: Serveri sondeerimine…
+  extra_ph: lisamudelid, üks rea kohta
+  hint: Märgitud ruudud + vaba sisestus = võtme lubatute loend. Kõikjal tühi = kõik serveri (teksti)mudelid lubatud.
+  img_label: Lubatud pildimudelid (<span class="mono">x/…</span>)
+  img_extra_ph: täiendavad pildimudelid (x/…), üks rea kohta
+  img_hint: <strong>Eraldi</strong> lubatute loend pildimudelite jaoks. Tühi = kõik pildimudelid lubatud (kui piltide genereerimine on üleval lubatud).
+  offline: Server pole kättesaadav või ilma mudeliteta — vaba sisestus allpool.
+kd:
+  meta: '{prefix}… · loodud {created} · viimati kasutatud: {last_used}'
+  try:
+    open: Proovi kohe
+    aria: Proovi võtit
+    title: Proovi „{label}“
+    tab_text: Tekst
+    tab_image: Pilt
+    model: Mudel
+    api_label: API
+    api_ollama: Ollama (vestlus)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Saatke sõnum: lüüs pärib selle võtmega seotud serverilt ja kuvab mudeli vastuse.'
+    msg_ph: Kirjutage sõnum…
+    send: Saada
+    img_model: Pildimudel
+    img_api_ollama: Ollama pilt (/api/generate)
+    img_api_openai: OpenAI pilt (/v1/images/generations)
+    img_attach: Manustatud pilt (valikuline — pildist pildiks)
+    img_hint: Kirjeldage genereeritavat pilti; lisage soovi korral sisendpilt. Lüüs pärib seotud serverilt ja kuvab loodud pildi.
+    img_ph: Kirjeldage genereeritavat pilti…
+    img_send: Genereeri
+  js:
+    no_model: (ühtegi mudelit ei tuvastatud)
+    unreachable: (server pole kättesaadav)
+    no_img_model: (ühtegi x/ mudelit ei tuvastatud)
+    failed: 'Ebaõnnestus: '
+    net_error: Võrguviga.
+    generating: Genereerimine…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Lahendamine…
+    whois_unavailable: WHOIS pole saadaval.
+  opt:
+    default: ' (vaikimisi)'
+    disabled: ' — keelatud'
+  edit:
+    server_hint: Serveri vahetamine sondeerib selle saadaolevaid mudeleid allpool uuesti.
+    target_hint: Avalik URL, mida kasutatakse keskkonnamuutujate genereerimiseks.
+    fallback_hint: Primaarse upstream'i serveri vea (5xx / ühendus) korral suunatakse päring läbipaistvalt sellele serverile.
+    retention: Logide säilitamine (päeva)
+    retention_hint: Päringute täielik sisu (failid väljaspool andmebaasi). Tühi = globaalne vaikeväärtus ({days} p); 0 = möödunud tundide puhastamine.
+  stat:
+    requests: päringud
+    tokens_total: tokenid (kokku)
+    tokens_month: tokenid sel kuul
+    errors: vead
+  usage:
+    title: Kasutus (viimased 30 päeva)
+    th_day: Päev
+    th_reqs: Päringud
+    th_tokens: Tokenid
+    empty: Perioodil päringuid pole — kasutus ilmub siia alates esimesest kutsest.
+  origins:
+    title: Nähtud päritolud ({count})
+    search_ph: Otsi IP-d…
+    th_ip: IP
+    th_reqs: Päringud
+    th_last: Viimati nähtud
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Ükski päritolu ei vasta otsingule.
+    empty: Selle võtme jaoks pole veel ühtegi päritolu nähtud.
+  errors:
+    title: Viimased vead
+    th_ts: Ajatempel
+    th_ip: IP
+    th_path: Tee
+    th_status: Olek
+  whois:
+    aria: Päritolu WHOIS
+    title: WHOIS
+foot:
+  heart_aria: armastus

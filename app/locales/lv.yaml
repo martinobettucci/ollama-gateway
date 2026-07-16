@@ -1,0 +1,322 @@
+# Locale lv (Latviešu) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama vārteja
+  tagline: atslēgu pārvaldība
+common:
+  close: Aizvērt
+  save: Saglabāt
+  cancel: Atcelt
+  delete: Dzēst
+  edit: Rediģēt
+  'yes': jā
+  'no': nē
+  none: nav
+  all: visi
+  never: nekad
+  unlimited: neierobežots
+  optional: neobligāts
+  enabled: iespējots
+  disabled: atspējots
+  online: tiešsaistē
+  offline: bezsaistē
+  default: noklusējums
+nav:
+  aria: Galvenā navigācija
+  dashboard: Informācijas panelis
+  servers: Serveri
+  targets: Mērķi
+  logs: Žurnāli
+  manual: Rokasgrāmata
+  logout: Iziet
+  language: Valoda
+manual:
+  title: Lietotāja rokasgrāmata
+  close_aria: Aizvērt rokasgrāmatu
+  loading: Notiek rokasgrāmatas ielāde…
+  load_error: Rokasgrāmatu nevar ielādēt.
+login:
+  title: Pieteikšanās
+  heading: Administratora pieteikšanās
+  password: Parole
+  submit: Ieiet
+  wrong: Nepareiza parole.
+  throttled: Pārāk daudz mēģinājumu — mēģiniet vēlreiz pēc dažām minūtēm.
+setup:
+  title: Inicializācija
+  heading: Pirmā lietošana
+  subtitle: Iestatiet vārtejas administratora paroli
+  password: Administratora parole
+  hint: Vismaz 8 rakstzīmes.
+  confirm: Apstiprinājums
+  submit: Iestatīt un ieiet
+  error_pw: Parole ir pārāk īsa (min. 8) vai neatbilst.
+dash:
+  created:
+    created: Atslēga „{label}“ izveidota.
+    copy_now: Kopējiet to tagad
+    never: 'tā vairs nekad netiks parādīta:'
+  env:
+    aria: Konfigurēt klientu
+    title: Atslēga „{label}“ izveidota — konfigurējiet klientu
+    copy_desc: Kopējiet šos vides mainīgos uz klienta datoru.
+    never: Atslēga vairs nekad netiks parādīta.
+    api_ollama: Ollama API
+    api_openai: OpenAI API
+    api_anthropic: Anthropic API
+    no_public_url: '`PUBLIC_BASE_URL` nav konfigurēts vārtejā: pirms lietošanas aizstājiet vietturi ar īsto publisko URL.'
+    copy_btn: Kopēt mainīgos
+    copied: Nokopēts!
+    copy_fail: Kopēšana neizdevās
+  stat:
+    total_reqs: pieprasījumi kopā
+    last24h: pēdējās 24 h
+    tokens: apkalpotie marķieri
+    errors: kļūdas (≥ 400)
+  keys:
+    title: API atslēgas ({count})
+    search_ph: Meklēt (etiķete vai priedēklis)…
+    filter_server_aria: Filtrēt pēc servera
+    all_servers: Visi serveri
+    filter_api_aria: Filtrēt pēc API
+    all_apis: Visi API
+    filter_state_aria: Filtrēt pēc stāvokļa
+    all_states: Visi stāvokļi
+    active: Aktīvās
+    disabled: Atspējotās
+    th:
+      label: Etiķete
+      prefix: Priedēklis
+      state: Stāvoklis
+      server: Serveris
+      models: Modeļi
+      origins: Izcelsmes
+      quota: Kvota
+      last_used: Pēdējā lietošana
+      actions: Darbības
+    badge_active: aktīva
+    badge_disabled: atspējota
+    n_allowed: '{count} atļauti'
+    all_origins: visas
+    tok_month: mark./mēn.
+    req_min: piepr./min
+    deactivate: deaktivizēt
+    activate: aktivizēt
+    delete_confirm: Vai dzēst atslēgu „{label}“?
+    delete_short: dzēst
+    empty: Vēl nav atslēgu — izveidojiet pirmo ar zemāk esošo veidlapu.
+    no_match: Neviena atslēga neatbilst filtriem.
+  new:
+    title: Jauna atslēga
+    label: Etiķete *
+    server: Izpildes serveris
+    default: noklusējums
+    target: Publiskais mērķis (env-gen)
+    target_hint: Publiskais URL, kas ievietots atslēgas vides mainīgajos.
+    fallback: Rezerves serveris (fallback)
+    none_option: — nav —
+    fallback_hint: Caurspīdīga rezerve servera kļūdas gadījumā (5xx / savienojums).
+    monthly_cap: Marķieru ierobežojums / mēnesī
+    empty_unlimited: Tukšs = neierobežots.
+    rpm: Ātruma ierobežojums (piepr./min)
+    expiry_legend: Derīguma termiņš / dzīves cikla ierobežojumi
+    expiry_hint: (izmēģinājums ar ierobežotām izmaksām — atsevišķs no ātruma ierobežojuma)
+    total_tokens: Kopējais marķieru ierobežojums
+    total_tokens_hint: Absolūtais budžets atslēgas dzīves ciklā. Tukšs = neierobežots.
+    total_reqs: Kopējais pieprasījumu ierobežojums
+    total_reqs_hint: Absolūtais pieprasījumu skaits. Tukšs = neierobežots.
+    expires_at: Beidzas
+    expires_hint: Termiņa datums/laiks. Tukšs = nekad.
+    idle: Beigšanās neaktivitātes dēļ (dienas)
+    idle_hint: Atteikums pēc N dienām bez lietošanas. Tukšs = nekad.
+    models: Atļautie modeļi
+    apis: Atļautie API
+    origins: Atļautās izcelsmes
+    origins_hint: Viena IP vai CIDR rindā; tukšs = visas izcelsmes.
+    note: Piezīme
+    submit: Izveidot atslēgu
+tgt:
+  title: Publiskie mērķi
+  intro: <strong>Mērķis</strong> ir vārtejas publiskais URL tā, kā to redz klients (piem., <span class="mono">https://llm.example:21434</span>). To izmanto saistītās atslēgas vides mainīgo ģenerēšanai — <strong>tas nemaina maršrutēšanu</strong> (upstream joprojām izvēlas izpildes serveris). Katra atslēga norāda uz mērķi; noklusējuma mērķi nevar dzēst.
+  keys_count: '{count} atslēga(-as)'
+  edit:
+    name: Nosaukums
+    url: Publiskais URL
+  delete_confirm: Vai dzēst mērķi „{name}“?
+  add:
+    title: Pievienot mērķi
+    name: Nosaukums *
+    url: Publiskais URL *
+    hint: Bez beigu slīpsvītras. Tas ir URL, ko klients ievadīs laukos <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Pievienot mērķi
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: pieprasījumi
+    active_keys: aktīvās atslēgas
+  reqs_day: Pieprasījumi / diena (30 d)
+  tokens_day: Marķieri / diena (30 d)
+  status_dist: Statusu sadalījums
+  tokens_key: Marķieri uz atslēgu (top 10)
+  reqs_key: Pieprasījumi uz atslēgu (top 10)
+  consumption: Patēriņš uz atslēgu
+  th:
+    key: Atslēga
+    reqs: Pieprasījumi
+    tokens: Marķieri
+    errors: Kļūdas
+    last_used: Pēdējā lietošana
+  empty: Šim serverim vēl nav piešķirts neviens pieprasījums.
+logs:
+  title: Žurnāls un aizliegumi
+  intro: Pilns pieprasījumu žurnāls (saglabāts pilnībā, nekad netiek attīrīts) — kopā {total} notikums(-i), parādīti {shown}. Aizliedziet izcelsmi ar vienu klikšķi no rindas; aizliegto izcelsmi starpniekserveris noraida (403) pirms jebkuras atslēgas.
+  bans:
+    title: Aizliegtās izcelsmes ({count})
+    cidr_label: Aizliedzamais IP vai CIDR
+    reason_label: Iemesls (neobligāts)
+    reason_ph: ļaunprātība, skenēšana…
+    ban_btn: Aizliegt
+    th:
+      origin: Izcelsme
+      reason: Iemesls
+      since: Kopš
+    unban: Atcelt aizliegumu
+    empty: Nav aizliegtu izcelsmju.
+  journal:
+    title: Pieprasījumu žurnāls
+    th:
+      ts: Laika zīmogs
+      origin: Izcelsme
+      key: Atslēga
+      method: Metode
+      path: Ceļš
+      model: Modelis
+      status: Statuss
+      tokens: Marķieri
+      duration: Ilgums
+      action: Darbība
+    banned: aizliegta
+    ban_reason: aizliegta no žurnāla konsoles
+    empty: Vēl nav reģistrēts neviens pieprasījums.
+srv:
+  title: Izpildes serveri
+  intro: Katra atslēga ir saistīta ar tieši vienu serveri. Noklusējuma serveris (lokālais) tiek izveidots automātiski un to nevar dzēst.
+  untested: nav testēts
+  auth_badge: auth
+  tested_on: testēts {date}
+  compat:
+    title: API saderība
+    tested: — testēta {date}
+    net_error: tīkla kļūda
+  actions:
+    monitor: Monitor
+    test: Testēt
+    check_compat: Pārbaudīt saderību
+  delete_confirm: Vai dzēst serveri „{name}“?
+  edit:
+    name: Nosaukums
+    url: Bāzes URL
+    token: Attālinātās autentifikācijas marķieris (Bearer)
+    token_ph_set: iestatīts — atstājiet tukšu, lai saglabātu
+    enabled_check: serveris iespējots
+    clear_token: noņemt marķieri
+  add:
+    title: Pievienot serveri
+    name: Nosaukums *
+    url: Bāzes URL *
+    token_hint: Šifrēts miera stāvoklī; vairs nekad netiek parādīts. Izmanto, ja attālinātais serveris pieprasa Bearer.
+    submit: Pievienot serveri
+api:
+  fam:
+    ollama: Vietējais Ollama (/api/*)
+    openai: OpenAI saderīgs (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Atzīmētās izvēles rūtiņas = atslēgai atļautās API saimes (ceļa atļaušana/aizliegšana, bez shēmas validācijas). <strong>Neviena atzīmēta = visi API atļauti.</strong> Saraksta galapunkti (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) vienmēr tiek apkalpoti.
+  img:
+    ollama-image: Attēls caur Ollama (modelis x/… uz /api/generate)
+    openai-image: Attēls caur OpenAI (/v1/images/generations)
+  img_hint: <strong>Attēlu ģenerēšana</strong> (atsevišķa iespēja). Iespējojiet vēlamo ceļu un norādiet <strong>attēlu modeļus</strong> (<span class="mono">x/…</span>) zemāk.
+mdl:
+  probing: Servera sondēšana…
+  extra_ph: papildu modeļi, viens rindā
+  hint: Atzīmētās izvēles rūtiņas + brīva ievade = atslēgas atļauto saraksts. Visur tukšs = visi servera (teksta) modeļi atļauti.
+  img_label: Atļautie attēlu modeļi (<span class="mono">x/…</span>)
+  img_extra_ph: papildu attēlu modeļi (x/…), viens rindā
+  img_hint: <strong>Atsevišķs</strong> atļauto saraksts attēlu modeļiem. Tukšs = visi attēlu modeļi atļauti (ja attēlu ģenerēšana ir iespējota augšā).
+  offline: Serveris nav sasniedzams vai bez modeļiem — brīva ievade zemāk.
+kd:
+  meta: '{prefix}… · izveidota {created} · pēdējā lietošana: {last_used}'
+  try:
+    open: Izmēģināt tagad
+    aria: Izmēģināt atslēgu
+    title: Izmēģināt „{label}“
+    tab_text: Teksts
+    tab_image: Attēls
+    model: Modelis
+    api_label: API
+    api_ollama: Ollama (tērzēšana)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Nosūtiet ziņojumu: vārteja vaicā ar šo atslēgu saistīto serveri un parāda modeļa atbildi.'
+    msg_ph: Uzrakstiet ziņojumu…
+    send: Sūtīt
+    img_model: Attēla modelis
+    img_api_ollama: Ollama attēls (/api/generate)
+    img_api_openai: OpenAI attēls (/v1/images/generations)
+    img_attach: Pievienots attēls (neobligāts — attēls uz attēlu)
+    img_hint: Aprakstiet ģenerējamo attēlu; pēc izvēles pievienojiet ievades attēlu. Vārteja vaicā saistīto serveri un parāda izveidoto attēlu.
+    img_ph: Aprakstiet ģenerējamo attēlu…
+    img_send: Ģenerēt
+  js:
+    no_model: (neviens modelis nav atrasts)
+    unreachable: (serveris nav sasniedzams)
+    no_img_model: (neviens x/ modelis nav atrasts)
+    failed: 'Neizdevās: '
+    net_error: Tīkla kļūda.
+    generating: Ģenerēšana…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Atrisināšana…
+    whois_unavailable: WHOIS nav pieejams.
+  opt:
+    default: ' (noklusējums)'
+    disabled: ' — atspējots'
+  edit:
+    server_hint: Servera maiņa atkārtoti sondē tā pieejamos modeļus zemāk.
+    target_hint: Publiskais URL, ko izmanto vides mainīgo ģenerēšanai.
+    fallback_hint: Primārā upstream servera kļūdas (5xx / savienojums) gadījumā pieprasījums tiek caurspīdīgi pārsūtīts uz šo serveri.
+    retention: Žurnālu saglabāšana (dienas)
+    retention_hint: Pilns pieprasījumu saturs (faili ārpus datubāzes). Tukšs = globālā noklusējuma vērtība ({days} d); 0 = pagājušo stundu attīrīšana.
+  stat:
+    requests: pieprasījumi
+    tokens_total: marķieri (kopā)
+    tokens_month: marķieri šomēnes
+    errors: kļūdas
+  usage:
+    title: Lietojums (pēdējās 30 dienas)
+    th_day: Diena
+    th_reqs: Pieprasījumi
+    th_tokens: Marķieri
+    empty: Periodā nav pieprasījumu — lietojums parādīsies šeit no pirmā izsaukuma.
+  origins:
+    title: Redzētās izcelsmes ({count})
+    search_ph: Meklēt IP…
+    th_ip: IP
+    th_reqs: Pieprasījumi
+    th_last: Pēdējo reizi redzēta
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Neviena izcelsme neatbilst meklēšanai.
+    empty: Šai atslēgai vēl nav redzēta neviena izcelsme.
+  errors:
+    title: Pēdējās kļūdas
+    th_ts: Laika zīmogs
+    th_ip: IP
+    th_path: Ceļš
+    th_status: Statuss
+  whois:
+    aria: Izcelsmes WHOIS
+    title: WHOIS
+foot:
+  heart_aria: mīlestība

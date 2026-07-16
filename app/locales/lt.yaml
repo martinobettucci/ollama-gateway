@@ -1,0 +1,322 @@
+# Locale lt (Lietuvių) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama sietuvas
+  tagline: raktų valdymas
+common:
+  close: Uždaryti
+  save: Išsaugoti
+  cancel: Atšaukti
+  delete: Ištrinti
+  edit: Redaguoti
+  'yes': taip
+  'no': ne
+  none: nėra
+  all: visi
+  never: niekada
+  unlimited: neribota
+  optional: pasirinktinai
+  enabled: įjungta
+  disabled: išjungta
+  online: prisijungę
+  offline: atsijungę
+  default: numatytasis
+nav:
+  aria: Pagrindinė navigacija
+  dashboard: Prietaisų skydelis
+  servers: Serveriai
+  targets: Tikslai
+  logs: Žurnalai
+  manual: Vadovas
+  logout: Atsijungti
+  language: Kalba
+manual:
+  title: Naudotojo vadovas
+  close_aria: Uždaryti vadovą
+  loading: Įkeliamas vadovas…
+  load_error: Nepavyko įkelti vadovo.
+login:
+  title: Prisijungimas
+  heading: Administratoriaus prisijungimas
+  password: Slaptažodis
+  submit: Įeiti
+  wrong: Neteisingas slaptažodis.
+  throttled: Per daug bandymų — bandykite dar kartą po kelių minučių.
+setup:
+  title: Inicijavimas
+  heading: Pirmasis naudojimas
+  subtitle: Nustatykite sietuvo administratoriaus slaptažodį
+  password: Administratoriaus slaptažodis
+  hint: Mažiausiai 8 simboliai.
+  confirm: Patvirtinimas
+  submit: Nustatyti ir įeiti
+  error_pw: Slaptažodis per trumpas (min. 8) arba nesutampa.
+dash:
+  created:
+    created: Raktas „{label}“ sukurtas.
+    copy_now: Nukopijuokite jį dabar
+    never: 'jis daugiau niekada nebus rodomas:'
+  env:
+    aria: Konfigūruoti klientą
+    title: Raktas „{label}“ sukurtas — sukonfigūruokite klientą
+    copy_desc: Nukopijuokite šiuos aplinkos kintamuosius į kliento kompiuterį.
+    never: Raktas daugiau niekada nebus rodomas.
+    api_ollama: Ollama API
+    api_openai: OpenAI API
+    api_anthropic: Anthropic API
+    no_public_url: '`PUBLIC_BASE_URL` nesukonfigūruotas sietuve: prieš naudodami pakeiskite vietos rezervavimo ženklą tikruoju viešuoju URL.'
+    copy_btn: Kopijuoti kintamuosius
+    copied: Nukopijuota!
+    copy_fail: Kopijuoti nepavyko
+  stat:
+    total_reqs: iš viso užklausų
+    last24h: paskutinės 24 val.
+    tokens: aptarnauti žetonai
+    errors: klaidos (≥ 400)
+  keys:
+    title: API raktai ({count})
+    search_ph: Ieškoti (etiketė arba priešdėlis)…
+    filter_server_aria: Filtruoti pagal serverį
+    all_servers: Visi serveriai
+    filter_api_aria: Filtruoti pagal API
+    all_apis: Visi API
+    filter_state_aria: Filtruoti pagal būseną
+    all_states: Visos būsenos
+    active: Aktyvūs
+    disabled: Išjungti
+    th:
+      label: Etiketė
+      prefix: Priešdėlis
+      state: Būsena
+      server: Serveris
+      models: Modeliai
+      origins: Kilmės
+      quota: Kvota
+      last_used: Paskutinį kartą naudota
+      actions: Veiksmai
+    badge_active: aktyvus
+    badge_disabled: išjungtas
+    n_allowed: '{count} leidžiama'
+    all_origins: visos
+    tok_month: žet./mėn.
+    req_min: užkl./min
+    deactivate: išjungti
+    activate: įjungti
+    delete_confirm: Ištrinti raktą „{label}“?
+    delete_short: trinti
+    empty: Kol kas raktų nėra — sukurkite pirmą naudodami žemiau esančią formą.
+    no_match: Nė vienas raktas neatitinka filtrų.
+  new:
+    title: Naujas raktas
+    label: Etiketė *
+    server: Vykdymo serveris
+    default: numatytasis
+    target: Viešasis tikslas (env-gen)
+    target_hint: Viešasis URL, įterptas į rakto aplinkos kintamuosius.
+    fallback: Atsarginis serveris (fallback)
+    none_option: — nėra —
+    fallback_hint: Skaidrus atsarginis variantas serverio klaidos atveju (5xx / ryšys).
+    monthly_cap: Žetonų riba / mėn.
+    empty_unlimited: Tuščia = neribota.
+    rpm: Spartos riba (užkl./min)
+    expiry_legend: Galiojimo pabaiga / gyvavimo ribos
+    expiry_hint: (bandymas su ribota kaina — atskiras nuo spartos ribos)
+    total_tokens: Bendra žetonų riba
+    total_tokens_hint: Absoliutus biudžetas per rakto gyvavimo laiką. Tuščia = neribota.
+    total_reqs: Bendra užklausų riba
+    total_reqs_hint: Absoliutus užklausų skaičius. Tuščia = neribota.
+    expires_at: Galioja iki
+    expires_hint: Termino data/laikas. Tuščia = niekada.
+    idle: Galiojimo pabaiga dėl neveiklumo (dienos)
+    idle_hint: Atsisakymas po N dienų be naudojimo. Tuščia = niekada.
+    models: Leidžiami modeliai
+    apis: Leidžiami API
+    origins: Leidžiamos kilmės
+    origins_hint: Vienas IP arba CIDR eilutėje; tuščia = visos kilmės.
+    note: Pastaba
+    submit: Sukurti raktą
+tgt:
+  title: Viešieji tikslai
+  intro: <strong>Tikslas</strong> yra viešasis sietuvo URL, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:21434</span>). Jis naudojamas susieto rakto aplinkos kintamiesiems generuoti — <strong>jis nekeičia maršruto</strong> (upstream vis tiek pasirenka vykdymo serveris). Kiekvienas raktas nurodo tikslą; numatytojo tikslo negalima ištrinti.
+  keys_count: '{count} raktas(-ai)'
+  edit:
+    name: Pavadinimas
+    url: Viešasis URL
+  delete_confirm: Ištrinti tikslą „{name}“?
+  add:
+    title: Pridėti tikslą
+    name: Pavadinimas *
+    url: Viešasis URL *
+    hint: Be pabaigos pasvirojo brūkšnio. Tai URL, kurį klientas įrašys į <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Pridėti tikslą
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: užklausos
+    active_keys: aktyvūs raktai
+  reqs_day: Užklausos / diena (30 d.)
+  tokens_day: Žetonai / diena (30 d.)
+  status_dist: Būsenų pasiskirstymas
+  tokens_key: Žetonai vienam raktui (top 10)
+  reqs_key: Užklausos vienam raktui (top 10)
+  consumption: Suvartojimas vienam raktui
+  th:
+    key: Raktas
+    reqs: Užklausos
+    tokens: Žetonai
+    errors: Klaidos
+    last_used: Paskutinį kartą naudota
+  empty: Šiam serveriui dar nepriskirta jokia užklausa.
+logs:
+  title: Žurnalas ir draudimai
+  intro: Visas užklausų žurnalas (saugomas visas, niekada nevalomas) — iš viso {total} įvykis(-iai), rodoma {shown}. Uždrauskite kilmę vienu paspaudimu iš eilutės; uždraustą kilmę tarpinis serveris atmeta (403) prieš bet kurį raktą.
+  bans:
+    title: Uždraustos kilmės ({count})
+    cidr_label: Draudžiamas IP arba CIDR
+    reason_label: Priežastis (pasirinktinai)
+    reason_ph: piktnaudžiavimas, skenavimas…
+    ban_btn: Uždrausti
+    th:
+      origin: Kilmė
+      reason: Priežastis
+      since: Nuo
+    unban: Panaikinti draudimą
+    empty: Nėra uždraustų kilmių.
+  journal:
+    title: Užklausų žurnalas
+    th:
+      ts: Laiko žyma
+      origin: Kilmė
+      key: Raktas
+      method: Metodas
+      path: Kelias
+      model: Modelis
+      status: Būsena
+      tokens: Žetonai
+      duration: Trukmė
+      action: Veiksmas
+    banned: uždrausta
+    ban_reason: uždrausta iš žurnalo konsolės
+    empty: Kol kas neužregistruota jokia užklausa.
+srv:
+  title: Vykdymo serveriai
+  intro: Kiekvienas raktas susietas su tiksliai vienu serveriu. Numatytasis serveris (vietinis) sukuriamas automatiškai ir jo negalima ištrinti.
+  untested: nepatikrinta
+  auth_badge: auth
+  tested_on: patikrinta {date}
+  compat:
+    title: API suderinamumas
+    tested: — patikrinta {date}
+    net_error: tinklo klaida
+  actions:
+    monitor: Monitor
+    test: Testuoti
+    check_compat: Patikrinti suderinamumą
+  delete_confirm: Ištrinti serverį „{name}“?
+  edit:
+    name: Pavadinimas
+    url: Bazinis URL
+    token: Nuotolinio autentifikavimo žetonas (Bearer)
+    token_ph_set: nustatyta — palikite tuščią, kad išsaugotumėte
+    enabled_check: serveris įjungtas
+    clear_token: pašalinti žetoną
+  add:
+    title: Pridėti serverį
+    name: Pavadinimas *
+    url: Bazinis URL *
+    token_hint: Šifruota ramybės būsenoje; daugiau niekada nerodoma. Naudojama, jei nuotolinis serveris reikalauja Bearer.
+    submit: Pridėti serverį
+api:
+  fam:
+    ollama: Vietinis Ollama (/api/*)
+    openai: OpenAI suderinamas (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Pažymėti langeliai = raktui leidžiamos API šeimos (kelio leidimas/draudimas, be schemos tikrinimo). <strong>Nė vienas nepažymėtas = visi API leidžiami.</strong> Sąrašo galiniai taškai (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) visada aptarnaujami.
+  img:
+    ollama-image: Vaizdas per Ollama (modelis x/… kelyje /api/generate)
+    openai-image: Vaizdas per OpenAI (/v1/images/generations)
+  img_hint: <strong>Vaizdų generavimas</strong> (atskira galimybė). Įjunkite norimą kelią ir nurodykite <strong>vaizdų modelius</strong> (<span class="mono">x/…</span>) žemiau.
+mdl:
+  probing: Serverio zondavimas…
+  extra_ph: papildomi modeliai, po vieną eilutėje
+  hint: Pažymėti langeliai + laisvas įvedimas = rakto leidžiamų sąrašas. Visur tuščia = visi serverio (teksto) modeliai leidžiami.
+  img_label: Leidžiami vaizdų modeliai (<span class="mono">x/…</span>)
+  img_extra_ph: papildomi vaizdų modeliai (x/…), po vieną eilutėje
+  img_hint: <strong>Atskiras</strong> leidžiamų sąrašas vaizdų modeliams. Tuščia = visi vaizdų modeliai leidžiami (jei vaizdų generavimas įjungtas viršuje).
+  offline: Serveris nepasiekiamas arba be modelių — laisvas įvedimas žemiau.
+kd:
+  meta: '{prefix}… · sukurta {created} · paskutinį kartą naudota: {last_used}'
+  try:
+    open: Išbandyti dabar
+    aria: Išbandyti raktą
+    title: Išbandyti „{label}“
+    tab_text: Tekstas
+    tab_image: Vaizdas
+    model: Modelis
+    api_label: API
+    api_ollama: Ollama (pokalbis)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Nusiųskite žinutę: sietuvas užklausia su šiuo raktu susieto serverio ir parodo modelio atsakymą.'
+    msg_ph: Parašykite žinutę…
+    send: Siųsti
+    img_model: Vaizdo modelis
+    img_api_ollama: Ollama vaizdas (/api/generate)
+    img_api_openai: OpenAI vaizdas (/v1/images/generations)
+    img_attach: Pridėtas vaizdas (pasirinktinai — vaizdas į vaizdą)
+    img_hint: Aprašykite generuojamą vaizdą; pasirinktinai pridėkite įvesties vaizdą. Sietuvas užklausia susietą serverį ir parodo sukurtą vaizdą.
+    img_ph: Aprašykite generuojamą vaizdą…
+    img_send: Generuoti
+  js:
+    no_model: (neaptikta jokio modelio)
+    unreachable: (serveris nepasiekiamas)
+    no_img_model: (neaptikta jokio x/ modelio)
+    failed: 'Nepavyko: '
+    net_error: Tinklo klaida.
+    generating: Generuojama…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Sprendžiama…
+    whois_unavailable: WHOIS nepasiekiamas.
+  opt:
+    default: ' (numatytasis)'
+    disabled: ' — išjungtas'
+  edit:
+    server_hint: Serverio keitimas iš naujo zonduoja jo galimus modelius žemiau.
+    target_hint: Viešasis URL, naudojamas aplinkos kintamiesiems generuoti.
+    fallback_hint: Pirminio upstream serverio klaidos (5xx / ryšys) atveju užklausa skaidriai persiunčiama į šį serverį.
+    retention: Žurnalų saugojimas (dienos)
+    retention_hint: Visas užklausų turinys (failai už duomenų bazės ribų). Tuščia = globali numatytoji reikšmė ({days} d.); 0 = praėjusių valandų valymas.
+  stat:
+    requests: užklausos
+    tokens_total: žetonai (iš viso)
+    tokens_month: žetonai šį mėnesį
+    errors: klaidos
+  usage:
+    title: Naudojimas (paskutinės 30 dienų)
+    th_day: Diena
+    th_reqs: Užklausos
+    th_tokens: Žetonai
+    empty: Per laikotarpį užklausų nėra — naudojimas čia pasirodys nuo pirmo iškvietimo.
+  origins:
+    title: Matytos kilmės ({count})
+    search_ph: Ieškoti IP…
+    th_ip: IP
+    th_reqs: Užklausos
+    th_last: Paskutinį kartą matyta
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Nė viena kilmė neatitinka paieškos.
+    empty: Šiam raktui dar nematyta jokios kilmės.
+  errors:
+    title: Paskutinės klaidos
+    th_ts: Laiko žyma
+    th_ip: IP
+    th_path: Kelias
+    th_status: Būsena
+  whois:
+    aria: Kilmės WHOIS
+    title: WHOIS
+foot:
+  heart_aria: meilė

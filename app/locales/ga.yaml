@@ -1,0 +1,322 @@
+# Locale ga (Gaeilge) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Geata Ollama
+  tagline: bainistíocht eochracha
+common:
+  close: Dún
+  save: Sábháil
+  cancel: Cealaigh
+  delete: Scrios
+  edit: Cuir in eagar
+  'yes': tá
+  'no': níl
+  none: ceann ar bith
+  all: gach
+  never: riamh
+  unlimited: gan teorainn
+  optional: roghnach
+  enabled: cumasaithe
+  disabled: díchumasaithe
+  online: ar líne
+  offline: as líne
+  default: réamhshocrú
+nav:
+  aria: Príomhnascleanúint
+  dashboard: Deais
+  servers: Freastalaithe
+  targets: Spriocanna
+  logs: Logaí
+  manual: Lámhleabhar
+  logout: Logáil amach
+  language: Teanga
+manual:
+  title: Lámhleabhar úsáideora
+  close_aria: Dún an lámhleabhar
+  loading: Ag lódáil an lámhleabhair…
+  load_error: Ní féidir an lámhleabhar a lódáil.
+login:
+  title: Logáil isteach
+  heading: Logáil isteach riaracháin
+  password: Pasfhocal
+  submit: Isteach
+  wrong: Pasfhocal mícheart.
+  throttled: An iomarca iarrachtaí — bain triail eile as i gceann cúpla nóiméad.
+setup:
+  title: Túsú
+  heading: Céad úsáid
+  subtitle: Socraigh pasfhocal riaracháin an gheata
+  password: Pasfhocal riaracháin
+  hint: 8 gcarachtar ar a laghad.
+  confirm: Deimhniú
+  submit: Socraigh agus isteach
+  error_pw: Pasfhocal ró-ghearr (íosmhéid 8) nó ní ionann é.
+dash:
+  created:
+    created: Eochair „{label}“ cruthaithe.
+    copy_now: Cóipeáil anois é
+    never: 'ní thaispeánfar arís go deo é:'
+  env:
+    aria: Cumraigh an cliant
+    title: Eochair „{label}“ cruthaithe — cumraigh an cliant
+    copy_desc: Cóipeáil na hathróga timpeallachta seo chuig meaisín an chliaint.
+    never: Ní thaispeánfar an eochair arís go deo.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: 'Níl `PUBLIC_BASE_URL` cumraithe ar an ngeata: cuir an fíor-URL poiblí in ionad an tsealbhóra áite roimh úsáid.'
+    copy_btn: Cóipeáil na hathróga
+    copied: Cóipeáilte!
+    copy_fail: Theip ar an gcóipeáil
+  stat:
+    total_reqs: iarratais iomlána
+    last24h: 24 u dheireanacha
+    tokens: comharthaí seirbheáilte
+    errors: earráidí (≥ 400)
+  keys:
+    title: Eochracha API ({count})
+    search_ph: Cuardaigh (lipéad nó réimír)…
+    filter_server_aria: Scag de réir freastalaí
+    all_servers: Gach freastalaí
+    filter_api_aria: Scag de réir API
+    all_apis: Gach API
+    filter_state_aria: Scag de réir stádais
+    all_states: Gach stádas
+    active: Gníomhach
+    disabled: Díchumasaithe
+    th:
+      label: Lipéad
+      prefix: Réimír
+      state: Stádas
+      server: Freastalaí
+      models: Múnlaí
+      origins: Bunúis
+      quota: Cuóta
+      last_used: Úsáid dheireanach
+      actions: Gníomhartha
+    badge_active: gníomhach
+    badge_disabled: díchumasaithe
+    n_allowed: '{count} ceadaithe'
+    all_origins: gach
+    tok_month: com./mí
+    req_min: iarr./nóim
+    deactivate: díghníomhachtaigh
+    activate: gníomhachtaigh
+    delete_confirm: Scrios an eochair „{label}“?
+    delete_short: scrios
+    empty: Gan eochracha go fóill — cruthaigh an chéad cheann leis an bhfoirm thíos.
+    no_match: Níl aon eochair ag teacht leis na scagairí.
+  new:
+    title: Eochair nua
+    label: Lipéad *
+    server: Freastalaí forghníomhaithe
+    default: réamhshocrú
+    target: Sprioc phoiblí (env-gen)
+    target_hint: URL poiblí a chuirtear isteach in athróga timpeallachta na heochrach.
+    fallback: Freastalaí cúltaca (fallback)
+    none_option: — ceann ar bith —
+    fallback_hint: Cúltaca trédhearcach ar earráid freastalaí (5xx / ceangal).
+    monthly_cap: Uasteorainn comharthaí / mí
+    empty_unlimited: Folamh = gan teorainn.
+    rpm: Teorainn ráta (iarr./nóim)
+    expiry_legend: Éag / teorainneacha saolré
+    expiry_hint: (triail faoi theorainn costais — ar leithligh ón teorainn ráta)
+    total_tokens: Uasteorainn iomlán comharthaí
+    total_tokens_hint: Buiséad iomlán thar shaolré na heochrach. Folamh = gan teorainn.
+    total_reqs: Uasteorainn iomlán iarratas
+    total_reqs_hint: Líon iomlán iarratas. Folamh = gan teorainn.
+    expires_at: Éagann ar
+    expires_hint: Dáta/am spriocdháta. Folamh = riamh.
+    idle: Éag mar gheall ar díomhaointeas (laethanta)
+    idle_hint: Diúltú tar éis N lá gan úsáid. Folamh = riamh.
+    models: Múnlaí ceadaithe
+    apis: APInna ceadaithe
+    origins: Bunúis cheadaithe
+    origins_hint: IP nó CIDR amháin in aghaidh na líne; folamh = gach bunús.
+    note: Nóta
+    submit: Cruthaigh an eochair
+tgt:
+  title: Spriocanna poiblí
+  intro: Is é <strong>sprioc</strong> URL poiblí an gheata mar a fheiceann cliant é (m.sh. <span class="mono">https://llm.example:21434</span>). Úsáidtear é chun athróga timpeallachta na heochrach ceangailte a ghiniúint — <strong>ní athraíonn sé an ródú</strong> (roghnaíonn an freastalaí forghníomhaithe an upstream fós). Díríonn gach eochair ar sprioc; ní féidir an sprioc réamhshocraithe a scriosadh.
+  keys_count: '{count} eochair'
+  edit:
+    name: Ainm
+    url: URL poiblí
+  delete_confirm: Scrios an sprioc „{name}“?
+  add:
+    title: Cuir sprioc leis
+    name: Ainm *
+    url: URL poiblí *
+    hint: Gan slais deiridh. Is é seo an URL a chuirfidh an cliant i <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Cuir an sprioc leis
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: iarratais
+    active_keys: eochracha gníomhacha
+  reqs_day: Iarratais / lá (30 l)
+  tokens_day: Comharthaí / lá (30 l)
+  status_dist: Dáileadh stádais
+  tokens_key: Comharthaí in aghaidh na heochrach (barr 10)
+  reqs_key: Iarratais in aghaidh na heochrach (barr 10)
+  consumption: Tomhaltas in aghaidh na heochrach
+  th:
+    key: Eochair
+    reqs: Iarratais
+    tokens: Comharthaí
+    errors: Earráidí
+    last_used: Úsáid dheireanach
+  empty: Níl aon iarratas curtha i leith an fhreastalaí seo go fóill.
+logs:
+  title: Loga agus coisc
+  intro: Loga iomlán iarratas (coinnithe ina iomláine, ná glantar riamh) — {total} imeacht san iomlán, {shown} ar taispeáint. Cuir cosc ar bhunús le cliceáil amháin ó ró; diúltaítear (403) do bhunús coiscthe ag an seachfhreastalaí roimh aon eochair.
+  bans:
+    title: Bunúis choiscthe ({count})
+    cidr_label: IP nó CIDR le cosc
+    reason_label: Cúis (roghnach)
+    reason_ph: mí-úsáid, scanadh…
+    ban_btn: Cuir cosc
+    th:
+      origin: Bunús
+      reason: Cúis
+      since: Ó
+    unban: Bain an cosc
+    empty: Níl aon bhunús coiscthe.
+  journal:
+    title: Loga iarratas
+    th:
+      ts: Stampa ama
+      origin: Bunús
+      key: Eochair
+      method: Modh
+      path: Conair
+      model: Múnla
+      status: Stádas
+      tokens: Comharthaí
+      duration: Fad
+      action: Gníomh
+    banned: coiscthe
+    ban_reason: coiscthe ón gconsól logaí
+    empty: Níl aon iarratas logáilte go fóill.
+srv:
+  title: Freastalaithe forghníomhaithe
+  intro: Tá gach eochair ceangailte le freastalaí amháin go díreach. Cruthaítear an freastalaí réamhshocraithe (áitiúil) go huathoibríoch agus ní féidir é a scriosadh.
+  untested: gan tástáil
+  auth_badge: auth
+  tested_on: tástáilte ar {date}
+  compat:
+    title: Comhoiriúnacht API
+    tested: — tástáilte ar {date}
+    net_error: earráid líonra
+  actions:
+    monitor: Monitor
+    test: Tástáil
+    check_compat: Seiceáil an chomhoiriúnacht
+  delete_confirm: Scrios an freastalaí „{name}“?
+  edit:
+    name: Ainm
+    url: Bun-URL
+    token: Comhartha fíordheimhnithe cianda (Bearer)
+    token_ph_set: socraithe — fág folamh chun é a choinneáil
+    enabled_check: freastalaí cumasaithe
+    clear_token: bain an comhartha
+  add:
+    title: Cuir freastalaí leis
+    name: Ainm *
+    url: Bun-URL *
+    token_hint: Criptithe agus é ina stad; ní thaispeántar arís go deo é. Úsáidtear é má éilíonn an cianfhreastalaí Bearer.
+    submit: Cuir an freastalaí leis
+api:
+  fam:
+    ollama: Ollama dúchasach (/api/*)
+    openai: Comhoiriúnach le OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Boscaí ticeáilte = teaghlaigh API atá ceadaithe don eochair (ceadú/cosc conaire, gan bailíochtú scéimre). <strong>Ceann ar bith ticeáilte = gach API ceadaithe.</strong> Freastalaítear i gcónaí ar na críochphointí liostála (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>).
+  img:
+    ollama-image: Íomhá trí Ollama (múnla x/… ar /api/generate)
+    openai-image: Íomhá trí OpenAI (/v1/images/generations)
+  img_hint: <strong>Giniúint íomhánna</strong> (cumas ar leithligh). Cumasaigh an chonair atá uait agus líon isteach na <strong>múnlaí íomhá</strong> (<span class="mono">x/…</span>) thíos.
+mdl:
+  probing: Ag tástáil an fhreastalaí…
+  extra_ph: múnlaí breise, ceann in aghaidh na líne
+  hint: Boscaí ticeáilte + iontráil shaor = liosta ceadaithe na heochrach. Folamh gach áit = gach múnla (téacs) ar an bhfreastalaí ceadaithe.
+  img_label: Múnlaí íomhá ceadaithe (<span class="mono">x/…</span>)
+  img_extra_ph: múnlaí íomhá breise (x/…), ceann in aghaidh na líne
+  img_hint: Liosta ceadaithe <strong>ar leithligh</strong> do na múnlaí íomhá. Folamh = gach múnla íomhá ceadaithe (má tá giniúint íomhánna cumasaithe thuas).
+  offline: Freastalaí do-rochtana nó gan mhúnlaí — iontráil shaor thíos.
+kd:
+  meta: '{prefix}… · cruthaithe ar {created} · úsáid dheireanach: {last_used}'
+  try:
+    open: Bain triail as anois
+    aria: Bain triail as an eochair
+    title: Bain triail as „{label}“
+    tab_text: Téacs
+    tab_image: Íomhá
+    model: Múnla
+    api_label: API
+    api_ollama: Ollama (comhrá)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Seol teachtaireacht: fiosraíonn an geata an freastalaí atá ceangailte leis an eochair seo agus taispeánann sé freagra an mhúnla.'
+    msg_ph: Scríobh teachtaireacht…
+    send: Seol
+    img_model: Múnla íomhá
+    img_api_ollama: Íomhá Ollama (/api/generate)
+    img_api_openai: Íomhá OpenAI (/v1/images/generations)
+    img_attach: Íomhá ceangailte (roghnach — íomhá go híomhá)
+    img_hint: Déan cur síos ar an íomhá le giniúint; ceangail íomhá ionchuir más mian leat. Fiosraíonn an geata an freastalaí ceangailte agus taispeánann sé an íomhá a táirgeadh.
+    img_ph: Déan cur síos ar an íomhá le giniúint…
+    img_send: Gin
+  js:
+    no_model: (níor braitheadh aon mhúnla)
+    unreachable: (freastalaí do-rochtana)
+    no_img_model: (níor braitheadh aon mhúnla x/)
+    failed: 'Theip: '
+    net_error: Earráid líonra.
+    generating: Á ghiniúint…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Á réiteach…
+    whois_unavailable: WHOIS gan fáil.
+  opt:
+    default: ' (réamhshocrú)'
+    disabled: ' — díchumasaithe'
+  edit:
+    server_hint: Athraíonn athrú freastalaí a mhúnlaí atá ar fáil thíos arís.
+    target_hint: URL poiblí a úsáidtear chun na hathróga timpeallachta a ghiniúint.
+    fallback_hint: Ar earráid freastalaí (5xx / ceangal) an upstream príomhúil, athsheoltar an t-iarratas go trédhearcach chuig an bhfreastalaí seo.
+    retention: Coinneáil logaí (laethanta)
+    retention_hint: Ábhar iomlán na n-iarratas (comhaid lasmuigh den bhunachar sonraí). Folamh = réamhshocrú domhanda ({days} l); 0 = glanadh na n-uaireanta atá caite.
+  stat:
+    requests: iarratais
+    tokens_total: comharthaí (iomlán)
+    tokens_month: comharthaí an mhí seo
+    errors: earráidí
+  usage:
+    title: Úsáid (30 lá dheireanacha)
+    th_day: Lá
+    th_reqs: Iarratais
+    th_tokens: Comharthaí
+    empty: Níl aon iarratas sa tréimhse — taispeánfar an úsáid anseo ón gcéad ghlao.
+  origins:
+    title: Bunúis fheicthe ({count})
+    search_ph: Cuardaigh IP…
+    th_ip: IP
+    th_reqs: Iarratais
+    th_last: Feicthe go deireanach
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Níl aon bhunús ag teacht leis an gcuardach.
+    empty: Níor feiceadh aon bhunús don eochair seo go fóill.
+  errors:
+    title: Earráidí is déanaí
+    th_ts: Stampa ama
+    th_ip: IP
+    th_path: Conair
+    th_status: Stádas
+  whois:
+    aria: WHOIS bunúis
+    title: WHOIS
+foot:
+  heart_aria: grá
