@@ -1,0 +1,322 @@
+# Locale ro (Română) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Gateway Ollama
+  tagline: gestionarea cheilor
+common:
+  close: Închide
+  save: Salvează
+  cancel: Anulează
+  delete: Șterge
+  edit: Editează
+  'yes': da
+  'no': nu
+  none: niciunul
+  all: toate
+  never: niciodată
+  unlimited: nelimitat
+  optional: opțional
+  enabled: activat
+  disabled: dezactivat
+  online: online
+  offline: offline
+  default: implicit
+nav:
+  aria: Navigare principală
+  dashboard: Tablou de bord
+  servers: Servere
+  targets: Ținte
+  logs: Jurnale
+  manual: Manual
+  logout: Deconectare
+  language: Limbă
+manual:
+  title: Manual de utilizare
+  close_aria: Închide manualul
+  loading: Se încarcă manualul…
+  load_error: Manualul nu poate fi încărcat.
+login:
+  title: Autentificare
+  heading: Autentificare administrator
+  password: Parolă
+  submit: Intră
+  wrong: Parolă incorectă.
+  throttled: Prea multe încercări — încercați din nou peste câteva minute.
+setup:
+  title: Inițializare
+  heading: Prima utilizare
+  subtitle: Setați parola de administrator a gateway-ului
+  password: Parolă de administrator
+  hint: Minimum 8 caractere.
+  confirm: Confirmare
+  submit: Setează și intră
+  error_pw: Parolă prea scurtă (min. 8) sau neidentică.
+dash:
+  created:
+    created: Cheia „{label}” a fost creată.
+    copy_now: Copiați-o acum
+    never: 'nu va mai fi afișată niciodată:'
+  env:
+    aria: Configurați clientul
+    title: Cheia „{label}” a fost creată — configurați clientul
+    copy_desc: Copiați aceste variabile de mediu pe mașina client.
+    never: Cheia nu va mai fi afișată niciodată.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` nu este configurat pe gateway: înlocuiți substituentul cu URL-ul public real înainte de utilizare.'
+    copy_btn: Copiați variabilele
+    copied: Copiat!
+    copy_fail: Copierea a eșuat
+  stat:
+    total_reqs: total cereri
+    last24h: ultimele 24 h
+    tokens: tokenuri servite
+    errors: erori (≥ 400)
+  keys:
+    title: Chei API ({count})
+    search_ph: Căutare (etichetă sau prefix)…
+    filter_server_aria: Filtrează după server
+    all_servers: Toate serverele
+    filter_api_aria: Filtrează după API
+    all_apis: Toate API-urile
+    filter_state_aria: Filtrează după stare
+    all_states: Toate stările
+    active: Active
+    disabled: Dezactivate
+    th:
+      label: Etichetă
+      prefix: Prefix
+      state: Stare
+      server: Server
+      models: Modele
+      origins: Origini
+      quota: Cotă
+      last_used: Ultima utilizare
+      actions: Acțiuni
+    badge_active: activă
+    badge_disabled: dezactivată
+    n_allowed: '{count} permise'
+    all_origins: toate
+    tok_month: tok/lună
+    req_min: cereri/min
+    deactivate: dezactivează
+    activate: activează
+    delete_confirm: Ștergeți cheia „{label}”?
+    delete_short: șterge
+    empty: Încă nu există chei — creați-o pe prima cu formularul de mai jos.
+    no_match: Nicio cheie nu corespunde filtrelor.
+  new:
+    title: Cheie nouă
+    label: Etichetă *
+    server: Server de execuție
+    default: implicit
+    target: Țintă publică (env-gen)
+    target_hint: URL public injectat în variabilele de mediu ale cheii.
+    fallback: Server de rezervă (fallback)
+    none_option: — niciunul —
+    fallback_hint: Rezervă transparentă la eroare de server (5xx / conexiune).
+    monthly_cap: Plafon tokenuri / lună
+    empty_unlimited: Gol = nelimitat.
+    rpm: Limită de rată (cereri/min)
+    expiry_legend: Expirare / plafoane de viață
+    expiry_hint: (probă cu cost plafonat — distinctă de limita de rată)
+    total_tokens: Plafon total de tokenuri
+    total_tokens_hint: Buget absolut pe durata de viață a cheii. Gol = nelimitat.
+    total_reqs: Plafon total de cereri
+    total_reqs_hint: Număr absolut de cereri. Gol = nelimitat.
+    expires_at: Expiră la
+    expires_hint: Dată/oră limită. Gol = niciodată.
+    idle: Expirare din inactivitate (zile)
+    idle_hint: Refuz după N zile fără utilizare. Gol = niciodată.
+    models: Modele permise
+    apis: API-uri permise
+    origins: Origini permise
+    origins_hint: Un IP sau un CIDR pe linie; gol = toate originile.
+    note: Notă
+    submit: Creează cheia
+tgt:
+  title: Ținte publice
+  intro: O <strong>țintă</strong> este URL-ul public al gateway-ului așa cum îl vede un client (ex. <span class="mono">https://llm.example:21434</span>). Servește la generarea variabilelor de mediu ale cheii asociate — <strong>nu modifică rutarea</strong> (upstream-ul este ales în continuare de serverul de execuție). Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.
+  keys_count: '{count} cheie/chei'
+  edit:
+    name: Nume
+    url: URL public
+  delete_confirm: Ștergeți ținta „{name}”?
+  add:
+    title: Adaugă o țintă
+    name: Nume *
+    url: URL public *
+    hint: Fără bară oblică finală. Este URL-ul pe care clientul îl va pune în <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Adaugă ținta
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: cereri
+    active_keys: chei active
+  reqs_day: Cereri / zi (30 z)
+  tokens_day: Tokenuri / zi (30 z)
+  status_dist: Distribuția stărilor
+  tokens_key: Tokenuri pe cheie (top 10)
+  reqs_key: Cereri pe cheie (top 10)
+  consumption: Consum pe cheie
+  th:
+    key: Cheie
+    reqs: Cereri
+    tokens: Tokenuri
+    errors: Erori
+    last_used: Ultima utilizare
+  empty: Nicio cerere atribuită acestui server încă.
+logs:
+  title: Jurnal și interdicții
+  intro: Jurnal complet al cererilor (păstrat integral, niciodată curățat) — {total} eveniment(e) în total, {shown} afișate. Interziceți o origine cu un clic dintr-un rând; o origine interzisă este refuzată (403) de proxy înaintea oricărei chei.
+  bans:
+    title: Origini interzise ({count})
+    cidr_label: IP sau CIDR de interzis
+    reason_label: Motiv (opțional)
+    reason_ph: abuz, scanare…
+    ban_btn: Interzice
+    th:
+      origin: Origine
+      reason: Motiv
+      since: Din
+    unban: Ridică interdicția
+    empty: Nicio origine interzisă.
+  journal:
+    title: Jurnalul cererilor
+    th:
+      ts: Marcaj temporal
+      origin: Origine
+      key: Cheie
+      method: Metodă
+      path: Cale
+      model: Model
+      status: Stare
+      tokens: Tokenuri
+      duration: Durată
+      action: Acțiune
+    banned: interzisă
+    ban_reason: interzisă din consola de jurnale
+    empty: Nicio cerere jurnalizată încă.
+srv:
+  title: Servere de execuție
+  intro: Fiecare cheie este asociată cu exact un server. Serverul implicit (local) este creat automat și nu poate fi șters.
+  untested: netestat
+  auth_badge: auth
+  tested_on: testat pe {date}
+  compat:
+    title: Compatibilitate API
+    tested: — testată pe {date}
+    net_error: eroare de rețea
+  actions:
+    monitor: Monitor
+    test: Testează
+    check_compat: Verifică compatibilitatea
+  delete_confirm: Ștergeți serverul „{name}”?
+  edit:
+    name: Nume
+    url: URL de bază
+    token: Token de auth la distanță (Bearer)
+    token_ph_set: setat — lăsați gol pentru a păstra
+    enabled_check: server activat
+    clear_token: elimină tokenul
+  add:
+    title: Adaugă un server
+    name: Nume *
+    url: URL de bază *
+    token_hint: Criptat în repaus; niciodată reafișat. Utilizat dacă serverul la distanță necesită un Bearer.
+    submit: Adaugă serverul
+api:
+  fam:
+    ollama: Ollama nativ (/api/*)
+    openai: Compatibil OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Căsuțe bifate = familii de API permise pentru cheie (permite/interzice cale, fără validarea schemei). <strong>Niciuna bifată = toate API-urile permise.</strong> Punctele finale de listare (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) sunt întotdeauna servite.
+  img:
+    ollama-image: Imagine prin Ollama (model x/… pe /api/generate)
+    openai-image: Imagine prin OpenAI (/v1/images/generations)
+  img_hint: <strong>Generare de imagini</strong> (capacitate separată). Activați calea dorită și completați <strong>modelele de imagine</strong> (<span class="mono">x/…</span>) mai jos.
+mdl:
+  probing: Sondare a serverului…
+  extra_ph: modele suplimentare, unul pe linie
+  hint: Căsuțe bifate + introducere liberă = lista de permise a cheii. Gol peste tot = toate modelele (text) ale serverului permise.
+  img_label: Modele de imagine permise (<span class="mono">x/…</span>)
+  img_extra_ph: modele de imagine (x/…) suplimentare, unul pe linie
+  img_hint: Listă de permise <strong>separată</strong> pentru modelele de imagine. Gol = toate modelele de imagine permise (dacă generarea de imagini este activată mai sus).
+  offline: Server inaccesibil sau fără modele — introducere liberă mai jos.
+kd:
+  meta: '{prefix}… · creată pe {created} · ultima utilizare: {last_used}'
+  try:
+    open: Încearcă acum
+    aria: Încearcă cheia
+    title: Încearcă „{label}”
+    tab_text: Text
+    tab_image: Imagine
+    model: Model
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Trimiteți un mesaj: gateway-ul interoghează serverul asociat acestei chei și afișează răspunsul modelului.'
+    msg_ph: Scrieți un mesaj…
+    send: Trimite
+    img_model: Model de imagine
+    img_api_ollama: Imagine Ollama (/api/generate)
+    img_api_openai: Imagine OpenAI (/v1/images/generations)
+    img_attach: Imagine atașată (opțional — imagine în imagine)
+    img_hint: Descrieți imaginea de generat; atașați eventual o imagine de intrare. Gateway-ul interoghează serverul asociat și afișează imaginea produsă.
+    img_ph: Descrieți imaginea de generat…
+    img_send: Generează
+  js:
+    no_model: (niciun model detectat)
+    unreachable: (server inaccesibil)
+    no_img_model: (niciun model x/ detectat)
+    failed: 'Eșec: '
+    net_error: Eroare de rețea.
+    generating: Generare…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Rezolvare…
+    whois_unavailable: WHOIS indisponibil.
+  opt:
+    default: ' (implicit)'
+    disabled: ' — dezactivat'
+  edit:
+    server_hint: Schimbarea serverului resondează modelele sale disponibile mai jos.
+    target_hint: URL public utilizat pentru generarea variabilelor de mediu.
+    fallback_hint: La o eroare de server (5xx / conexiune) a upstream-ului primar, cererea este retrimisă transparent către acest server.
+    retention: Reținerea jurnalelor (zile)
+    retention_hint: Conținutul complet al cererilor (fișiere în afara bazei de date). Gol = valoare implicită globală ({days} z); 0 = purjarea orelor trecute.
+  stat:
+    requests: cereri
+    tokens_total: tokenuri (total)
+    tokens_month: tokenuri luna aceasta
+    errors: erori
+  usage:
+    title: Utilizare (ultimele 30 de zile)
+    th_day: Zi
+    th_reqs: Cereri
+    th_tokens: Tokenuri
+    empty: Nicio cerere în perioadă — utilizarea va apărea aici de la primul apel.
+  origins:
+    title: Origini văzute ({count})
+    search_ph: Caută un IP…
+    th_ip: IP
+    th_reqs: Cereri
+    th_last: Văzută ultima dată
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Nicio origine nu corespunde căutării.
+    empty: Nicio origine văzută încă pentru această cheie.
+  errors:
+    title: Ultimele erori
+    th_ts: Marcaj temporal
+    th_ip: IP
+    th_path: Cale
+    th_status: Stare
+  whois:
+    aria: WHOIS al unei origini
+    title: WHOIS
+foot:
+  heart_aria: dragoste

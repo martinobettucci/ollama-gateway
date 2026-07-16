@@ -1,0 +1,322 @@
+# Locale bg (Български) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Шлюз Ollama
+  tagline: управление на ключове
+common:
+  close: Затвори
+  save: Запази
+  cancel: Отказ
+  delete: Изтрий
+  edit: Редактирай
+  'yes': да
+  'no': не
+  none: няма
+  all: всички
+  never: никога
+  unlimited: неограничено
+  optional: по избор
+  enabled: активирано
+  disabled: деактивирано
+  online: онлайн
+  offline: офлайн
+  default: по подразбиране
+nav:
+  aria: Основна навигация
+  dashboard: Табло
+  servers: Сървъри
+  targets: Цели
+  logs: Дневници
+  manual: Ръководство
+  logout: Изход
+  language: Език
+manual:
+  title: Ръководство за потребителя
+  close_aria: Затвори ръководството
+  loading: Зареждане на ръководството…
+  load_error: Ръководството не може да се зареди.
+login:
+  title: Вход
+  heading: Вход за администратор
+  password: Парола
+  submit: Влез
+  wrong: Неправилна парола.
+  throttled: Твърде много опити — опитайте отново след няколко минути.
+setup:
+  title: Инициализация
+  heading: Първо използване
+  subtitle: Задайте администраторската парола на шлюза
+  password: Администраторска парола
+  hint: Минимум 8 знака.
+  confirm: Потвърждение
+  submit: Задай и влез
+  error_pw: Паролата е твърде къса (мин. 8) или не съвпада.
+dash:
+  created:
+    created: Ключът „{label}“ е създаден.
+    copy_now: Копирайте го сега
+    never: 'той никога повече няма да бъде показан:'
+  env:
+    aria: Конфигуриране на клиента
+    title: Ключът „{label}“ е създаден — конфигурирайте клиента
+    copy_desc: Копирайте тези променливи на средата на клиентската машина.
+    never: Ключът никога повече няма да бъде показан.
+    api_ollama: API на Ollama
+    api_openai: API на OpenAI
+    api_anthropic: API на Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` не е конфигуриран на шлюза: заменете контейнера за заместване с реалния публичен URL адрес преди употреба.'
+    copy_btn: Копирай променливите
+    copied: Копирано!
+    copy_fail: Копирането е неуспешно
+  stat:
+    total_reqs: общо заявки
+    last24h: последните 24 ч
+    tokens: обслужени токени
+    errors: грешки (≥ 400)
+  keys:
+    title: API ключове ({count})
+    search_ph: Търсене (етикет или префикс)…
+    filter_server_aria: Филтриране по сървър
+    all_servers: Всички сървъри
+    filter_api_aria: Филтриране по API
+    all_apis: Всички API
+    filter_state_aria: Филтриране по състояние
+    all_states: Всички състояния
+    active: Активни
+    disabled: Деактивирани
+    th:
+      label: Етикет
+      prefix: Префикс
+      state: Състояние
+      server: Сървър
+      models: Модели
+      origins: Източници
+      quota: Квота
+      last_used: Последно използване
+      actions: Действия
+    badge_active: активен
+    badge_disabled: деактивиран
+    n_allowed: '{count} разрешени'
+    all_origins: всички
+    tok_month: ток/месец
+    req_min: заявки/мин
+    deactivate: деактивирай
+    activate: активирай
+    delete_confirm: Да се изтрие ли ключът „{label}“?
+    delete_short: изтр.
+    empty: Все още няма ключове — създайте първия чрез формуляра по-долу.
+    no_match: Няма ключ, който да отговаря на филтрите.
+  new:
+    title: Нов ключ
+    label: Етикет *
+    server: Изпълнителен сървър
+    default: по подразбиране
+    target: Публична цел (env-gen)
+    target_hint: Публичен URL, вмъкнат в променливите на средата на ключа.
+    fallback: Резервен сървър (fallback)
+    none_option: — няма —
+    fallback_hint: Прозрачно превключване при грешка на сървъра (5xx / връзка).
+    monthly_cap: Лимит на токени / месец
+    empty_unlimited: Празно = неограничено.
+    rpm: Ограничение на скоростта (заявки/мин)
+    expiry_legend: Изтичане / лимити за живот
+    expiry_hint: (проба с ограничена цена — отделна от ограничението на скоростта)
+    total_tokens: Общ лимит на токени
+    total_tokens_hint: Абсолютен бюджет за живота на ключа. Празно = неограничено.
+    total_reqs: Общ лимит на заявки
+    total_reqs_hint: Абсолютен брой заявки. Празно = неограничено.
+    expires_at: Изтича на
+    expires_hint: Краен срок дата/час. Празно = никога.
+    idle: Изтичане поради бездействие (дни)
+    idle_hint: Отказ след N дни без използване. Празно = никога.
+    models: Разрешени модели
+    apis: Разрешени API
+    origins: Разрешени източници
+    origins_hint: Един IP или CIDR на ред; празно = всички източници.
+    note: Бележка
+    submit: Създай ключа
+tgt:
+  title: Публични цели
+  intro: <strong>Цел</strong> е публичният URL на шлюза, както го вижда клиентът (напр. <span class="mono">https://llm.example:21434</span>). Служи за генериране на променливите на средата на свързания ключ — <strong>не променя маршрутизацията</strong> (upstream все още се избира от изпълнителния сървър). Всеки ключ сочи към цел; целта по подразбиране не може да бъде изтрита.
+  keys_count: '{count} ключ(а)'
+  edit:
+    name: Име
+    url: Публичен URL
+  delete_confirm: Да се изтрие ли целта „{name}“?
+  add:
+    title: Добави цел
+    name: Име *
+    url: Публичен URL *
+    hint: Без крайна наклонена черта. Това е URL, който клиентът ще постави в <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Добави целта
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: заявки
+    active_keys: активни ключове
+  reqs_day: Заявки / ден (30 д)
+  tokens_day: Токени / ден (30 д)
+  status_dist: Разпределение на статусите
+  tokens_key: Токени на ключ (топ 10)
+  reqs_key: Заявки на ключ (топ 10)
+  consumption: Потребление на ключ
+  th:
+    key: Ключ
+    reqs: Заявки
+    tokens: Токени
+    errors: Грешки
+    last_used: Последно използване
+  empty: Все още няма заявка, приписана на този сървър.
+logs:
+  title: Дневник и забрани
+  intro: Пълен дневник на заявките (запазен изцяло, никога не се изчиства) — общо {total} събитие(я), показани {shown}. Забранете източник с едно кликване от ред; забранен източник се отказва (403) от прокси преди всеки ключ.
+  bans:
+    title: Забранени източници ({count})
+    cidr_label: IP или CIDR за забрана
+    reason_label: Причина (по избор)
+    reason_ph: злоупотреба, сканиране…
+    ban_btn: Забрани
+    th:
+      origin: Източник
+      reason: Причина
+      since: От
+    unban: Премахни забраната
+    empty: Няма забранен източник.
+  journal:
+    title: Дневник на заявките
+    th:
+      ts: Времеви печат
+      origin: Източник
+      key: Ключ
+      method: Метод
+      path: Път
+      model: Модел
+      status: Състояние
+      tokens: Токени
+      duration: Времетраене
+      action: Действие
+    banned: забранен
+    ban_reason: забранен от конзолата на дневника
+    empty: Все още не е регистрирана заявка.
+srv:
+  title: Изпълнителни сървъри
+  intro: Всеки ключ е свързан с точно един сървър. Сървърът по подразбиране (локален) се създава автоматично и не може да бъде изтрит.
+  untested: нетестван
+  auth_badge: auth
+  tested_on: тестван на {date}
+  compat:
+    title: Съвместимост на API
+    tested: — тествана на {date}
+    net_error: мрежова грешка
+  actions:
+    monitor: Monitor
+    test: Тествай
+    check_compat: Провери съвместимостта
+  delete_confirm: Да се изтрие ли сървърът „{name}“?
+  edit:
+    name: Име
+    url: Основен URL
+    token: Токен за отдалечена автентикация (Bearer)
+    token_ph_set: зададен — оставете празно за запазване
+    enabled_check: сървърът е активиран
+    clear_token: премахни токена
+  add:
+    title: Добави сървър
+    name: Име *
+    url: Основен URL *
+    token_hint: Шифрован в покой; никога повече не се показва. Използва се, ако отдалеченият сървър изисква Bearer.
+    submit: Добави сървъра
+api:
+  fam:
+    ollama: Роден Ollama (/api/*)
+    openai: Съвместим с OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Отметнати полета = семейства API, разрешени за ключа (разреши/забрани път, без валидиране на схема). <strong>Няма отметнати = всички API разрешени.</strong> Крайните точки за списък (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) винаги се обслужват.
+  img:
+    ollama-image: Изображение чрез Ollama (модел x/… на /api/generate)
+    openai-image: Изображение чрез OpenAI (/v1/images/generations)
+  img_hint: <strong>Генериране на изображения</strong> (отделна възможност). Активирайте желания път и въведете <strong>моделите за изображения</strong> (<span class="mono">x/…</span>) по-долу.
+mdl:
+  probing: Сондиране на сървъра…
+  extra_ph: допълнителни модели, по един на ред
+  hint: Отметнати полета + свободно въвеждане = списък с разрешени на ключа. Празно навсякъде = всички (текстови) модели на сървъра разрешени.
+  img_label: Разрешени модели за изображения (<span class="mono">x/…</span>)
+  img_extra_ph: допълнителни модели за изображения (x/…), по един на ред
+  img_hint: <strong>Отделен</strong> списък с разрешени за моделите за изображения. Празно = всички модели за изображения разрешени (ако генерирането на изображения е активирано по-горе).
+  offline: Сървърът е недостъпен или без модели — свободно въвеждане по-долу.
+kd:
+  meta: '{prefix}… · създаден на {created} · последно използване: {last_used}'
+  try:
+    open: Опитай сега
+    aria: Опитай ключа
+    title: Опитай „{label}“
+    tab_text: Текст
+    tab_image: Изображение
+    model: Модел
+    api_label: API
+    api_ollama: Ollama (чат)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Изпратете съобщение: шлюзът заявява сървъра, свързан с този ключ, и показва отговора на модела.'
+    msg_ph: Напишете съобщение…
+    send: Изпрати
+    img_model: Модел за изображение
+    img_api_ollama: Изображение Ollama (/api/generate)
+    img_api_openai: Изображение OpenAI (/v1/images/generations)
+    img_attach: Прикачено изображение (по избор — изображение към изображение)
+    img_hint: Опишете изображението за генериране; по избор прикачете входно изображение. Шлюзът заявява свързания сървър и показва произведеното изображение.
+    img_ph: Опишете изображението за генериране…
+    img_send: Генерирай
+  js:
+    no_model: (няма открит модел)
+    unreachable: (сървърът е недостъпен)
+    no_img_model: (няма открит модел x/)
+    failed: 'Неуспех: '
+    net_error: Мрежова грешка.
+    generating: Генериране…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Разрешаване…
+    whois_unavailable: WHOIS не е наличен.
+  opt:
+    default: ' (по подразбиране)'
+    disabled: ' — деактивиран'
+  edit:
+    server_hint: Смяната на сървъра отново сондира наличните му модели по-долу.
+    target_hint: Публичен URL, използван за генериране на променливите на средата.
+    fallback_hint: При грешка на сървъра (5xx / връзка) на основния upstream заявката се пренасочва прозрачно към този сървър.
+    retention: Задържане на дневниците (дни)
+    retention_hint: Пълно съдържание на заявките (файлове извън базата данни). Празно = глобална стойност по подразбиране ({days} д); 0 = изчистване на изминалите часове.
+  stat:
+    requests: заявки
+    tokens_total: токени (общо)
+    tokens_month: токени този месец
+    errors: грешки
+  usage:
+    title: Използване (последните 30 дни)
+    th_day: Ден
+    th_reqs: Заявки
+    th_tokens: Токени
+    empty: Няма заявка за периода — използването ще се появи тук от първото извикване.
+  origins:
+    title: Видени източници ({count})
+    search_ph: Търсене на IP…
+    th_ip: IP
+    th_reqs: Заявки
+    th_last: Последно видян
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Няма източник, който да отговаря на търсенето.
+    empty: За този ключ все още не е видян източник.
+  errors:
+    title: Последни грешки
+    th_ts: Времеви печат
+    th_ip: IP
+    th_path: Път
+    th_status: Състояние
+  whois:
+    aria: WHOIS на източник
+    title: WHOIS
+foot:
+  heart_aria: любов

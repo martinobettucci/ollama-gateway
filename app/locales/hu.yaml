@@ -1,0 +1,322 @@
+# Locale hu (Magyar) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama átjáró
+  tagline: kulcskezelés
+common:
+  close: Bezárás
+  save: Mentés
+  cancel: Mégse
+  delete: Törlés
+  edit: Szerkesztés
+  'yes': igen
+  'no': nem
+  none: nincs
+  all: összes
+  never: soha
+  unlimited: korlátlan
+  optional: opcionális
+  enabled: engedélyezve
+  disabled: letiltva
+  online: online
+  offline: offline
+  default: alapértelmezett
+nav:
+  aria: Fő navigáció
+  dashboard: Irányítópult
+  servers: Kiszolgálók
+  targets: Célok
+  logs: Naplók
+  manual: Kézikönyv
+  logout: Kijelentkezés
+  language: Nyelv
+manual:
+  title: Felhasználói kézikönyv
+  close_aria: Kézikönyv bezárása
+  loading: Kézikönyv betöltése…
+  load_error: A kézikönyv nem tölthető be.
+login:
+  title: Bejelentkezés
+  heading: Rendszergazdai bejelentkezés
+  password: Jelszó
+  submit: Belépés
+  wrong: Helytelen jelszó.
+  throttled: Túl sok próbálkozás — próbálja újra néhány perc múlva.
+setup:
+  title: Inicializálás
+  heading: Első használat
+  subtitle: Állítsa be az átjáró rendszergazdai jelszavát
+  password: Rendszergazdai jelszó
+  hint: Legalább 8 karakter.
+  confirm: Megerősítés
+  submit: Beállítás és belépés
+  error_pw: A jelszó túl rövid (min. 8), vagy nem egyezik.
+dash:
+  created:
+    created: A(z) „{label}” kulcs létrehozva.
+    copy_now: Másolja most
+    never: 'többé nem jelenik meg:'
+  env:
+    aria: Kliens konfigurálása
+    title: A(z) „{label}” kulcs létrehozva — konfigurálja a klienst
+    copy_desc: Másolja ezeket a környezeti változókat a kliensgépre.
+    never: A kulcs többé nem jelenik meg.
+    api_ollama: Ollama API
+    api_openai: OpenAI API
+    api_anthropic: Anthropic API
+    no_public_url: 'A `PUBLIC_BASE_URL` nincs beállítva az átjárón: használat előtt cserélje ki a helyőrzőt a valódi nyilvános URL-re.'
+    copy_btn: Változók másolása
+    copied: Másolva!
+    copy_fail: A másolás sikertelen
+  stat:
+    total_reqs: összes kérés
+    last24h: utolsó 24 ó
+    tokens: kiszolgált tokenek
+    errors: hibák (≥ 400)
+  keys:
+    title: API-kulcsok ({count})
+    search_ph: Keresés (címke vagy előtag)…
+    filter_server_aria: Szűrés kiszolgáló szerint
+    all_servers: Összes kiszolgáló
+    filter_api_aria: Szűrés API szerint
+    all_apis: Összes API
+    filter_state_aria: Szűrés állapot szerint
+    all_states: Összes állapot
+    active: Aktív
+    disabled: Letiltott
+    th:
+      label: Címke
+      prefix: Előtag
+      state: Állapot
+      server: Kiszolgáló
+      models: Modellek
+      origins: Eredetek
+      quota: Kvóta
+      last_used: Utolsó használat
+      actions: Műveletek
+    badge_active: aktív
+    badge_disabled: letiltva
+    n_allowed: '{count} engedélyezve'
+    all_origins: összes
+    tok_month: token/hó
+    req_min: kérés/perc
+    deactivate: letiltás
+    activate: aktiválás
+    delete_confirm: Törli a(z) „{label}” kulcsot?
+    delete_short: törlés
+    empty: Még nincsenek kulcsok — hozza létre az elsőt az alábbi űrlappal.
+    no_match: Egyetlen kulcs sem felel meg a szűrőknek.
+  new:
+    title: Új kulcs
+    label: Címke *
+    server: Végrehajtó kiszolgáló
+    default: alapértelmezett
+    target: Nyilvános cél (env-gen)
+    target_hint: A kulcs környezeti változóiba beszúrt nyilvános URL.
+    fallback: Tartalék kiszolgáló (fallback)
+    none_option: — nincs —
+    fallback_hint: Átlátszó tartalék kiszolgálóhiba esetén (5xx / kapcsolat).
+    monthly_cap: Token-korlát / hó
+    empty_unlimited: Üres = korlátlan.
+    rpm: Sebességkorlát (kérés/perc)
+    expiry_legend: Lejárat / élettartam-korlátok
+    expiry_hint: (költségkorlátos próba — a sebességkorláttól elkülönülő)
+    total_tokens: Teljes token-korlát
+    total_tokens_hint: Abszolút költségkeret a kulcs élettartamára. Üres = korlátlan.
+    total_reqs: Teljes kérés-korlát
+    total_reqs_hint: Abszolút kérésszám. Üres = korlátlan.
+    expires_at: Lejárat
+    expires_hint: Határidő dátum/idő. Üres = soha.
+    idle: Lejárat inaktivitás miatt (nap)
+    idle_hint: Elutasítás N nap használat nélkül. Üres = soha.
+    models: Engedélyezett modellek
+    apis: Engedélyezett API-k
+    origins: Engedélyezett eredetek
+    origins_hint: Soronként egy IP vagy CIDR; üres = összes eredet.
+    note: Megjegyzés
+    submit: Kulcs létrehozása
+tgt:
+  title: Nyilvános célok
+  intro: A <strong>cél</strong> az átjáró nyilvános URL-je úgy, ahogy a kliens látja (pl. <span class="mono">https://llm.example:21434</span>). A csatolt kulcs környezeti változóinak generálására szolgál — <strong>nem változtatja meg az útválasztást</strong> (az upstreamet továbbra is a végrehajtó kiszolgáló választja). Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.
+  keys_count: '{count} kulcs'
+  edit:
+    name: Név
+    url: Nyilvános URL
+  delete_confirm: Törli a(z) „{name}” célt?
+  add:
+    title: Cél hozzáadása
+    name: Név *
+    url: Nyilvános URL *
+    hint: 'Záró perjel nélkül. Ez az URL, amelyet a kliens beír a következőkbe: <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.'
+    submit: Cél hozzáadása
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: kérések
+    active_keys: aktív kulcsok
+  reqs_day: Kérések / nap (30 n)
+  tokens_day: Tokenek / nap (30 n)
+  status_dist: Állapoteloszlás
+  tokens_key: Tokenek kulcsonként (top 10)
+  reqs_key: Kérések kulcsonként (top 10)
+  consumption: Fogyasztás kulcsonként
+  th:
+    key: Kulcs
+    reqs: Kérések
+    tokens: Tokenek
+    errors: Hibák
+    last_used: Utolsó használat
+  empty: Ehhez a kiszolgálóhoz még nincs hozzárendelve kérés.
+logs:
+  title: Napló és tiltások
+  intro: Teljes kérésnapló (teljes egészében megőrizve, soha nem törölve) — összesen {total} esemény, megjelenítve {shown}. Tiltson le egy eredetet egy kattintással egy sorból; a letiltott eredetet a proxy minden kulcs előtt elutasítja (403).
+  bans:
+    title: Letiltott eredetek ({count})
+    cidr_label: Letiltandó IP vagy CIDR
+    reason_label: Indok (opcionális)
+    reason_ph: visszaélés, szkennelés…
+    ban_btn: Letiltás
+    th:
+      origin: Eredet
+      reason: Indok
+      since: Ekkortól
+    unban: Feloldás
+    empty: Nincs letiltott eredet.
+  journal:
+    title: Kérésnapló
+    th:
+      ts: Időbélyeg
+      origin: Eredet
+      key: Kulcs
+      method: Módszer
+      path: Útvonal
+      model: Modell
+      status: Állapot
+      tokens: Tokenek
+      duration: Időtartam
+      action: Művelet
+    banned: letiltva
+    ban_reason: letiltva a naplókonzolból
+    empty: Még nincs naplózott kérés.
+srv:
+  title: Végrehajtó kiszolgálók
+  intro: Minden kulcs pontosan egy kiszolgálóhoz kapcsolódik. Az alapértelmezett (helyi) kiszolgáló automatikusan létrejön, és nem törölhető.
+  untested: nem tesztelt
+  auth_badge: auth
+  tested_on: 'tesztelve: {date}'
+  compat:
+    title: API-kompatibilitás
+    tested: '— tesztelve: {date}'
+    net_error: hálózati hiba
+  actions:
+    monitor: Monitor
+    test: Tesztelés
+    check_compat: Kompatibilitás ellenőrzése
+  delete_confirm: Törli a(z) „{name}” kiszolgálót?
+  edit:
+    name: Név
+    url: Alap-URL
+    token: Távoli auth token (Bearer)
+    token_ph_set: beállítva — hagyja üresen a megtartáshoz
+    enabled_check: kiszolgáló engedélyezve
+    clear_token: token eltávolítása
+  add:
+    title: Kiszolgáló hozzáadása
+    name: Név *
+    url: Alap-URL *
+    token_hint: Nyugalomban titkosítva; soha többé nem jelenik meg. Akkor használatos, ha a távoli kiszolgáló Bearer-t igényel.
+    submit: Kiszolgáló hozzáadása
+api:
+  fam:
+    ollama: Natív Ollama (/api/*)
+    openai: OpenAI-kompatibilis (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Bejelölt jelölőnégyzetek = a kulcs számára engedélyezett API-családok (útvonal engedélyezés/tiltás, sémaellenőrzés nélkül). <strong>Egy sincs bejelölve = minden API engedélyezett.</strong> A listázó végpontok (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) mindig kiszolgáltak.
+  img:
+    ollama-image: Kép Ollamán keresztül (x/… modell a /api/generate-en)
+    openai-image: Kép OpenAI-n keresztül (/v1/images/generations)
+  img_hint: <strong>Képgenerálás</strong> (külön képesség). Engedélyezze a kívánt utat, és adja meg a <strong>képmodelleket</strong> (<span class="mono">x/…</span>) alább.
+mdl:
+  probing: Kiszolgáló szondázása…
+  extra_ph: további modellek, soronként egy
+  hint: Bejelölt jelölőnégyzetek + szabad bevitel = a kulcs engedélyezési listája. Mindenhol üres = a kiszolgáló összes (szöveges) modellje engedélyezett.
+  img_label: Engedélyezett képmodellek (<span class="mono">x/…</span>)
+  img_extra_ph: további képmodellek (x/…), soronként egy
+  img_hint: <strong>Külön</strong> engedélyezési lista a képmodellekhez. Üres = minden képmodell engedélyezett (ha a képgenerálás fent engedélyezve van).
+  offline: A kiszolgáló nem érhető el vagy nincsenek modellek — szabad bevitel alább.
+kd:
+  meta: '{prefix}… · létrehozva: {created} · utolsó használat: {last_used}'
+  try:
+    open: Kipróbálás most
+    aria: Kulcs kipróbálása
+    title: „{label}” kipróbálása
+    tab_text: Szöveg
+    tab_image: Kép
+    model: Modell
+    api_label: API
+    api_ollama: Ollama (csevegés)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Küldjön egy üzenetet: az átjáró lekérdezi az ehhez a kulcshoz csatolt kiszolgálót, és megjeleníti a modell válaszát.'
+    msg_ph: Írjon egy üzenetet…
+    send: Küldés
+    img_model: Képmodell
+    img_api_ollama: Ollama kép (/api/generate)
+    img_api_openai: OpenAI kép (/v1/images/generations)
+    img_attach: Csatolt kép (opcionális — képből képbe)
+    img_hint: Írja le a generálandó képet; opcionálisan csatoljon bemeneti képet. Az átjáró lekérdezi a csatolt kiszolgálót, és megjeleníti az előállított képet.
+    img_ph: Írja le a generálandó képet…
+    img_send: Generálás
+  js:
+    no_model: (nem észlelhető modell)
+    unreachable: (a kiszolgáló nem érhető el)
+    no_img_model: (nem észlelhető x/ modell)
+    failed: 'Sikertelen: '
+    net_error: Hálózati hiba.
+    generating: Generálás…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Feloldás…
+    whois_unavailable: A WHOIS nem érhető el.
+  opt:
+    default: ' (alapértelmezett)'
+    disabled: ' — letiltva'
+  edit:
+    server_hint: A kiszolgáló módosítása újra szondázza az elérhető modelljeit alább.
+    target_hint: A környezeti változók generálásához használt nyilvános URL.
+    fallback_hint: Az elsődleges upstream kiszolgálóhibája (5xx / kapcsolat) esetén a kérés átlátszóan újraküldésre kerül erre a kiszolgálóra.
+    retention: Naplók megőrzése (nap)
+    retention_hint: A kérések teljes tartalma (fájlok az adatbázison kívül). Üres = globális alapértelmezett ({days} n); 0 = az elmúlt órák törlése.
+  stat:
+    requests: kérések
+    tokens_total: tokenek (összesen)
+    tokens_month: tokenek ebben a hónapban
+    errors: hibák
+  usage:
+    title: Használat (utolsó 30 nap)
+    th_day: Nap
+    th_reqs: Kérések
+    th_tokens: Tokenek
+    empty: Nincs kérés az időszakban — a használat az első hívástól itt jelenik meg.
+  origins:
+    title: Látott eredetek ({count})
+    search_ph: IP keresése…
+    th_ip: IP
+    th_reqs: Kérések
+    th_last: Utoljára látott
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Egyetlen eredet sem felel meg a keresésnek.
+    empty: Ehhez a kulcshoz még nem látott eredet.
+  errors:
+    title: Legutóbbi hibák
+    th_ts: Időbélyeg
+    th_ip: IP
+    th_path: Útvonal
+    th_status: Állapot
+  whois:
+    aria: Egy eredet WHOIS-a
+    title: WHOIS
+foot:
+  heart_aria: szeretet
