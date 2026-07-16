@@ -66,6 +66,11 @@ REQUEST_LOG_RETENTION_DAYS = int(os.environ.get("REQUEST_LOG_RETENTION_DAYS", "3
 # filtre déjà, mais le proxy re-vérifie). Préfixes, pas exact-match.
 ALLOWED_PATH_PREFIXES = ("/api/", "/v1/")
 
+# Taille max d'un corps de requête proxifié (octets). Défense en profondeur anti-DoS mémoire
+# (le corps est bufferisé pour appliquer la restriction de modèle). Généreux par défaut (100 Mio)
+# pour l'image-to-image (base64) ; 0 = illimité. Caddy peut aussi borner en amont (`request_body`).
+MAX_REQUEST_BYTES = int(os.environ.get("MAX_REQUEST_BYTES", str(100 * 1024 * 1024)))
+
 IS_PROD = APP_ENV == "prod"
 
 

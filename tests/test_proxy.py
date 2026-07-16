@@ -234,6 +234,26 @@ async def test_disabled_server_returns_503(fake_upstream):
     assert r.status_code == 503 and "serveur d'exécution" in r.text
 
 
+async def test_oversized_body_rejected_413(fake_upstream, monkeypatch):
+    """Un corps dont le Content-Length dépasse la borne est refusé (413) avant tout traitement."""
+    from app import config
+    monkeypatch.setattr(config, "MAX_REQUEST_BYTES", 50)
+    _, key = keys.create_key("x", [], None, None)
+    big = {"model": "demo:latest", "pad": "x" * 500}
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/api/chat", headers=_auth(key), json=big)
+    assert r.status_code == 413 and "volumineux" in r.text
+
+
+async def test_body_within_limit_passes(fake_upstream, monkeypatch):
+    from app import config
+    monkeypatch.setattr(config, "MAX_REQUEST_BYTES", 10 * 1024 * 1024)
+    _, key = keys.create_key("x", [], None, None)
+    async with proxy_client(fake_upstream) as c:
+        r = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
+    assert r.status_code == 200
+
+
 # --- Résistance à l'usurpation de X-Forwarded-For (sécurité) ----------------------------------
 
 async def test_xff_spoof_does_not_bypass_origin_allowlist(fake_upstream):

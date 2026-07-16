@@ -6,6 +6,12 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Sécurité — conteneur non-root & borne de taille de requête.** L'image applicative tourne
+  désormais sous un **utilisateur non privilégié** (défense en profondeur). Le proxy **refuse
+  (413)** un corps dont la taille déclarée dépasse `MAX_REQUEST_BYTES` (défaut 100 Mio, `0` =
+  illimité), pour limiter la pression mémoire (le corps est bufferisé afin d'appliquer la
+  restriction de modèle). Caddy peut aussi borner en amont.
+
 - **Sécurité — démarrage prod « fail-closed » sur les secrets.** En production, la passerelle
   **refuse de démarrer** si `ADMIN_SESSION_SECRET` ou `P2E_MASTER_KEY` sont absents ou laissés à
   leur valeur de développement (non secrète). Empêche qu'une prod mal configurée signe ses

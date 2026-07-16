@@ -193,6 +193,14 @@ async def proxy(request: Request, full_path: str):
     if not path.startswith(config.ALLOWED_PATH_PREFIXES):
         return JSONResponse({"error": "not found"}, status_code=404)
 
+    # --- Borne de taille (anti-DoS mémoire) : rejet précoce si Content-Length déclaré dépasse la
+    #     limite. Le corps est bufferisé plus bas pour la restriction de modèle ; on refuse avant.
+    #     (Caddy peut aussi borner en amont via `request_body`.) ---
+    clen = request.headers.get("content-length", "")
+    if config.MAX_REQUEST_BYTES and clen.isdigit() and int(clen) > config.MAX_REQUEST_BYTES:
+        _log(None, ip, method, path, "", 413, t0)
+        return JSONResponse({"error": "corps de requête trop volumineux"}, status_code=413)
+
     # --- Authentification par clé (Bearer, ou x-api-key pour le SDK Anthropic) ---
     key = auth.extract_api_key(request.headers)
     if not key:
