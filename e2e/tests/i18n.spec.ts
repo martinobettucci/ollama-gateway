@@ -4,9 +4,8 @@ import fs from 'fs';
 const OUT = 'output';
 test.beforeAll(() => fs.mkdirSync(OUT, { recursive: true }));
 
-// Navigateur en français : la négociation Accept-Language rend le panel en fr par défaut
-// (avant toute bascule explicite). On teste ensuite l'override par le sélecteur.
-test.use({ locale: 'fr-FR' });
+// Le navigateur est en fr-FR (locale globale de la config) : la négociation Accept-Language
+// rend le panel en français par défaut, puis on teste l'override par le sélecteur de langue.
 
 async function login(page) {
   await page.goto('/admin/login');

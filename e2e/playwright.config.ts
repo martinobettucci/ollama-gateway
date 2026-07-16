@@ -18,6 +18,10 @@ export default defineConfig({
   globalSetup: './global-setup.ts',
   use: {
     baseURL: 'http://127.0.0.1:8792',
+    // Locale fr : la négociation i18n (Accept-Language) rend le panel en français par défaut,
+    // langue source du projet et des captures du manuel. Les specs basculent explicitement de
+    // langue via le sélecteur quand elles testent l'i18n.
+    locale: 'fr-FR',
     screenshot: 'only-on-failure',
     video: 'on',                    // .webm pour l'observation en vision
     trace: 'retain-on-failure',

@@ -175,6 +175,25 @@ La suppression d'une clé est définitive (l'historique d'usage agrégé reste c
 
 L'interface applique la charte graphique P2Enjoy (voir `docs/DESIGN_SYSTEM.md`).
 
+### Langue de l'interface
+
+Le panel est **internationalisé** : les 24 langues officielles de l'Union européenne sont
+disponibles. Un **sélecteur de langue** (icône globe) est présent en haut à droite de la barre,
+visible même sur l'écran de connexion. La langue choisie est **mémorisée pour la session** ; à
+défaut de choix explicite, le panel détecte la langue du navigateur (en-tête `Accept-Language`)
+et retombe sur le français si aucune langue reconnue n'est proposée. Chaque libellé non traduit
+retombe automatiquement sur le français, puis sur la clé technique — l'interface ne casse jamais.
+
+Le même tableau de bord, basculé en anglais via le sélecteur (la charte et la mise en page sont
+identiques, seul le texte change) :
+
+![Le panel basculé en anglais via le sélecteur de langue](../app/static/manual/19-lang-en.jpg)
+
+Les traductions vivent dans un fichier **YAML par langue** (`app/locales/<code>.yaml`), le
+français étant la source de référence. Le sous-ensemble de langues proposé peut être restreint
+via la variable d'environnement `SUPPORTED_LANGS` (par ex. un déploiement qui n'expose que
+quelques langues).
+
 ### Connexion (et première utilisation)
 
 À la toute première utilisation, un écran d'initialisation demande de définir le mot de

@@ -41,6 +41,9 @@
   }
 
   async function refresh() {
+    // Serveur ciblé au lancement : si la sélection change pendant la sonde (await), la réponse
+    // devient périmée et NE DOIT PAS re-rendre des cases (évite une course entre deux serveurs).
+    const target = sel.value;
     const curText = [...new Set([...checkedOf(box), ...listOf(ta)])];
     const curImg = [...new Set([...checkedOf(imgBox), ...listOf(imgTa)])];
     box.innerHTML = ''; imgBox.innerHTML = '';
@@ -48,9 +51,11 @@
     status.hidden = false; status.textContent = status.dataset.probing;
     let data = { online: false, models: [] };
     try {
-      const r = await fetch('/admin/servers/' + sel.value + '/models');
+      const r = await fetch('/admin/servers/' + target + '/models');
+      if (sel.value !== target) return;               // sélection changée → réponse périmée
       if (r.ok) data = await r.json();
-    } catch (e) { /* réseau : repli saisie libre */ }
+      if (sel.value !== target) return;
+    } catch (e) { if (sel.value !== target) return; }  // réseau : repli saisie libre
     if (!data.online || !Array.isArray(data.models) || !data.models.length) {
       status.textContent = status.dataset.offline;
       return;
