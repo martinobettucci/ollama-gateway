@@ -6,6 +6,17 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Internationalisation (i18n) du panel — 24 langues de l'UE.** L'admin est désormais entièrement
+  traduisible via un **fichier YAML par langue** (`app/locales/<code>.yaml`), le français étant la
+  source de référence. Les 24 langues officielles de l'Union européenne sont fournies (bg, cs, da,
+  de, el, en, es, et, fi, fr, ga, hr, hu, it, lt, lv, mt, nl, pl, pt, ro, sk, sl, sv). Un **sélecteur
+  de langue** (icône globe) apparaît dans la barre, visible même déconnecté ; le choix est mémorisé
+  en session. À défaut, la langue est **négociée** depuis l'en-tête `Accept-Language` du navigateur,
+  avec repli sur le français puis sur la clé technique (l'interface ne casse jamais). Le sous-ensemble
+  proposé peut être restreint via `SUPPORTED_LANGS`. Les libellés injectés côté JavaScript (sondes,
+  échecs, WHOIS…) sont eux aussi traduits. Placeholders (`{param}`) et identifiants techniques (noms
+  de variables d'env, chemins d'API) sont préservés à l'identique dans toutes les langues.
+
 - **Pied de page d'attribution.** Toutes les pages du panel (login compris) affichent désormais un
   pied de page « Made proudly with AI by **P2Enjoy** with ♥ », où *P2Enjoy* renvoie vers
   `https://p2enjoy.studio` (nouvel onglet, `rel="noopener noreferrer"`). Cœur en icône vectorielle

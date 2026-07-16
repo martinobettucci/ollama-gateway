@@ -50,7 +50,10 @@ charte n'en définit pas un.
 3. **Icônes pastilles** : carré arrondi (10 px) en fond doux de la couleur de catégorie,
    icône de la couleur pleine. Icônes **lucide**, trait 2 px, jamais d'emoji.
 4. **Navigation en pilules** : item actif = fond `--color-brand-soft`, texte `--color-brand`,
-   icône + libellé toujours ; inactif = texte `#4B5563`, hover fond gris `#F3F4F6`.
+   icône + libellé toujours ; inactif = texte `#4B5563`, hover fond gris `#F3F4F6`. Le **sélecteur
+   de langue** (i18n) est calé à droite de la barre (`.topbar-right`) sous forme d'une pilule
+   `rounded-full` bordée (icône lucide `globe` + `<select>` natif discret) ; visible même sur
+   l'écran de connexion, il ne porte pas de couleur de catégorie.
 5. **Boutons** : primaire = fond `#23468C`, texte blanc, `rounded-lg`, hover `#1B3670` ;
    secondaire = bordure `#E5E7EB`, fond blanc, hover fond gris ; destructif = rouge (plein ou
    contour). Hauteur ≥ 40 px, focus ring 2 px `#23468C` avec offset.

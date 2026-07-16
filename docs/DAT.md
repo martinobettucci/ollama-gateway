@@ -50,6 +50,17 @@ car Ollama est en loopback natif (hors Docker).
 - `reqlog.py` — journal de **contenu** des requêtes **sur fichiers** (hors base), secrets
   masqués ; CLI `compact` (cron) : gzip des heures passées + purge (rétention par clé).
 - `whois.py` — résolution **RDAP** d'une IP (bouton WHOIS des origines) ; court-circuit local.
+- `i18n.py` — **internationalisation** du panel : un catalogue **YAML par langue**
+  (`app/locales/<code>.yaml`), aplati en clés pointées au chargement, source de référence `fr`.
+  `translate(key, lang, **params)` interpole les `{param}` (via `str.format_map`, placeholder
+  inconnu laissé intact) et **replie** langue absente → `fr` → clé brute. `negotiate(request)`
+  choisit la langue par **priorité session → cookie → `Accept-Language` → défaut fr**, bornée à
+  l'ensemble activé (`SUPPORTED_LANGS`, vide = les 24 langues UE). Les templates reçoivent `t`,
+  `lang` et `languages` via un wrapper de rendu (`admin.render`) ; la route `POST /admin/lang`
+  écrit `session['lang']` (redirection bornée à `/admin`, anti-open-redirect). Les libellés
+  utilisés en JavaScript (sondes de modèles, essais, WHOIS) sont exposés en JSON/`data-*` puis
+  traduits côté client. Aucune dépendance hors **PyYAML**. Les 24 langues officielles de l'UE sont
+  fournies et **complètes clé-à-clé** (test dédié `tests/test_i18n.py`).
 
 ## 3. Données (SQLite)
 
