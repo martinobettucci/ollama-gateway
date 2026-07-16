@@ -1,0 +1,322 @@
+# Locale fi (Suomi) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama-yhdyskäytävä
+  tagline: avainten hallinta
+common:
+  close: Sulje
+  save: Tallenna
+  cancel: Peruuta
+  delete: Poista
+  edit: Muokkaa
+  'yes': kyllä
+  'no': ei
+  none: ei mitään
+  all: kaikki
+  never: ei koskaan
+  unlimited: rajoittamaton
+  optional: valinnainen
+  enabled: käytössä
+  disabled: poissa käytöstä
+  online: verkossa
+  offline: offline
+  default: oletus
+nav:
+  aria: Päänavigointi
+  dashboard: Kojelauta
+  servers: Palvelimet
+  targets: Kohteet
+  logs: Lokit
+  manual: Käyttöopas
+  logout: Kirjaudu ulos
+  language: Kieli
+manual:
+  title: Käyttöopas
+  close_aria: Sulje käyttöopas
+  loading: Ladataan käyttöopasta…
+  load_error: Käyttöopasta ei voi ladata.
+login:
+  title: Kirjaudu sisään
+  heading: Järjestelmänvalvojan kirjautuminen
+  password: Salasana
+  submit: Siirry
+  wrong: Väärä salasana.
+  throttled: Liian monta yritystä — yritä uudelleen muutaman minuutin kuluttua.
+setup:
+  title: Alustus
+  heading: Ensimmäinen käyttö
+  subtitle: Aseta yhdyskäytävän järjestelmänvalvojan salasana
+  password: Järjestelmänvalvojan salasana
+  hint: Vähintään 8 merkkiä.
+  confirm: Vahvistus
+  submit: Aseta ja siirry
+  error_pw: Salasana liian lyhyt (väh. 8) tai ei sama.
+dash:
+  created:
+    created: Avain ”{label}” luotu.
+    copy_now: Kopioi se nyt
+    never: 'sitä ei näytetä enää koskaan:'
+  env:
+    aria: Määritä asiakas
+    title: Avain ”{label}” luotu — määritä asiakas
+    copy_desc: Kopioi nämä ympäristömuuttujat asiakaskoneelle.
+    never: Avainta ei näytetä enää koskaan.
+    api_ollama: Ollama-API
+    api_openai: OpenAI-API
+    api_anthropic: Anthropic-API
+    no_public_url: '`PUBLIC_BASE_URL` ei ole määritetty yhdyskäytävässä: korvaa paikkamerkki todellisella julkisella URL-osoitteella ennen käyttöä.'
+    copy_btn: Kopioi muuttujat
+    copied: Kopioitu!
+    copy_fail: Kopiointi epäonnistui
+  stat:
+    total_reqs: pyyntöjä yhteensä
+    last24h: viimeiset 24 h
+    tokens: toimitetut tokenit
+    errors: virheet (≥ 400)
+  keys:
+    title: API-avaimet ({count})
+    search_ph: Hae (nimi tai etuliite)…
+    filter_server_aria: Suodata palvelimen mukaan
+    all_servers: Kaikki palvelimet
+    filter_api_aria: Suodata API:n mukaan
+    all_apis: Kaikki API:t
+    filter_state_aria: Suodata tilan mukaan
+    all_states: Kaikki tilat
+    active: Aktiiviset
+    disabled: Poistetut käytöstä
+    th:
+      label: Nimi
+      prefix: Etuliite
+      state: Tila
+      server: Palvelin
+      models: Mallit
+      origins: Alkuperät
+      quota: Kiintiö
+      last_used: Viimeksi käytetty
+      actions: Toiminnot
+    badge_active: aktiivinen
+    badge_disabled: poistettu käytöstä
+    n_allowed: '{count} sallittu'
+    all_origins: kaikki
+    tok_month: tok/kk
+    req_min: pyyntöä/min
+    deactivate: poista käytöstä
+    activate: ota käyttöön
+    delete_confirm: Poistetaanko avain ”{label}”?
+    delete_short: poista
+    empty: Ei vielä avaimia — luo ensimmäinen alla olevalla lomakkeella.
+    no_match: Yksikään avain ei vastaa suodattimia.
+  new:
+    title: Uusi avain
+    label: Nimi *
+    server: Suorituspalvelin
+    default: oletus
+    target: Julkinen kohde (env-gen)
+    target_hint: Julkinen URL, joka lisätään avaimen ympäristömuuttujiin.
+    fallback: Varapalvelin (fallback)
+    none_option: — ei mitään —
+    fallback_hint: Läpinäkyvä varajärjestely palvelinvirheessä (5xx / yhteys).
+    monthly_cap: Token-katto / kk
+    empty_unlimited: Tyhjä = rajoittamaton.
+    rpm: Nopeusraja (pyyntöä/min)
+    expiry_legend: Vanheneminen / elinkaaren rajat
+    expiry_hint: (kustannuskatollinen kokeilu — erillään nopeusrajasta)
+    total_tokens: Tokenien kokonaiskatto
+    total_tokens_hint: Absoluuttinen budjetti avaimen elinkaaren ajalta. Tyhjä = rajoittamaton.
+    total_reqs: Pyyntöjen kokonaiskatto
+    total_reqs_hint: Absoluuttinen pyyntöjen määrä. Tyhjä = rajoittamaton.
+    expires_at: Vanhenee
+    expires_hint: Määräpäivä/-aika. Tyhjä = ei koskaan.
+    idle: Vanheneminen käyttämättömyyden vuoksi (päivää)
+    idle_hint: Hylkäys N päivän käyttämättömyyden jälkeen. Tyhjä = ei koskaan.
+    models: Sallitut mallit
+    apis: Sallitut API:t
+    origins: Sallitut alkuperät
+    origins_hint: Yksi IP tai CIDR riviä kohti; tyhjä = kaikki alkuperät.
+    note: Muistiinpano
+    submit: Luo avain
+tgt:
+  title: Julkiset kohteet
+  intro: <strong>Kohde</strong> on yhdyskäytävän julkinen URL sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:21434</span>). Sitä käytetään liitetyn avaimen ympäristömuuttujien luomiseen — <strong>se ei muuta reititystä</strong> (upstreamin valitsee edelleen suorituspalvelin). Jokainen avain osoittaa kohteeseen; oletuskohdetta ei voi poistaa.
+  keys_count: '{count} avain(ta)'
+  edit:
+    name: Nimi
+    url: Julkinen URL
+  delete_confirm: Poistetaanko kohde ”{name}”?
+  add:
+    title: Lisää kohde
+    name: Nimi *
+    url: Julkinen URL *
+    hint: Ilman loppukauttaviivaa. Tämä on URL, jonka asiakas laittaa kenttiin <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Lisää kohde
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: pyyntöä
+    active_keys: aktiivista avainta
+  reqs_day: Pyynnöt / päivä (30 pv)
+  tokens_day: Tokenit / päivä (30 pv)
+  status_dist: Tilajakauma
+  tokens_key: Tokenit avainta kohti (top 10)
+  reqs_key: Pyynnöt avainta kohti (top 10)
+  consumption: Kulutus avainta kohti
+  th:
+    key: Avain
+    reqs: Pyynnöt
+    tokens: Tokenit
+    errors: Virheet
+    last_used: Viimeksi käytetty
+  empty: Tälle palvelimelle ei ole vielä kohdistettu yhtään pyyntöä.
+logs:
+  title: Loki & estot
+  intro: Täydellinen pyyntöloki (säilytetään kokonaisuudessaan, ei koskaan tyhjennetä) — yhteensä {total} tapahtuma(a), {shown} näytetty. Estä alkuperä yhdellä napsautuksella riviltä; estetty alkuperä hylätään (403) välityspalvelimessa ennen mitään avainta.
+  bans:
+    title: Estetyt alkuperät ({count})
+    cidr_label: Estettävä IP tai CIDR
+    reason_label: Syy (valinnainen)
+    reason_ph: väärinkäyttö, skannaus…
+    ban_btn: Estä
+    th:
+      origin: Alkuperä
+      reason: Syy
+      since: Alkaen
+    unban: Poista esto
+    empty: Ei estettyjä alkuperiä.
+  journal:
+    title: Pyyntöloki
+    th:
+      ts: Aikaleima
+      origin: Alkuperä
+      key: Avain
+      method: Menetelmä
+      path: Polku
+      model: Malli
+      status: Tila
+      tokens: Tokenit
+      duration: Kesto
+      action: Toiminto
+    banned: estetty
+    ban_reason: estetty lokikonsolista
+    empty: Ei vielä kirjattuja pyyntöjä.
+srv:
+  title: Suorituspalvelimet
+  intro: Jokainen avain on liitetty täsmälleen yhteen palvelimeen. Oletuspalvelin (paikallinen) luodaan automaattisesti eikä sitä voi poistaa.
+  untested: ei testattu
+  auth_badge: auth
+  tested_on: testattu {date}
+  compat:
+    title: API-yhteensopivuus
+    tested: — testattu {date}
+    net_error: verkkovirhe
+  actions:
+    monitor: Monitor
+    test: Testaa
+    check_compat: Tarkista yhteensopivuus
+  delete_confirm: Poistetaanko palvelin ”{name}”?
+  edit:
+    name: Nimi
+    url: Perus-URL
+    token: Etä-auth-token (Bearer)
+    token_ph_set: asetettu — jätä tyhjäksi säilyttääksesi
+    enabled_check: palvelin käytössä
+    clear_token: poista token
+  add:
+    title: Lisää palvelin
+    name: Nimi *
+    url: Perus-URL *
+    token_hint: Salattu levossa; ei näytetä enää koskaan. Käytetään, jos etäpalvelin vaatii Bearerin.
+    submit: Lisää palvelin
+api:
+  fam:
+    ollama: Natiivi Ollama (/api/*)
+    openai: OpenAI-yhteensopiva (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Rastitetut ruudut = avaimelle sallitut API-perheet (polun salli/estä, ilman skeeman validointia). <strong>Ei rastitettuja = kaikki API:t sallittu.</strong> Listauspäätepisteet (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) tarjotaan aina.
+  img:
+    ollama-image: Kuva Ollaman kautta (malli x/… polussa /api/generate)
+    openai-image: Kuva OpenAI:n kautta (/v1/images/generations)
+  img_hint: <strong>Kuvien luonti</strong> (erillinen ominaisuus). Ota haluttu reitti käyttöön ja anna <strong>kuvamallit</strong> (<span class="mono">x/…</span>) alla.
+mdl:
+  probing: Tutkitaan palvelinta…
+  extra_ph: lisämalleja, yksi riviä kohti
+  hint: Rastitetut ruudut + vapaa syöttö = avaimen sallittujen luettelo. Kaikkialla tyhjä = kaikki palvelimen (teksti)mallit sallittu.
+  img_label: Sallitut kuvamallit (<span class="mono">x/…</span>)
+  img_extra_ph: lisäkuvamalleja (x/…), yksi riviä kohti
+  img_hint: <strong>Erillinen</strong> sallittujen luettelo kuvamalleille. Tyhjä = kaikki kuvamallit sallittu (jos kuvien luonti on yllä käytössä).
+  offline: Palvelin ei tavoitettavissa tai ilman malleja — vapaa syöttö alla.
+kd:
+  meta: '{prefix}… · luotu {created} · viimeksi käytetty: {last_used}'
+  try:
+    open: Kokeile nyt
+    aria: Kokeile avainta
+    title: Kokeile ”{label}”
+    tab_text: Teksti
+    tab_image: Kuva
+    model: Malli
+    api_label: API
+    api_ollama: Ollama (keskustelu)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Lähetä viesti: yhdyskäytävä kysyy tähän avaimeen liitetyltä palvelimelta ja näyttää mallin vastauksen.'
+    msg_ph: Kirjoita viesti…
+    send: Lähetä
+    img_model: Kuvamalli
+    img_api_ollama: Ollama-kuva (/api/generate)
+    img_api_openai: OpenAI-kuva (/v1/images/generations)
+    img_attach: Liitetty kuva (valinnainen — kuvasta kuvaan)
+    img_hint: Kuvaile luotava kuva; liitä halutessasi syötekuva. Yhdyskäytävä kysyy liitetyltä palvelimelta ja näyttää tuotetun kuvan.
+    img_ph: Kuvaile luotava kuva…
+    img_send: Luo
+  js:
+    no_model: (ei havaittua mallia)
+    unreachable: (palvelin ei tavoitettavissa)
+    no_img_model: (ei havaittua x/-mallia)
+    failed: 'Epäonnistui: '
+    net_error: Verkkovirhe.
+    generating: Luodaan…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Selvitetään…
+    whois_unavailable: WHOIS ei käytettävissä.
+  opt:
+    default: ' (oletus)'
+    disabled: ' — poistettu käytöstä'
+  edit:
+    server_hint: Palvelimen vaihto tutkii sen käytettävissä olevat mallit alla uudelleen.
+    target_hint: Julkinen URL, jota käytetään ympäristömuuttujien luomiseen.
+    fallback_hint: Ensisijaisen upstreamin palvelinvirheessä (5xx / yhteys) pyyntö toistetaan läpinäkyvästi tälle palvelimelle.
+    retention: Lokien säilytys (päivää)
+    retention_hint: Pyyntöjen täysi sisältö (tiedostot tietokannan ulkopuolella). Tyhjä = globaali oletus ({days} pv); 0 = menneiden tuntien tyhjennys.
+  stat:
+    requests: pyyntöä
+    tokens_total: tokenit (yhteensä)
+    tokens_month: tokenit tässä kuussa
+    errors: virheet
+  usage:
+    title: Käyttö (viimeiset 30 päivää)
+    th_day: Päivä
+    th_reqs: Pyynnöt
+    th_tokens: Tokenit
+    empty: Ei pyyntöjä jaksolla — käyttö näkyy tässä ensimmäisestä kutsusta alkaen.
+  origins:
+    title: Nähdyt alkuperät ({count})
+    search_ph: Hae IP…
+    th_ip: IP
+    th_reqs: Pyynnöt
+    th_last: Viimeksi nähty
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Yksikään alkuperä ei vastaa hakua.
+    empty: Tälle avaimelle ei ole vielä nähty alkuperää.
+  errors:
+    title: Viimeisimmät virheet
+    th_ts: Aikaleima
+    th_ip: IP
+    th_path: Polku
+    th_status: Tila
+  whois:
+    aria: Alkuperän WHOIS
+    title: WHOIS
+foot:
+  heart_aria: rakkaus

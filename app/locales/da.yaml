@@ -1,0 +1,322 @@
+# Locale da (Dansk) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama-gateway
+  tagline: nøglestyring
+common:
+  close: Luk
+  save: Gem
+  cancel: Annuller
+  delete: Slet
+  edit: Rediger
+  'yes': ja
+  'no': nej
+  none: ingen
+  all: alle
+  never: aldrig
+  unlimited: ubegrænset
+  optional: valgfri
+  enabled: aktiveret
+  disabled: deaktiveret
+  online: online
+  offline: offline
+  default: standard
+nav:
+  aria: Hovednavigation
+  dashboard: Dashboard
+  servers: Servere
+  targets: Mål
+  logs: Logfiler
+  manual: Manual
+  logout: Log ud
+  language: Sprog
+manual:
+  title: Brugermanual
+  close_aria: Luk manualen
+  loading: Indlæser manualen…
+  load_error: Kan ikke indlæse manualen.
+login:
+  title: Log ind
+  heading: Admin-login
+  password: Adgangskode
+  submit: Gå ind
+  wrong: Forkert adgangskode.
+  throttled: For mange forsøg — prøv igen om et par minutter.
+setup:
+  title: Initialisering
+  heading: Første brug
+  subtitle: Angiv gatewayens admin-adgangskode
+  password: Admin-adgangskode
+  hint: Mindst 8 tegn.
+  confirm: Bekræftelse
+  submit: Angiv og gå ind
+  error_pw: Adgangskode for kort (min. 8) eller ikke identisk.
+dash:
+  created:
+    created: Nøgle »{label}« oprettet.
+    copy_now: Kopiér den nu
+    never: 'den vises aldrig igen:'
+  env:
+    aria: Konfigurer klienten
+    title: Nøgle »{label}« oprettet — konfigurer klienten
+    copy_desc: Kopiér disse miljøvariabler til klientmaskinen.
+    never: Nøglen vises aldrig igen.
+    api_ollama: Ollama-API
+    api_openai: OpenAI-API
+    api_anthropic: Anthropic-API
+    no_public_url: '`PUBLIC_BASE_URL` er ikke konfigureret på gatewayen: erstat pladsholderen med den rigtige offentlige URL før brug.'
+    copy_btn: Kopiér variablerne
+    copied: Kopieret!
+    copy_fail: Kopiering mislykkedes
+  stat:
+    total_reqs: anmodninger i alt
+    last24h: seneste 24 t
+    tokens: leverede tokens
+    errors: fejl (≥ 400)
+  keys:
+    title: API-nøgler ({count})
+    search_ph: Søg (label eller præfiks)…
+    filter_server_aria: Filtrér efter server
+    all_servers: Alle servere
+    filter_api_aria: Filtrér efter API
+    all_apis: Alle API'er
+    filter_state_aria: Filtrér efter status
+    all_states: Alle status
+    active: Aktive
+    disabled: Deaktiverede
+    th:
+      label: Label
+      prefix: Præfiks
+      state: Status
+      server: Server
+      models: Modeller
+      origins: Oprindelser
+      quota: Kvote
+      last_used: Sidst brugt
+      actions: Handlinger
+    badge_active: aktiv
+    badge_disabled: deaktiveret
+    n_allowed: '{count} tilladt'
+    all_origins: alle
+    tok_month: tok/måned
+    req_min: anm./min
+    deactivate: deaktivér
+    activate: aktivér
+    delete_confirm: Slet nøglen »{label}«?
+    delete_short: slet
+    empty: Ingen nøgler endnu — opret den første med formularen nedenfor.
+    no_match: Ingen nøgle matcher filtrene.
+  new:
+    title: Ny nøgle
+    label: Label *
+    server: Udførelsesserver
+    default: standard
+    target: Offentligt mål (env-gen)
+    target_hint: Offentlig URL, der indsættes i nøglens miljøvariabler.
+    fallback: Reserveserver (fallback)
+    none_option: — ingen —
+    fallback_hint: Transparent fallback ved serverfejl (5xx / forbindelse).
+    monthly_cap: Tokengrænse / måned
+    empty_unlimited: Tom = ubegrænset.
+    rpm: Hastighedsgrænse (anm./min)
+    expiry_legend: Udløb / levetidsgrænser
+    expiry_hint: (omkostningsbegrænset prøve — adskilt fra hastighedsgrænsen)
+    total_tokens: Samlet tokengrænse
+    total_tokens_hint: Absolut budget over nøglens levetid. Tom = ubegrænset.
+    total_reqs: Samlet anmodningsgrænse
+    total_reqs_hint: Absolut antal anmodninger. Tom = ubegrænset.
+    expires_at: Udløber den
+    expires_hint: Frist dato/tid. Tom = aldrig.
+    idle: Udløb ved inaktivitet (dage)
+    idle_hint: Afvisning efter N dage uden brug. Tom = aldrig.
+    models: Tilladte modeller
+    apis: Tilladte API'er
+    origins: Tilladte oprindelser
+    origins_hint: Én IP eller ét CIDR pr. linje; tom = alle oprindelser.
+    note: Note
+    submit: Opret nøglen
+tgt:
+  title: Offentlige mål
+  intro: Et <strong>mål</strong> er gatewayens offentlige URL, som en klient ser den (f.eks. <span class="mono">https://llm.example:21434</span>). Det bruges til at generere miljøvariablerne for den tilknyttede nøgle — <strong>det ændrer ikke routingen</strong> (upstream vælges stadig af udførelsesserveren). Hver nøgle peger på et mål; standardmålet kan ikke slettes.
+  keys_count: '{count} nøgle(r)'
+  edit:
+    name: Navn
+    url: Offentlig URL
+  delete_confirm: Slet målet »{name}«?
+  add:
+    title: Tilføj et mål
+    name: Navn *
+    url: Offentlig URL *
+    hint: Uden afsluttende skråstreg. Det er den URL, klienten indsætter i <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Tilføj målet
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: anmodninger
+    active_keys: aktive nøgler
+  reqs_day: Anmodninger / dag (30 d)
+  tokens_day: Tokens / dag (30 d)
+  status_dist: Statusfordeling
+  tokens_key: Tokens pr. nøgle (top 10)
+  reqs_key: Anmodninger pr. nøgle (top 10)
+  consumption: Forbrug pr. nøgle
+  th:
+    key: Nøgle
+    reqs: Anmodninger
+    tokens: Tokens
+    errors: Fejl
+    last_used: Sidst brugt
+  empty: Ingen anmodning tilskrevet denne server endnu.
+logs:
+  title: Journal & spærringer
+  intro: Fuld anmodningsjournal (bevaret komplet, aldrig renset) — {total} hændelse(r) i alt, {shown} vist. Spær en oprindelse med ét klik fra en række; en spærret oprindelse afvises (403) af proxyen før enhver nøgle.
+  bans:
+    title: Spærrede oprindelser ({count})
+    cidr_label: IP eller CIDR at spærre
+    reason_label: Årsag (valgfri)
+    reason_ph: misbrug, scanning…
+    ban_btn: Spær
+    th:
+      origin: Oprindelse
+      reason: Årsag
+      since: Siden
+    unban: Ophæv spærring
+    empty: Ingen spærret oprindelse.
+  journal:
+    title: Anmodningsjournal
+    th:
+      ts: Tidsstempel
+      origin: Oprindelse
+      key: Nøgle
+      method: Metode
+      path: Sti
+      model: Model
+      status: Status
+      tokens: Tokens
+      duration: Varighed
+      action: Handling
+    banned: spærret
+    ban_reason: spærret fra logkonsollen
+    empty: Ingen anmodning logget endnu.
+srv:
+  title: Udførelsesservere
+  intro: Hver nøgle er tilknyttet præcis én server. Standardserveren (lokal) oprettes automatisk og kan ikke slettes.
+  untested: ikke testet
+  auth_badge: auth
+  tested_on: testet den {date}
+  compat:
+    title: API-kompatibilitet
+    tested: — testet den {date}
+    net_error: netværksfejl
+  actions:
+    monitor: Monitor
+    test: Test
+    check_compat: Tjek kompatibiliteten
+  delete_confirm: Slet serveren »{name}«?
+  edit:
+    name: Navn
+    url: Basis-URL
+    token: Fjern-auth-token (Bearer)
+    token_ph_set: angivet — lad stå tomt for at bevare
+    enabled_check: server aktiveret
+    clear_token: fjern token
+  add:
+    title: Tilføj en server
+    name: Navn *
+    url: Basis-URL *
+    token_hint: Krypteret i hvile; vises aldrig igen. Bruges, hvis fjernserveren kræver en Bearer.
+    submit: Tilføj serveren
+api:
+  fam:
+    ollama: Native Ollama (/api/*)
+    openai: OpenAI-kompatibel (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Afkrydsede felter = API-familier tilladt for nøglen (tillad/forbyd sti, uden skemavalidering). <strong>Ingen afkrydset = alle API'er tilladt.</strong> Listeendpoints (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) betjenes altid.
+  img:
+    ollama-image: Billede via Ollama (model x/… på /api/generate)
+    openai-image: Billede via OpenAI (/v1/images/generations)
+  img_hint: <strong>Billedgenerering</strong> (separat funktion). Aktivér den ønskede vej og angiv <strong>billedmodellerne</strong> (<span class="mono">x/…</span>) nedenfor.
+mdl:
+  probing: Undersøger serveren…
+  extra_ph: flere modeller, én pr. linje
+  hint: Afkrydsede felter + fri indtastning = nøglens tilladelsesliste. Tom overalt = alle (tekst)modeller på serveren tilladt.
+  img_label: Tilladte billedmodeller (<span class="mono">x/…</span>)
+  img_extra_ph: flere billedmodeller (x/…), én pr. linje
+  img_hint: <strong>Separat</strong> tilladelsesliste for billedmodeller. Tom = alle billedmodeller tilladt (hvis billedgenerering er aktiveret ovenfor).
+  offline: Server uopnåelig eller uden modeller — fri indtastning nedenfor.
+kd:
+  meta: '{prefix}… · oprettet den {created} · sidst brugt: {last_used}'
+  try:
+    open: Prøv nu
+    aria: Prøv nøglen
+    title: Prøv »{label}«
+    tab_text: Tekst
+    tab_image: Billede
+    model: Model
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Send en besked: gatewayen forespørger den server, der er tilknyttet denne nøgle, og viser modellens svar.'
+    msg_ph: Skriv en besked…
+    send: Send
+    img_model: Billedmodel
+    img_api_ollama: Ollama-billede (/api/generate)
+    img_api_openai: OpenAI-billede (/v1/images/generations)
+    img_attach: Vedhæftet billede (valgfrit — billede-til-billede)
+    img_hint: Beskriv billedet, der skal genereres; vedhæft eventuelt et inputbillede. Gatewayen forespørger den tilknyttede server og viser det producerede billede.
+    img_ph: Beskriv billedet, der skal genereres…
+    img_send: Generér
+  js:
+    no_model: (ingen model registreret)
+    unreachable: (server uopnåelig)
+    no_img_model: (ingen x/-model registreret)
+    failed: 'Mislykkedes: '
+    net_error: Netværksfejl.
+    generating: Genererer…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Slår op…
+    whois_unavailable: WHOIS ikke tilgængelig.
+  opt:
+    default: ' (standard)'
+    disabled: ' — deaktiveret'
+  edit:
+    server_hint: Skift af server undersøger dens tilgængelige modeller nedenfor igen.
+    target_hint: Offentlig URL brugt til at generere miljøvariablerne.
+    fallback_hint: Ved en serverfejl (5xx / forbindelse) på den primære upstream sendes anmodningen transparent videre til denne server.
+    retention: Logopbevaring (dage)
+    retention_hint: Fuldt anmodningsindhold (filer uden for databasen). Tom = global standard ({days} d); 0 = rensning af de forgangne timer.
+  stat:
+    requests: anmodninger
+    tokens_total: tokens (i alt)
+    tokens_month: tokens denne måned
+    errors: fejl
+  usage:
+    title: Forbrug (seneste 30 dage)
+    th_day: Dag
+    th_reqs: Anmodninger
+    th_tokens: Tokens
+    empty: Ingen anmodning i perioden — forbruget vises her fra det første kald.
+  origins:
+    title: Sete oprindelser ({count})
+    search_ph: Søg en IP…
+    th_ip: IP
+    th_reqs: Anmodninger
+    th_last: Sidst set
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Ingen oprindelse matcher søgningen.
+    empty: Ingen oprindelse set endnu for denne nøgle.
+  errors:
+    title: Seneste fejl
+    th_ts: Tidsstempel
+    th_ip: IP
+    th_path: Sti
+    th_status: Status
+  whois:
+    aria: WHOIS for en oprindelse
+    title: WHOIS
+foot:
+  heart_aria: kærlighed

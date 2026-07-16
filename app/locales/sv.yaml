@@ -1,0 +1,322 @@
+# Locale sv (Svenska) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama-gateway
+  tagline: nyckelhantering
+common:
+  close: Stäng
+  save: Spara
+  cancel: Avbryt
+  delete: Ta bort
+  edit: Redigera
+  'yes': ja
+  'no': nej
+  none: ingen
+  all: alla
+  never: aldrig
+  unlimited: obegränsat
+  optional: valfritt
+  enabled: aktiverad
+  disabled: inaktiverad
+  online: online
+  offline: offline
+  default: standard
+nav:
+  aria: Huvudnavigering
+  dashboard: Instrumentpanel
+  servers: Servrar
+  targets: Mål
+  logs: Loggar
+  manual: Manual
+  logout: Logga ut
+  language: Språk
+manual:
+  title: Användarmanual
+  close_aria: Stäng manualen
+  loading: Läser in manualen…
+  load_error: Kan inte läsa in manualen.
+login:
+  title: Logga in
+  heading: Admin-inloggning
+  password: Lösenord
+  submit: Gå in
+  wrong: Fel lösenord.
+  throttled: För många försök — försök igen om några minuter.
+setup:
+  title: Initiering
+  heading: Första användning
+  subtitle: Ange gatewayens admin-lösenord
+  password: Admin-lösenord
+  hint: Minst 8 tecken.
+  confirm: Bekräftelse
+  submit: Ange och gå in
+  error_pw: Lösenordet är för kort (min. 8) eller inte identiskt.
+dash:
+  created:
+    created: Nyckeln ”{label}” skapad.
+    copy_now: Kopiera den nu
+    never: 'den visas aldrig igen:'
+  env:
+    aria: Konfigurera klienten
+    title: Nyckeln ”{label}” skapad — konfigurera klienten
+    copy_desc: Kopiera dessa miljövariabler till klientdatorn.
+    never: Nyckeln visas aldrig igen.
+    api_ollama: Ollama-API
+    api_openai: OpenAI-API
+    api_anthropic: Anthropic-API
+    no_public_url: '`PUBLIC_BASE_URL` är inte konfigurerad på gatewayen: ersätt platshållaren med den riktiga offentliga URL:en före användning.'
+    copy_btn: Kopiera variablerna
+    copied: Kopierat!
+    copy_fail: Kopieringen misslyckades
+  stat:
+    total_reqs: begäranden totalt
+    last24h: senaste 24 h
+    tokens: levererade tokens
+    errors: fel (≥ 400)
+  keys:
+    title: API-nycklar ({count})
+    search_ph: Sök (etikett eller prefix)…
+    filter_server_aria: Filtrera efter server
+    all_servers: Alla servrar
+    filter_api_aria: Filtrera efter API
+    all_apis: Alla API:er
+    filter_state_aria: Filtrera efter status
+    all_states: Alla status
+    active: Aktiva
+    disabled: Inaktiverade
+    th:
+      label: Etikett
+      prefix: Prefix
+      state: Status
+      server: Server
+      models: Modeller
+      origins: Ursprung
+      quota: Kvot
+      last_used: Senast använd
+      actions: Åtgärder
+    badge_active: aktiv
+    badge_disabled: inaktiverad
+    n_allowed: '{count} tillåten/tillåtna'
+    all_origins: alla
+    tok_month: tok/månad
+    req_min: begär./min
+    deactivate: inaktivera
+    activate: aktivera
+    delete_confirm: Ta bort nyckeln ”{label}”?
+    delete_short: ta bort
+    empty: Inga nycklar ännu — skapa den första med formuläret nedan.
+    no_match: Ingen nyckel matchar filtren.
+  new:
+    title: Ny nyckel
+    label: Etikett *
+    server: Exekveringsserver
+    default: standard
+    target: Offentligt mål (env-gen)
+    target_hint: Offentlig URL som infogas i nyckelns miljövariabler.
+    fallback: Reservserver (fallback)
+    none_option: — ingen —
+    fallback_hint: Transparent fallback vid serverfel (5xx / anslutning).
+    monthly_cap: Tokengräns / månad
+    empty_unlimited: Tomt = obegränsat.
+    rpm: Hastighetsgräns (begär./min)
+    expiry_legend: Utgång / livstidsgränser
+    expiry_hint: (kostnadsbegränsad testning — skild från hastighetsgränsen)
+    total_tokens: Total tokengräns
+    total_tokens_hint: Absolut budget under nyckelns livstid. Tomt = obegränsat.
+    total_reqs: Total begärandegräns
+    total_reqs_hint: Absolut antal begäranden. Tomt = obegränsat.
+    expires_at: Löper ut den
+    expires_hint: Slutdatum/-tid. Tomt = aldrig.
+    idle: Utgång vid inaktivitet (dagar)
+    idle_hint: Avslag efter N dagar utan användning. Tomt = aldrig.
+    models: Tillåtna modeller
+    apis: Tillåtna API:er
+    origins: Tillåtna ursprung
+    origins_hint: En IP eller ett CIDR per rad; tomt = alla ursprung.
+    note: Anteckning
+    submit: Skapa nyckeln
+tgt:
+  title: Offentliga mål
+  intro: Ett <strong>mål</strong> är gatewayens offentliga URL såsom en klient ser den (t.ex. <span class="mono">https://llm.example:21434</span>). Det används för att generera miljövariablerna för den kopplade nyckeln — <strong>det ändrar inte routningen</strong> (upstream väljs fortfarande av exekveringsservern). Varje nyckel pekar på ett mål; standardmålet kan inte tas bort.
+  keys_count: '{count} nyckel/nycklar'
+  edit:
+    name: Namn
+    url: Offentlig URL
+  delete_confirm: Ta bort målet ”{name}”?
+  add:
+    title: Lägg till ett mål
+    name: Namn *
+    url: Offentlig URL *
+    hint: Utan avslutande snedstreck. Det är URL:en som klienten anger i <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Lägg till målet
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: begäranden
+    active_keys: aktiva nycklar
+  reqs_day: Begäranden / dag (30 d)
+  tokens_day: Tokens / dag (30 d)
+  status_dist: Statusfördelning
+  tokens_key: Tokens per nyckel (topp 10)
+  reqs_key: Begäranden per nyckel (topp 10)
+  consumption: Förbrukning per nyckel
+  th:
+    key: Nyckel
+    reqs: Begäranden
+    tokens: Tokens
+    errors: Fel
+    last_used: Senast använd
+  empty: Ingen begäran tillskriven denna server ännu.
+logs:
+  title: Journal & spärrar
+  intro: Fullständig begärandejournal (bevaras i sin helhet, rensas aldrig) — {total} händelse(r) totalt, {shown} visade. Spärra ett ursprung med ett klick från en rad; ett spärrat ursprung avvisas (403) av proxyn före någon nyckel.
+  bans:
+    title: Spärrade ursprung ({count})
+    cidr_label: IP eller CIDR att spärra
+    reason_label: Orsak (valfritt)
+    reason_ph: missbruk, skanning…
+    ban_btn: Spärra
+    th:
+      origin: Ursprung
+      reason: Orsak
+      since: Sedan
+    unban: Häv spärr
+    empty: Inget spärrat ursprung.
+  journal:
+    title: Begärandejournal
+    th:
+      ts: Tidsstämpel
+      origin: Ursprung
+      key: Nyckel
+      method: Metod
+      path: Sökväg
+      model: Modell
+      status: Status
+      tokens: Tokens
+      duration: Varaktighet
+      action: Åtgärd
+    banned: spärrad
+    ban_reason: spärrad från loggkonsolen
+    empty: Ingen begäran loggad ännu.
+srv:
+  title: Exekveringsservrar
+  intro: Varje nyckel är kopplad till exakt en server. Standardservern (lokal) skapas automatiskt och kan inte tas bort.
+  untested: inte testad
+  auth_badge: auth
+  tested_on: testad den {date}
+  compat:
+    title: API-kompatibilitet
+    tested: — testad den {date}
+    net_error: nätverksfel
+  actions:
+    monitor: Monitor
+    test: Testa
+    check_compat: Kontrollera kompatibiliteten
+  delete_confirm: Ta bort servern ”{name}”?
+  edit:
+    name: Namn
+    url: Bas-URL
+    token: Fjärr-auth-token (Bearer)
+    token_ph_set: angiven — lämna tomt för att behålla
+    enabled_check: server aktiverad
+    clear_token: ta bort token
+  add:
+    title: Lägg till en server
+    name: Namn *
+    url: Bas-URL *
+    token_hint: Krypterad i vila; visas aldrig igen. Används om fjärrservern kräver en Bearer.
+    submit: Lägg till servern
+api:
+  fam:
+    ollama: Nativt Ollama (/api/*)
+    openai: OpenAI-kompatibel (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Ikryssade rutor = API-familjer som är tillåtna för nyckeln (tillåt/förbjud per sökväg, utan schemavalidering). <strong>Ingen ikryssad = alla API:er tillåtna.</strong> Listningsslutpunkter (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) betjänas alltid.
+  img:
+    ollama-image: Bild via Ollama (modell x/… på /api/generate)
+    openai-image: Bild via OpenAI (/v1/images/generations)
+  img_hint: <strong>Bildgenerering</strong> (separat funktion). Aktivera önskad väg och ange <strong>bildmodellerna</strong> (<span class="mono">x/…</span>) nedan.
+mdl:
+  probing: Undersöker servern…
+  extra_ph: ytterligare modeller, en per rad
+  hint: Ikryssade rutor + fri inmatning = nyckelns tillåtelselista. Tomt överallt = alla (text)modeller på servern tillåtna.
+  img_label: Tillåtna bildmodeller (<span class="mono">x/…</span>)
+  img_extra_ph: ytterligare bildmodeller (x/…), en per rad
+  img_hint: <strong>Separat</strong> tillåtelselista för bildmodeller. Tomt = alla bildmodeller tillåtna (om bildgenerering är aktiverad ovan).
+  offline: Servern är onåbar eller saknar modeller — fri inmatning nedan.
+kd:
+  meta: '{prefix}… · skapad den {created} · senast använd: {last_used}'
+  try:
+    open: Prova nu
+    aria: Prova nyckeln
+    title: Prova ”{label}”
+    tab_text: Text
+    tab_image: Bild
+    model: Modell
+    api_label: API
+    api_ollama: Ollama (chatt)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Skicka ett meddelande: gatewayen frågar den server som är kopplad till nyckeln och visar modellens svar.'
+    msg_ph: Skriv ett meddelande…
+    send: Skicka
+    img_model: Bildmodell
+    img_api_ollama: Ollama-bild (/api/generate)
+    img_api_openai: OpenAI-bild (/v1/images/generations)
+    img_attach: Bifogad bild (valfritt — bild-till-bild)
+    img_hint: Beskriv bilden som ska genereras; bifoga eventuellt en indatabild. Gatewayen frågar den kopplade servern och visar den producerade bilden.
+    img_ph: Beskriv bilden som ska genereras…
+    img_send: Generera
+  js:
+    no_model: (ingen modell upptäckt)
+    unreachable: (servern är onåbar)
+    no_img_model: (ingen x/-modell upptäckt)
+    failed: 'Misslyckades: '
+    net_error: Nätverksfel.
+    generating: Genererar…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Slår upp…
+    whois_unavailable: WHOIS ej tillgängligt.
+  opt:
+    default: ' (standard)'
+    disabled: ' — inaktiverad'
+  edit:
+    server_hint: Att byta server undersöker dess tillgängliga modeller nedan på nytt.
+    target_hint: Offentlig URL som används för att generera miljövariablerna.
+    fallback_hint: Vid ett serverfel (5xx / anslutning) på den primära upstream skickas begäran transparent vidare till denna server.
+    retention: Loggbevarande (dagar)
+    retention_hint: Fullständigt begärandeinnehåll (filer utanför databasen). Tomt = global standard ({days} d); 0 = rensning av de gångna timmarna.
+  stat:
+    requests: begäranden
+    tokens_total: tokens (totalt)
+    tokens_month: tokens denna månad
+    errors: fel
+  usage:
+    title: Användning (senaste 30 dagarna)
+    th_day: Dag
+    th_reqs: Begäranden
+    th_tokens: Tokens
+    empty: Ingen begäran under perioden — användningen visas här från det första anropet.
+  origins:
+    title: Sedda ursprung ({count})
+    search_ph: Sök en IP…
+    th_ip: IP
+    th_reqs: Begäranden
+    th_last: Senast sedd
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Inget ursprung matchar sökningen.
+    empty: Inget ursprung sett ännu för denna nyckel.
+  errors:
+    title: Senaste fel
+    th_ts: Tidsstämpel
+    th_ip: IP
+    th_path: Sökväg
+    th_status: Status
+  whois:
+    aria: WHOIS för ett ursprung
+    title: WHOIS
+foot:
+  heart_aria: kärlek

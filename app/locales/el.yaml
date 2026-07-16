@@ -1,0 +1,322 @@
+# Locale el (Ελληνικά) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Πύλη Ollama
+  tagline: διαχείριση κλειδιών
+common:
+  close: Κλείσιμο
+  save: Αποθήκευση
+  cancel: Άκυρο
+  delete: Διαγραφή
+  edit: Επεξεργασία
+  'yes': ναι
+  'no': όχι
+  none: κανένα
+  all: όλα
+  never: ποτέ
+  unlimited: απεριόριστο
+  optional: προαιρετικό
+  enabled: ενεργοποιημένο
+  disabled: απενεργοποιημένο
+  online: σε σύνδεση
+  offline: εκτός σύνδεσης
+  default: προεπιλογή
+nav:
+  aria: Κύρια πλοήγηση
+  dashboard: Πίνακας ελέγχου
+  servers: Διακομιστές
+  targets: Προορισμοί
+  logs: Αρχεία καταγραφής
+  manual: Εγχειρίδιο
+  logout: Αποσύνδεση
+  language: Γλώσσα
+manual:
+  title: Εγχειρίδιο χρήστη
+  close_aria: Κλείσιμο εγχειριδίου
+  loading: Φόρτωση εγχειριδίου…
+  load_error: Δεν είναι δυνατή η φόρτωση του εγχειριδίου.
+login:
+  title: Σύνδεση
+  heading: Σύνδεση διαχειριστή
+  password: Κωδικός πρόσβασης
+  submit: Είσοδος
+  wrong: Λανθασμένος κωδικός πρόσβασης.
+  throttled: Πάρα πολλές προσπάθειες — δοκιμάστε ξανά σε λίγα λεπτά.
+setup:
+  title: Αρχικοποίηση
+  heading: Πρώτη χρήση
+  subtitle: Ορίστε τον κωδικό πρόσβασης διαχειριστή της πύλης
+  password: Κωδικός πρόσβασης διαχειριστή
+  hint: Τουλάχιστον 8 χαρακτήρες.
+  confirm: Επιβεβαίωση
+  submit: Ορισμός και είσοδος
+  error_pw: Ο κωδικός είναι πολύ σύντομος (ελάχ. 8) ή δεν ταιριάζει.
+dash:
+  created:
+    created: Το κλειδί «{label}» δημιουργήθηκε.
+    copy_now: Αντιγράψτε το τώρα
+    never: 'δεν θα εμφανιστεί ξανά ποτέ:'
+  env:
+    aria: Διαμόρφωση του πελάτη
+    title: Το κλειδί «{label}» δημιουργήθηκε — διαμορφώστε τον πελάτη
+    copy_desc: Αντιγράψτε αυτές τις μεταβλητές περιβάλλοντος στο μηχάνημα-πελάτη.
+    never: Το κλειδί δεν θα εμφανιστεί ξανά ποτέ.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: 'Η `PUBLIC_BASE_URL` δεν έχει διαμορφωθεί στην πύλη: αντικαταστήστε το σύμβολο κράτησης θέσης με την πραγματική δημόσια URL πριν από τη χρήση.'
+    copy_btn: Αντιγραφή των μεταβλητών
+    copied: Αντιγράφηκε!
+    copy_fail: Η αντιγραφή απέτυχε
+  stat:
+    total_reqs: συνολικά αιτήματα
+    last24h: τελευταίες 24 ώ
+    tokens: διανεμημένα tokens
+    errors: σφάλματα (≥ 400)
+  keys:
+    title: Κλειδιά API ({count})
+    search_ph: Αναζήτηση (ετικέτα ή πρόθεμα)…
+    filter_server_aria: Φιλτράρισμα ανά διακομιστή
+    all_servers: Όλοι οι διακομιστές
+    filter_api_aria: Φιλτράρισμα ανά API
+    all_apis: Όλα τα API
+    filter_state_aria: Φιλτράρισμα ανά κατάσταση
+    all_states: Όλες οι καταστάσεις
+    active: Ενεργά
+    disabled: Απενεργοποιημένα
+    th:
+      label: Ετικέτα
+      prefix: Πρόθεμα
+      state: Κατάσταση
+      server: Διακομιστής
+      models: Μοντέλα
+      origins: Προελεύσεις
+      quota: Ποσόστωση
+      last_used: Τελευταία χρήση
+      actions: Ενέργειες
+    badge_active: ενεργό
+    badge_disabled: απενεργοποιημένο
+    n_allowed: '{count} επιτρεπόμενα'
+    all_origins: όλες
+    tok_month: tok/μήνα
+    req_min: αιτ./λεπτό
+    deactivate: απενεργοποίηση
+    activate: ενεργοποίηση
+    delete_confirm: Διαγραφή του κλειδιού «{label}»;
+    delete_short: διαγρ.
+    empty: Κανένα κλειδί ακόμη — δημιουργήστε το πρώτο με τη φόρμα παρακάτω.
+    no_match: Κανένα κλειδί δεν ταιριάζει με τα φίλτρα.
+  new:
+    title: Νέο κλειδί
+    label: Ετικέτα *
+    server: Διακομιστής εκτέλεσης
+    default: προεπιλογή
+    target: Δημόσιος προορισμός (env-gen)
+    target_hint: Δημόσια URL που εισάγεται στις μεταβλητές περιβάλλοντος του κλειδιού.
+    fallback: Εφεδρικός διακομιστής (fallback)
+    none_option: — κανένας —
+    fallback_hint: Διαφανής εφεδρεία σε σφάλμα διακομιστή (5xx / σύνδεση).
+    monthly_cap: Όριο tokens / μήνα
+    empty_unlimited: Κενό = απεριόριστο.
+    rpm: Όριο ρυθμού (αιτ./λεπτό)
+    expiry_legend: Λήξη / όρια διάρκειας ζωής
+    expiry_hint: (δοκιμή με περιορισμένο κόστος — διακριτό από το όριο ρυθμού)
+    total_tokens: Συνολικό όριο tokens
+    total_tokens_hint: Απόλυτος προϋπολογισμός για τη διάρκεια ζωής του κλειδιού. Κενό = απεριόριστο.
+    total_reqs: Συνολικό όριο αιτημάτων
+    total_reqs_hint: Απόλυτος αριθμός αιτημάτων. Κενό = απεριόριστο.
+    expires_at: Λήγει στις
+    expires_hint: Καταληκτική ημερομηνία/ώρα. Κενό = ποτέ.
+    idle: Λήξη λόγω αδράνειας (ημέρες)
+    idle_hint: Απόρριψη μετά από N ημέρες χωρίς χρήση. Κενό = ποτέ.
+    models: Επιτρεπόμενα μοντέλα
+    apis: Επιτρεπόμενα API
+    origins: Επιτρεπόμενες προελεύσεις
+    origins_hint: Μία IP ή ένα CIDR ανά γραμμή· κενό = όλες οι προελεύσεις.
+    note: Σημείωση
+    submit: Δημιουργία του κλειδιού
+tgt:
+  title: Δημόσιοι προορισμοί
+  intro: Ένας <strong>προορισμός</strong> είναι η δημόσια URL της πύλης όπως τη βλέπει ένας πελάτης (π.χ. <span class="mono">https://llm.example:21434</span>). Χρησιμεύει για τη δημιουργία των μεταβλητών περιβάλλοντος του συνδεδεμένου κλειδιού — <strong>δεν αλλάζει τη δρομολόγηση</strong> (το upstream επιλέγεται ακόμη από τον διακομιστή εκτέλεσης). Κάθε κλειδί δείχνει σε έναν προορισμό· ο προεπιλεγμένος προορισμός δεν διαγράφεται.
+  keys_count: '{count} κλειδί(-ιά)'
+  edit:
+    name: Όνομα
+    url: Δημόσια URL
+  delete_confirm: Διαγραφή του προορισμού «{name}»;
+  add:
+    title: Προσθήκη προορισμού
+    name: Όνομα *
+    url: Δημόσια URL *
+    hint: Χωρίς τελική κάθετο. Είναι η URL που ο πελάτης θα βάλει στις <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Προσθήκη του προορισμού
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: αιτήματα
+    active_keys: ενεργά κλειδιά
+  reqs_day: Αιτήματα / ημέρα (30 ημ)
+  tokens_day: Tokens / ημέρα (30 ημ)
+  status_dist: Κατανομή καταστάσεων
+  tokens_key: Tokens ανά κλειδί (top 10)
+  reqs_key: Αιτήματα ανά κλειδί (top 10)
+  consumption: Κατανάλωση ανά κλειδί
+  th:
+    key: Κλειδί
+    reqs: Αιτήματα
+    tokens: Tokens
+    errors: Σφάλματα
+    last_used: Τελευταία χρήση
+  empty: Κανένα αίτημα δεν έχει αποδοθεί σε αυτόν τον διακομιστή ακόμη.
+logs:
+  title: Ημερολόγιο & αποκλεισμοί
+  intro: Πλήρες ημερολόγιο αιτημάτων (διατηρείται ακέραιο, δεν εκκαθαρίζεται ποτέ) — {total} συμβάν(τα) συνολικά, {shown} εμφανιζόμενα. Αποκλείστε μια προέλευση με ένα κλικ από μια γραμμή· μια αποκλεισμένη προέλευση απορρίπτεται (403) από τον διακομιστή μεσολάβησης πριν από κάθε κλειδί.
+  bans:
+    title: Αποκλεισμένες προελεύσεις ({count})
+    cidr_label: IP ή CIDR προς αποκλεισμό
+    reason_label: Λόγος (προαιρετικός)
+    reason_ph: κατάχρηση, σάρωση…
+    ban_btn: Αποκλεισμός
+    th:
+      origin: Προέλευση
+      reason: Λόγος
+      since: Από
+    unban: Άρση αποκλεισμού
+    empty: Καμία αποκλεισμένη προέλευση.
+  journal:
+    title: Ημερολόγιο αιτημάτων
+    th:
+      ts: Χρονική σήμανση
+      origin: Προέλευση
+      key: Κλειδί
+      method: Μέθοδος
+      path: Διαδρομή
+      model: Μοντέλο
+      status: Κατάσταση
+      tokens: Tokens
+      duration: Διάρκεια
+      action: Ενέργεια
+    banned: αποκλεισμένη
+    ban_reason: αποκλεισμένη από την κονσόλα καταγραφής
+    empty: Κανένα αίτημα δεν έχει καταγραφεί ακόμη.
+srv:
+  title: Διακομιστές εκτέλεσης
+  intro: Κάθε κλειδί συνδέεται με ακριβώς έναν διακομιστή. Ο προεπιλεγμένος διακομιστής (τοπικός) δημιουργείται αυτόματα και δεν μπορεί να διαγραφεί.
+  untested: μη δοκιμασμένος
+  auth_badge: auth
+  tested_on: δοκιμάστηκε στις {date}
+  compat:
+    title: Συμβατότητα API
+    tested: — δοκιμάστηκε στις {date}
+    net_error: σφάλμα δικτύου
+  actions:
+    monitor: Monitor
+    test: Δοκιμή
+    check_compat: Έλεγχος συμβατότητας
+  delete_confirm: Διαγραφή του διακομιστή «{name}»;
+  edit:
+    name: Όνομα
+    url: URL βάσης
+    token: Token απομακρυσμένου auth (Bearer)
+    token_ph_set: ορισμένο — αφήστε κενό για διατήρηση
+    enabled_check: διακομιστής ενεργοποιημένος
+    clear_token: αφαίρεση του token
+  add:
+    title: Προσθήκη διακομιστή
+    name: Όνομα *
+    url: URL βάσης *
+    token_hint: Κρυπτογραφημένο σε ηρεμία· δεν εμφανίζεται ξανά. Χρησιμοποιείται αν ο απομακρυσμένος διακομιστής απαιτεί Bearer.
+    submit: Προσθήκη του διακομιστή
+api:
+  fam:
+    ollama: Εγγενές Ollama (/api/*)
+    openai: Συμβατό με OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Επιλεγμένα πλαίσια = οικογένειες API επιτρεπόμενες για το κλειδί (επιτροπή/απαγόρευση διαδρομής, χωρίς επικύρωση σχήματος). <strong>Κανένα επιλεγμένο = όλα τα API επιτρέπονται.</strong> Τα άκρα καταλόγου (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) εξυπηρετούνται πάντα.
+  img:
+    ollama-image: Εικόνα μέσω Ollama (μοντέλο x/… στο /api/generate)
+    openai-image: Εικόνα μέσω OpenAI (/v1/images/generations)
+  img_hint: <strong>Δημιουργία εικόνων</strong> (ξεχωριστή δυνατότητα). Ενεργοποιήστε την επιθυμητή οδό και συμπληρώστε τα <strong>μοντέλα εικόνας</strong> (<span class="mono">x/…</span>) παρακάτω.
+mdl:
+  probing: Ανίχνευση διακομιστή…
+  extra_ph: επιπλέον μοντέλα, ένα ανά γραμμή
+  hint: Επιλεγμένα πλαίσια + ελεύθερη εισαγωγή = λίστα επιτρεπομένων του κλειδιού. Κενό παντού = όλα τα (κειμενικά) μοντέλα του διακομιστή επιτρέπονται.
+  img_label: Επιτρεπόμενα μοντέλα εικόνας (<span class="mono">x/…</span>)
+  img_extra_ph: επιπλέον μοντέλα εικόνας (x/…), ένα ανά γραμμή
+  img_hint: <strong>Ξεχωριστή</strong> λίστα επιτρεπομένων για τα μοντέλα εικόνας. Κενό = όλα τα μοντέλα εικόνας επιτρέπονται (αν η δημιουργία εικόνων είναι ενεργοποιημένη παραπάνω).
+  offline: Ο διακομιστής είναι απρόσιτος ή χωρίς μοντέλα — ελεύθερη εισαγωγή παρακάτω.
+kd:
+  meta: '{prefix}… · δημιουργήθηκε στις {created} · τελευταία χρήση: {last_used}'
+  try:
+    open: Δοκιμάστε τώρα
+    aria: Δοκιμή του κλειδιού
+    title: Δοκιμή «{label}»
+    tab_text: Κείμενο
+    tab_image: Εικόνα
+    model: Μοντέλο
+    api_label: API
+    api_ollama: Ollama (συνομιλία)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Στείλτε ένα μήνυμα: η πύλη ερωτά τον διακομιστή που συνδέεται με αυτό το κλειδί και εμφανίζει την απάντηση του μοντέλου.'
+    msg_ph: Γράψτε ένα μήνυμα…
+    send: Αποστολή
+    img_model: Μοντέλο εικόνας
+    img_api_ollama: Εικόνα Ollama (/api/generate)
+    img_api_openai: Εικόνα OpenAI (/v1/images/generations)
+    img_attach: Συνημμένη εικόνα (προαιρετική — εικόνα σε εικόνα)
+    img_hint: Περιγράψτε την εικόνα προς δημιουργία· επισυνάψτε προαιρετικά μια εικόνα εισόδου. Η πύλη ερωτά τον συνδεδεμένο διακομιστή και εμφανίζει την παραγόμενη εικόνα.
+    img_ph: Περιγράψτε την εικόνα προς δημιουργία…
+    img_send: Δημιουργία
+  js:
+    no_model: (δεν εντοπίστηκε μοντέλο)
+    unreachable: (ο διακομιστής είναι απρόσιτος)
+    no_img_model: (δεν εντοπίστηκε μοντέλο x/)
+    failed: 'Αποτυχία: '
+    net_error: Σφάλμα δικτύου.
+    generating: Δημιουργία…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Επίλυση…
+    whois_unavailable: WHOIS μη διαθέσιμο.
+  opt:
+    default: ' (προεπιλογή)'
+    disabled: ' — απενεργοποιημένος'
+  edit:
+    server_hint: Η αλλαγή διακομιστή ανιχνεύει ξανά τα διαθέσιμα μοντέλα του παρακάτω.
+    target_hint: Δημόσια URL που χρησιμοποιείται για τη δημιουργία των μεταβλητών περιβάλλοντος.
+    fallback_hint: Σε σφάλμα διακομιστή (5xx / σύνδεση) του πρωτεύοντος upstream, το αίτημα αναμεταδίδεται διαφανώς σε αυτόν τον διακομιστή.
+    retention: Διατήρηση αρχείων καταγραφής (ημέρες)
+    retention_hint: Πλήρες περιεχόμενο των αιτημάτων (αρχεία εκτός βάσης δεδομένων). Κενό = καθολική προεπιλογή ({days} ημ)· 0 = εκκαθάριση των παρελθουσών ωρών.
+  stat:
+    requests: αιτήματα
+    tokens_total: tokens (σύνολο)
+    tokens_month: tokens αυτόν τον μήνα
+    errors: σφάλματα
+  usage:
+    title: Χρήση (τελευταίες 30 ημέρες)
+    th_day: Ημέρα
+    th_reqs: Αιτήματα
+    th_tokens: Tokens
+    empty: Κανένα αίτημα στην περίοδο — η χρήση θα εμφανιστεί εδώ από την πρώτη κλήση.
+  origins:
+    title: Προελεύσεις που εμφανίστηκαν ({count})
+    search_ph: Αναζήτηση IP…
+    th_ip: IP
+    th_reqs: Αιτήματα
+    th_last: Τελευταία εμφάνιση
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Καμία προέλευση δεν ταιριάζει με την αναζήτηση.
+    empty: Καμία προέλευση δεν έχει εμφανιστεί ακόμη για αυτό το κλειδί.
+  errors:
+    title: Τελευταία σφάλματα
+    th_ts: Χρονική σήμανση
+    th_ip: IP
+    th_path: Διαδρομή
+    th_status: Κατάσταση
+  whois:
+    aria: WHOIS μιας προέλευσης
+    title: WHOIS
+foot:
+  heart_aria: αγάπη
