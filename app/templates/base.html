@@ -43,6 +43,11 @@
     .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
 
     main { width:100%; flex:1; padding:1.4rem 1.6rem 2rem; }
+    /* ── Pied de page (attribution P2Enjoy, lien vers le site) ──────────────────────── */
+    .appfooter { padding:.85rem 1.4rem; text-align:center; font-size:12.5px; color:var(--text-3);
+                 background:var(--surface); border-top:1px solid var(--line); }
+    .appfooter a { color:var(--color-brand); font-weight:600; }
+    .appfooter .heart { vertical-align:-2px; margin:0 1px; }
     /* Composition large : deux colonnes qui se partagent toute la largeur sur grand écran. */
     .grid-split { display:grid; grid-template-columns:minmax(0,1fr); gap:0 1.1rem; align-items:start; }
     @media (min-width:1360px) { .grid-split { grid-template-columns:minmax(0,58fr) minmax(0,42fr); } }
@@ -295,6 +300,16 @@
     {% endif %}
   </header>
   <main class="{% block main_class %}{% endblock %}">{% block body %}{% endblock %}</main>
+
+  <footer class="appfooter" data-testid="app-footer">
+    Made proudly with AI by
+    <a href="https://p2enjoy.studio" target="_blank" rel="noopener noreferrer">P2Enjoy</a>
+    with
+    <svg class="heart" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-danger)"
+         stroke="var(--color-danger)" stroke-width="1.5" role="img" aria-label="amour">
+      <path d="M12 21s-7.5-4.6-10-9C.6 9 2 5 5.5 5 7.8 5 9.3 6.3 12 9c2.7-2.7 4.2-4 6.5-4C22 5 23.4 9 22 12c-2.5 4.4-10 9-10 9z"/>
+    </svg>
+  </footer>
   {% if request.session.get('admin') %}
   <dialog class="manual" id="manual-dialog" aria-label="Manuel utilisateur">
     <div class="manual-head">

@@ -67,3 +67,19 @@ async def test_key_detail_page_renders(admin_client):
         r = await c.get(f"/admin/keys/{rec.id}")
     assert r.status_code == 200
     assert 'data-testid="api-checks"' in r.text and 'data-testid="expiry-fields"' in r.text
+
+
+async def test_footer_attribution_and_p2enjoy_link(admin_client):
+    """Le pied de page d'attribution P2Enjoy (lien vers le site) apparaît sur les pages,
+    y compris la page de login (déconnecté) — première chose que voit un nouvel utilisateur."""
+    keys.set_admin_password(PW)
+    async with admin_client as c:
+        login = await c.get("/admin/login")            # déconnecté
+        await c.post("/admin/login", data={"password": PW})
+        dash = await c.get("/admin")                    # connecté
+    for r in (login, dash):
+        assert r.status_code == 200
+        assert 'data-testid="app-footer"' in r.text
+        assert "Made proudly with AI by" in r.text
+        assert 'href="https://p2enjoy.studio"' in r.text
+        assert 'rel="noopener noreferrer"' in r.text

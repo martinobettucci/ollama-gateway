@@ -6,6 +6,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Pied de page d'attribution.** Toutes les pages du panel (login compris) affichent désormais un
+  pied de page « Made proudly with AI by **P2Enjoy** with ♥ », où *P2Enjoy* renvoie vers
+  `https://p2enjoy.studio` (nouvel onglet, `rel="noopener noreferrer"`). Cœur en icône vectorielle
+  (charte, pas d'emoji-icône).
+
 - **Sécurité — CSRF same-origin & anti-brute-force du login admin.** Toute requête mutante vers
   `/admin/*` dont le navigateur fournit un `Origin`/`Referer` d'un **autre hôte** est refusée
   (403), en complément du cookie de session `SameSite=Lax`. Le login admin applique un
