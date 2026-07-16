@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Logs — Passerelle Ollama{% endblock %}
+{% block title %}{{ t('nav.logs') }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
-<h1>Journal & bannissements</h1>
-<p class="page-meta">Journal complet des requêtes (conservé intégralement, jamais purgé) —
-  {{ total }} événement(s) au total, {{ events|length }} affiché(s). Bannissez une origine en un
-  clic depuis une ligne ; une origine bannie est refusée (403) par le proxy avant toute clé.</p>
+<h1>{{ t('logs.title') }}</h1>
+<p class="page-meta">{{ t('logs.intro', total=total, shown=events|length) }}</p>
 
 {% if flash %}
 <div class="flash" role="status" style="border-top-color:{{ 'var(--color-success)' if flash.ok else 'var(--color-danger)' }}">
@@ -17,23 +15,23 @@
 <div class="card cat-danger">
   <div class="card-head">
     <span class="chip-ic danger">{{ icon('ban', 18) }}</span>
-    <h2>Origines bannies ({{ bans|length }})</h2>
+    <h2>{{ t('logs.bans.title', count=bans|length) }}</h2>
   </div>
   <form method="post" action="/admin/logs/ban" data-testid="ban-form" class="ban-add">
     <div>
-      <label for="cidr">IP ou CIDR à bannir</label>
+      <label for="cidr">{{ t('logs.bans.cidr_label') }}</label>
       <input id="cidr" name="cidr" placeholder="203.0.113.7 ou 203.0.113.0/24" required>
     </div>
     <div>
-      <label for="reason">Motif (optionnel)</label>
-      <input id="reason" name="reason" placeholder="abus, scan…">
+      <label for="reason">{{ t('logs.bans.reason_label') }}</label>
+      <input id="reason" name="reason" placeholder="{{ t('logs.bans.reason_ph') }}">
     </div>
-    <button class="btn-danger" type="submit">{{ icon('ban', 14) }} Bannir</button>
+    <button class="btn-danger" type="submit">{{ icon('ban', 14) }} {{ t('logs.bans.ban_btn') }}</button>
   </form>
   {% if bans %}
   <div class="table-wrap">
   <table data-testid="bans-table">
-    <thead><tr><th>Origine</th><th>Motif</th><th>Depuis</th><th></th></tr></thead>
+    <thead><tr><th>{{ t('logs.bans.th.origin') }}</th><th>{{ t('logs.bans.th.reason') }}</th><th>{{ t('logs.bans.th.since') }}</th><th></th></tr></thead>
     <tbody>
     {% for b in bans %}
       <tr data-testid="ban-row">
@@ -42,7 +40,7 @@
         <td class="muted mono">{{ b.created_at }}</td>
         <td style="white-space:nowrap">
           <form class="inline" method="post" action="/admin/bans/{{ b.id }}/delete">
-            <button class="btn-secondary btn-sm" type="submit">{{ icon('check', 14) }} Débannir</button>
+            <button class="btn-secondary btn-sm" type="submit">{{ icon('check', 14) }} {{ t('logs.bans.unban') }}</button>
           </form>
         </td>
       </tr>
@@ -51,21 +49,21 @@
   </table>
   </div>
   {% else %}
-  <div class="empty">{{ icon('ban', 22) }}<span>Aucune origine bannie.</span></div>
+  <div class="empty">{{ icon('ban', 22) }}<span>{{ t('logs.bans.empty') }}</span></div>
   {% endif %}
 </div>
 
 <div class="card cat-brand">
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('scroll-text', 18) }}</span>
-    <h2>Journal des requêtes</h2>
+    <h2>{{ t('logs.journal.title') }}</h2>
   </div>
   {% if events %}
   <div class="table-wrap">
   <table data-testid="logs-table">
     <thead><tr>
-      <th>Horodatage</th><th>Origine</th><th>Clé</th><th>Méthode</th><th>Chemin</th>
-      <th>Modèle</th><th>Statut</th><th>Tokens</th><th>Durée</th><th>Action</th>
+      <th>{{ t('logs.journal.th.ts') }}</th><th>{{ t('logs.journal.th.origin') }}</th><th>{{ t('logs.journal.th.key') }}</th><th>{{ t('logs.journal.th.method') }}</th><th>{{ t('logs.journal.th.path') }}</th>
+      <th>{{ t('logs.journal.th.model') }}</th><th>{{ t('logs.journal.th.status') }}</th><th>{{ t('logs.journal.th.tokens') }}</th><th>{{ t('logs.journal.th.duration') }}</th><th>{{ t('logs.journal.th.action') }}</th>
     </tr></thead>
     <tbody>
     {% for e in events %}
@@ -85,13 +83,13 @@
         <td class="mono muted">{{ e.duration_ms }} ms</td>
         <td style="white-space:nowrap">
           {% if not e.client_ip %}<span class="muted">—</span>
-          {% elif e.client_ip in banned_ips %}<span class="badge off">{{ icon('ban', 12) }} banni</span>
+          {% elif e.client_ip in banned_ips %}<span class="badge off">{{ icon('ban', 12) }} {{ t('logs.journal.banned') }}</span>
           {% else %}
           <form class="inline" method="post" action="/admin/logs/ban">
             <input type="hidden" name="cidr" value="{{ e.client_ip }}">
-            <input type="hidden" name="reason" value="banni depuis la console de logs">
+            <input type="hidden" name="reason" value="{{ t('logs.journal.ban_reason') }}">
             <button class="btn-danger-outline btn-sm" type="submit"
-                    data-testid="log-ban">{{ icon('ban', 14) }} Bannir</button>
+                    data-testid="log-ban">{{ icon('ban', 14) }} {{ t('logs.bans.ban_btn') }}</button>
           </form>
           {% endif %}
         </td>
@@ -102,7 +100,7 @@
   </div>
   {% else %}
   <div class="empty">{{ icon('scroll-text', 22) }}
-    <span>Aucune requête journalisée pour le moment.</span></div>
+    <span>{{ t('logs.journal.empty') }}</span></div>
   {% endif %}
 </div>
 {% endblock %}

@@ -1,42 +1,42 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Monitor — {{ server.name }}{% endblock %}
+{% block title %}{{ t('mon.heading', name=server.name) }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
-<p><a class="backlink" href="/admin/servers">{{ icon('arrow-left') }} Serveurs</a></p>
-<h1>Monitor — {{ server.name }}</h1>
+<p><a class="backlink" href="/admin/servers">{{ icon('arrow-left') }} {{ t('nav.servers') }}</a></p>
+<h1>{{ t('mon.heading', name=server.name) }}</h1>
 <p class="page-meta mono">{{ server.base_url }}</p>
 
 <div class="stats">
   <div class="card stat cat-brand">
     <span class="chip-ic brand">{{ icon('activity', 18) }}</span>
-    <div><div class="n" data-testid="mon-reqs">{{ summary.requests }}</div><div class="l">requêtes</div></div>
+    <div><div class="n" data-testid="mon-reqs">{{ summary.requests }}</div><div class="l">{{ t('mon.stat.reqs') }}</div></div>
   </div>
   <div class="card stat cat-accent">
     <span class="chip-ic accent">{{ icon('coins', 18) }}</span>
-    <div><div class="n">{{ summary.tokens }}</div><div class="l">tokens servis</div></div>
+    <div><div class="n">{{ summary.tokens }}</div><div class="l">{{ t('dash.stat.tokens') }}</div></div>
   </div>
   <div class="card stat cat-danger">
     <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
-    <div><div class="n">{{ summary.errors }}</div><div class="l">erreurs (≥ 400)</div></div>
+    <div><div class="n">{{ summary.errors }}</div><div class="l">{{ t('dash.stat.errors') }}</div></div>
   </div>
   <div class="card stat cat-success">
     <span class="chip-ic success">{{ icon('key-round', 18) }}</span>
-    <div><div class="n">{{ summary.key_count }}</div><div class="l">clés actives</div></div>
+    <div><div class="n">{{ summary.key_count }}</div><div class="l">{{ t('mon.stat.active_keys') }}</div></div>
   </div>
 </div>
 
 <div class="grid-split">
   <div class="card cat-brand">
     <div class="card-head"><span class="chip-ic brand">{{ icon('bar-chart', 18) }}</span>
-      <h2>Requêtes / jour (30 j)</h2></div>
+      <h2>{{ t('mon.reqs_day') }}</h2></div>
     <div class="chart-wrap">{{ svg.reqs_line|safe }}</div>
     <div class="card-head" style="margin-top:1rem"><span class="chip-ic accent">{{ icon('coins', 18) }}</span>
-      <h2>Tokens / jour (30 j)</h2></div>
+      <h2>{{ t('mon.tokens_day') }}</h2></div>
     <div class="chart-wrap">{{ svg.tokens_line|safe }}</div>
   </div>
   <div class="card cat-success">
     <div class="card-head"><span class="chip-ic success">{{ icon('gauge', 18) }}</span>
-      <h2>Répartition des statuts</h2></div>
+      <h2>{{ t('mon.status_dist') }}</h2></div>
     <div class="donut-wrap" data-testid="status-donut">
       {{ svg.status_donut|safe }}
       <ul class="legend">
@@ -51,23 +51,23 @@
 <div class="grid-split">
   <div class="card cat-brand">
     <div class="card-head"><span class="chip-ic brand">{{ icon('coins', 18) }}</span>
-      <h2>Tokens par clé (top 10)</h2></div>
+      <h2>{{ t('mon.tokens_key') }}</h2></div>
     <div class="chart-wrap">{{ svg.tokens_bar|safe }}</div>
   </div>
   <div class="card cat-success">
     <div class="card-head"><span class="chip-ic success">{{ icon('activity', 18) }}</span>
-      <h2>Requêtes par clé (top 10)</h2></div>
+      <h2>{{ t('mon.reqs_key') }}</h2></div>
     <div class="chart-wrap">{{ svg.reqs_bar|safe }}</div>
   </div>
 </div>
 
 <div class="card cat-brand">
   <div class="card-head"><span class="chip-ic brand">{{ icon('key-round', 18) }}</span>
-    <h2>Consommation par clé</h2></div>
+    <h2>{{ t('mon.consumption') }}</h2></div>
   {% if per_key %}
   <div class="table-wrap">
   <table data-testid="monitor-perkey">
-    <thead><tr><th>Clé</th><th>Requêtes</th><th>Tokens</th><th>Erreurs</th><th>Dernier usage</th></tr></thead>
+    <thead><tr><th>{{ t('mon.th.key') }}</th><th>{{ t('mon.th.reqs') }}</th><th>{{ t('mon.th.tokens') }}</th><th>{{ t('mon.th.errors') }}</th><th>{{ t('mon.th.last_used') }}</th></tr></thead>
     <tbody>
     {% for r in per_key %}
       <tr>
@@ -85,7 +85,7 @@
   </div>
   {% else %}
   <div class="empty">{{ icon('bar-chart', 22) }}
-    <span>Aucune requête attribuée à ce serveur pour le moment.</span></div>
+    <span>{{ t('mon.empty') }}</span></div>
   {% endif %}
 </div>
 {% endblock %}

@@ -1,22 +1,19 @@
-{# Sélecteur de modèles autorisés (spec « rattachement ») : au rendu du formulaire ET à chaque
-   changement de serveur, le serveur choisi est SONDÉ (GET /admin/servers/{id}/models) et les
-   modèles réellement disponibles s'affichent en cases à cocher. Les modèles d'IMAGE (préfixe
-   `x/…`) sont présentés dans une **liste séparée** (allowlist d'image distincte). Repli en saisie
-   libre si le serveur est hors ligne. Sans JS, les textareas portent les allowlists → valides. #}
+{# Sélecteur de modèles autorisés : sonde le serveur (GET /admin/servers/{id}/models) et affiche
+   les modèles en cases. Modèles d'IMAGE (préfixe `x/…`) dans une liste séparée. Repli saisie libre
+   hors ligne. Importer avec `with context` pour disposer de `t()`. Libellés JS via data-*. #}
 {% macro model_picker(selected, image_selected=None, select_id='server_id') -%}
 <div class="checks" id="model-checks" data-testid="model-checks"></div>
-<p class="hint" id="model-status" role="status">Sonde du serveur…</p>
+<p class="hint" id="model-status" role="status"
+   data-probing="{{ t('mdl.probing') }}" data-offline="{{ t('mdl.offline') }}">{{ t('mdl.probing') }}</p>
 <textarea id="models" name="models"
-  placeholder="modèles supplémentaires, un par ligne">{{ selected|join('\n') }}</textarea>
-<p class="hint">Cases cochées + saisie libre = allowlist de la clé. Vide partout = tous les
-  modèles (texte) du serveur autorisés.</p>
+  placeholder="{{ t('mdl.extra_ph') }}">{{ selected|join('\n') }}</textarea>
+<p class="hint">{{ t('mdl.hint') }}</p>
 
-<label class="img-models-label">Modèles d'image autorisés (<span class="mono">x/…</span>)</label>
+<label class="img-models-label">{{ t('mdl.img_label')|safe }}</label>
 <div class="checks" id="image-model-checks" data-testid="image-model-checks"></div>
 <textarea id="image_models" name="image_models"
-  placeholder="modèles d'image (x/…) supplémentaires, un par ligne">{{ (image_selected or [])|join('\n') }}</textarea>
-<p class="hint">Allowlist <strong>séparée</strong> des modèles d'image. Vide = tous les modèles
-  d'image autorisés (si la génération d'images est activée ci-dessus).</p>
+  placeholder="{{ t('mdl.img_extra_ph') }}">{{ (image_selected or [])|join('\n') }}</textarea>
+<p class="hint">{{ t('mdl.img_hint')|safe }}</p>
 <script>
 (function () {
   const sel = document.getElementById('{{ select_id }}');
@@ -48,14 +45,14 @@
     const curImg = [...new Set([...checkedOf(imgBox), ...listOf(imgTa)])];
     box.innerHTML = ''; imgBox.innerHTML = '';
     ta.value = curText.join('\n'); imgTa.value = curImg.join('\n');
-    status.hidden = false; status.textContent = 'Sonde du serveur…';
+    status.hidden = false; status.textContent = status.dataset.probing;
     let data = { online: false, models: [] };
     try {
       const r = await fetch('/admin/servers/' + sel.value + '/models');
       if (r.ok) data = await r.json();
     } catch (e) { /* réseau : repli saisie libre */ }
     if (!data.online || !Array.isArray(data.models) || !data.models.length) {
-      status.textContent = 'Serveur injoignable ou sans modèle — saisie libre ci-dessous.';
+      status.textContent = status.dataset.offline;
       return;
     }
     status.hidden = true;
@@ -63,7 +60,6 @@
     const imageModels = data.models.filter(m => m.startsWith(IMG));
     render(box, textModels, curText, 'model_check');
     render(imgBox, imageModels, curImg, 'image_model_check');
-    // Ne laisse en saisie libre que les modèles hors des listes détectées.
     ta.value = curText.filter(m => !textModels.includes(m)).join('\n');
     imgTa.value = curImg.filter(m => !imageModels.includes(m)).join('\n');
   }

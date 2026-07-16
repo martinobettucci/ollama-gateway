@@ -8,6 +8,7 @@ python-multipart==0.0.20        # parsing des formulaires HTML (admin)
 itsdangerous==2.2.0             # signature des cookies de session (SessionMiddleware)
 markdown==3.7                   # rendu du manuel utilisateur (docs/manual.md) dans le panel
 cryptography==44.0.0            # Fernet : chiffrement au repos des jetons des serveurs distants
+pyyaml==6.0.3                   # catalogues i18n (app/locales/*.yaml) chargés par app/i18n.py
 # --- tests ---
 pytest==8.3.4
 pytest-asyncio==0.25.2

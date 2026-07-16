@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Connexion — Passerelle Ollama{% endblock %}
+{% block title %}{{ t('login.title') }} — {{ t('brand.name') }}{% endblock %}
 {% block main_class %}auth-main{% endblock %}
 {% block body %}
 <div class="auth-wrap">
   <div class="hero">
     {{ icon('shield-check', 28) }}
-    <h1>Connexion admin</h1>
-    <p>Passerelle Ollama — gestion des clés</p>
+    <h1>{{ t('login.heading') }}</h1>
+    <p>{{ t('brand.name') }} — {{ t('brand.tagline') }}</p>
   </div>
   <div class="auth-card">
     {% if error %}<p class="err" role="alert">{{ icon('circle-alert') }} {{ error }}</p>{% endif %}
     <form method="post" action="/admin/login">
-      <label for="password">Mot de passe</label>
+      <label for="password">{{ t('login.password') }}</label>
       <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
-      <button type="submit">{{ icon('log-in') }} Entrer</button>
+      <button type="submit">{{ icon('log-in') }} {{ t('login.submit') }}</button>
     </form>
   </div>
 </div>

@@ -16,10 +16,25 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import apis, auth, bans, charts, config, db, keys, servers, targets, usage, whois
+from . import apis, auth, bans, charts, config, db, i18n, keys, servers, targets, usage, whois
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
+
+
+def render(request: Request, name: str, ctx: dict | None = None, status_code: int = 200):
+    """Rend un template en injectant l'i18n de la requête (`t`, `lang`, `languages`)."""
+    lang = i18n.negotiate(request)
+    c = dict(ctx or {})
+    c["t"] = lambda key, **kw: i18n.translate(key, lang, **kw)
+    c["lang"] = lang
+    c["languages"] = i18n.languages()
+    return TEMPLATES.TemplateResponse(request, name, c, status_code=status_code)
+
+
+def _t(request: Request, key: str, **kw) -> str:
+    """Traduit une chaîne (flash/erreur) dans la langue de la requête."""
+    return i18n.translate(key, i18n.negotiate(request), **kw)
 
 
 @asynccontextmanager
@@ -184,7 +199,7 @@ async def root():
 async def setup_form(request: Request):
     if keys.get_admin_hash() is not None:
         return RedirectResponse("/admin/login", status_code=303)
-    return TEMPLATES.TemplateResponse(request, "setup.html", {"error": None})
+    return render(request, "setup.html", {"error": None})
 
 
 @app.post("/admin/setup")
@@ -192,9 +207,8 @@ async def setup_submit(request: Request, password: str = Form(...), confirm: str
     if keys.get_admin_hash() is not None:
         return RedirectResponse("/admin/login", status_code=303)
     if len(password) < 8 or password != confirm:
-        return TEMPLATES.TemplateResponse(
-            request, "setup.html",
-            {"error": "Mot de passe trop court (min 8) ou non identique."}, status_code=400)
+        return render(request, "setup.html",
+                      {"error": _t(request, "setup.error_pw")}, status_code=400)
     keys.set_admin_password(password)
     request.session["admin"] = True
     return RedirectResponse("/admin", status_code=303)
@@ -204,30 +218,38 @@ async def setup_submit(request: Request, password: str = Form(...), confirm: str
 async def login_form(request: Request):
     if keys.get_admin_hash() is None:
         return RedirectResponse("/admin/setup", status_code=303)
-    return TEMPLATES.TemplateResponse(request, "login.html", {"error": None})
+    return render(request, "login.html", {"error": None})
 
 
 @app.post("/admin/login")
 async def login_submit(request: Request, password: str = Form(...)):
     ip = _login_client_ip(request)
     if _login_locked(ip):
-        return TEMPLATES.TemplateResponse(
-            request, "login.html",
-            {"error": "Trop de tentatives — réessayez dans quelques minutes."}, status_code=429)
+        return render(request, "login.html",
+                      {"error": _t(request, "login.throttled")}, status_code=429)
     stored = keys.get_admin_hash()
     if stored and auth.verify_password(password, stored):
         _login_clear(ip)
         request.session["admin"] = True
         return RedirectResponse("/admin", status_code=303)
     _login_record_fail(ip)
-    return TEMPLATES.TemplateResponse(
-        request, "login.html", {"error": "Mot de passe incorrect."}, status_code=401)
+    return render(request, "login.html",
+                  {"error": _t(request, "login.wrong")}, status_code=401)
 
 
 @app.get("/admin/logout")
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/admin/login", status_code=303)
+
+
+@app.post("/admin/lang")
+async def set_lang(request: Request, lang: str = Form(...), next: str = Form("/admin")):
+    """Change la langue du panel (stockée en session). Disponible même déconnecté."""
+    if lang in i18n.ENABLED:
+        request.session["lang"] = lang
+    dest = next if next.startswith("/admin") else "/admin"
+    return RedirectResponse(dest, status_code=303)
 
 
 # --- Manuel utilisateur -----------------------------------------------------------------------
@@ -254,7 +276,7 @@ async def manual(request: Request):
 async def dashboard(request: Request):
     if (r := _guard(request)):
         return r
-    return TEMPLATES.TemplateResponse(request, "dashboard.html", {
+    return render(request, "dashboard.html", {
         "keys": keys.list_keys(),
         "totals": usage.global_summary(),
         "servers": servers.list_servers(),
@@ -303,7 +325,7 @@ async def key_detail(request: Request, key_id: int):
     rec = keys.get_key(key_id)
     if rec is None:
         return RedirectResponse("/admin", status_code=303)
-    return TEMPLATES.TemplateResponse(request, "key_detail.html", {
+    return render(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
         "servers": servers.list_servers(),
         "targets": targets.list_targets(),
@@ -442,7 +464,7 @@ async def logs_page(request: Request):
     if (r := _guard(request)):
         return r
     events = usage.recent_events(500)
-    return TEMPLATES.TemplateResponse(request, "logs.html", {
+    return render(request, "logs.html", {
         "events": events,
         "total": usage.total_events(),
         "banned_ips": bans.banned_among(e["client_ip"] for e in events),
@@ -488,7 +510,7 @@ async def ban_delete(request: Request, ban_id: int):
 async def servers_page(request: Request):
     if (r := _guard(request)):
         return r
-    return TEMPLATES.TemplateResponse(request, "servers.html", {
+    return render(request, "servers.html", {
         "servers": servers.list_servers(),
         "flash": request.session.pop("server_flash", None),
     })
@@ -587,7 +609,7 @@ async def server_monitor(request: Request, server_id: int):
         "tokens_line": charts.line([(d["day"][5:], d["tokens"]) for d in daily],
                                    "Tokens / jour", color=charts.ACCENT),
     }
-    return TEMPLATES.TemplateResponse(request, "monitor.html", {
+    return render(request, "monitor.html", {
         "server": srv, "summary": summary, "per_key": per_key,
         "status": status, "svg": svg,
     })
@@ -619,7 +641,7 @@ async def server_delete(request: Request, server_id: int):
 async def targets_page(request: Request):
     if (r := _guard(request)):
         return r
-    return TEMPLATES.TemplateResponse(request, "targets.html", {
+    return render(request, "targets.html", {
         "targets": targets.list_targets(),
         "keys_by_target": {t.id: targets.keys_count(t.id) for t in targets.list_targets()},
         "flash": request.session.pop("target_flash", None),

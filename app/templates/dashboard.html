@@ -1,46 +1,46 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% from "_model_picker.html" import model_picker %}
-{% from "_api_picker.html" import api_picker %}
-{% block title %}Tableau de bord — Passerelle Ollama{% endblock %}
+{% from "_model_picker.html" import model_picker with context %}
+{% from "_api_picker.html" import api_picker with context %}
+{% block title %}{{ t('nav.dashboard') }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
-<h1>Tableau de bord</h1>
+<h1>{{ t('nav.dashboard') }}</h1>
 
 {% if created %}
 <div class="flash" data-testid="created-flash" role="status">
   <span class="chip-ic success">{{ icon('check', 18) }}</span>
   <div>
-    Clé « {{ created.label }} » créée. <strong>Copiez-la maintenant</strong> — elle ne sera plus jamais affichée :
+    {{ t('dash.created.created', label=created.label) }} <strong>{{ t('dash.created.copy_now') }}</strong> — {{ t('dash.created.never') }}
     <code data-testid="created-secret">{{ created.secret }}</code>
   </div>
 </div>
 
-{# Modale « configurer le client » : variables d'environnement prêtes à copier, générées selon
-   les API cochées. Le secret n'existe que dans CE rendu (affiché une seule fois). #}
-<dialog class="envmod" id="env-dialog" data-testid="env-dialog" aria-label="Configurer le client">
+{# Modale « configurer le client » : variables d'environnement prêtes à copier. #}
+<dialog class="envmod" id="env-dialog" data-testid="env-dialog" aria-label="{{ t('dash.env.aria') }}">
   <div class="manual-head">
     <span class="chip-ic success">{{ icon('terminal', 18) }}</span>
-    <h2>Clé « {{ created.label }} » créée — configurer le client</h2>
-    <button type="button" class="btn-close" id="env-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
+    <h2>{{ t('dash.env.title', label=created.label) }}</h2>
+    <button type="button" class="btn-close" id="env-close" aria-label="{{ t('common.close') }}">{{ icon('x') }} {{ t('common.close') }}</button>
   </div>
   <div class="modal-scroll">
    <div class="modal-col env-body">
-    <p>Copiez ces variables d'environnement sur la machine cliente.
-      <strong>La clé ne sera plus jamais réaffichée.</strong></p>
+    <p>{{ t('dash.env.copy_desc') }}
+      <strong>{{ t('dash.env.never') }}</strong></p>
     <div class="checks" data-testid="env-apis">
-      <label><input type="checkbox" id="env-api-ollama" checked> API Ollama</label>
-      <label><input type="checkbox" id="env-api-openai"> API OpenAI</label>
-      <label><input type="checkbox" id="env-api-anthropic"> API Anthropic</label>
+      <label><input type="checkbox" id="env-api-ollama" checked> {{ t('dash.env.api_ollama') }}</label>
+      <label><input type="checkbox" id="env-api-openai"> {{ t('dash.env.api_openai') }}</label>
+      <label><input type="checkbox" id="env-api-anthropic"> {{ t('dash.env.api_anthropic') }}</label>
     </div>
     <pre class="env-output" id="env-output" data-testid="env-output"></pre>
     {% if not public_base_url %}
-    <p class="hint">`PUBLIC_BASE_URL` n'est pas configurée côté passerelle : remplacez le
-      placeholder par l'URL publique réelle avant usage.</p>
+    <p class="hint">{{ t('dash.env.no_public_url') }}</p>
     {% endif %}
     <p class="actions">
-      <button type="button" id="env-copy" data-testid="env-copy">
-        {{ icon('copy') }} <span id="env-copy-label">Copier les variables</span></button>
-      <button type="button" class="btn-secondary" id="env-done">Fermer</button>
+      <button type="button" id="env-copy" data-testid="env-copy"
+              data-copy="{{ t('dash.env.copy_btn') }}" data-copied="{{ t('dash.env.copied') }}"
+              data-failed="{{ t('dash.env.copy_fail') }}">
+        {{ icon('copy') }} <span id="env-copy-label">{{ t('dash.env.copy_btn') }}</span></button>
+      <button type="button" class="btn-secondary" id="env-done">{{ t('common.close') }}</button>
     </p>
    </div>
   </div>
@@ -49,10 +49,8 @@
 (function () {
   const dlg = document.getElementById('env-dialog');
   const out = document.getElementById('env-output');
-  // URL de la cible rattachée à la clé créée (repli : PUBLIC_BASE_URL, puis placeholder).
   const base = {{ (created.target_url or public_base_url or '')|tojson }} || 'https://PASSERELLE-A-REMPLACER';
   const secret = {{ created.secret|tojson }};
-  // Variables standard de chaque SDK ; la passerelle accepte Bearer ET x-api-key (Anthropic).
   const gen = {
     ollama:    ['OLLAMA_HOST=' + base, 'OLLAMA_API_KEY=' + secret],
     openai:    ['OPENAI_BASE_URL=' + base + '/v1', 'OPENAI_API_KEY=' + secret],
@@ -65,7 +63,8 @@
       .flatMap(a => gen[a]).join('\n');
   }
   apis.forEach(a => document.getElementById('env-api-' + a).addEventListener('change', render));
-  document.getElementById('env-copy').addEventListener('click', async () => {
+  const copyBtn = document.getElementById('env-copy');
+  copyBtn.addEventListener('click', async () => {
     let ok = false;
     try { await navigator.clipboard.writeText(out.textContent); ok = true; } catch (e) {}
     if (!ok) {  // admin LAN servi en http : contexte non sécurisé → repli execCommand
@@ -74,8 +73,8 @@
       ok = document.execCommand('copy'); ta.remove();
     }
     const lbl = document.getElementById('env-copy-label');
-    lbl.textContent = ok ? 'Copié !' : 'Échec de la copie';
-    setTimeout(() => { lbl.textContent = 'Copier les variables'; }, 2000);
+    lbl.textContent = ok ? copyBtn.dataset.copied : copyBtn.dataset.failed;
+    setTimeout(() => { lbl.textContent = copyBtn.dataset.copy; }, 2000);
   });
   document.getElementById('env-close').addEventListener('click', () => dlg.close());
   document.getElementById('env-done').addEventListener('click', () => dlg.close());
@@ -89,19 +88,19 @@
 <div class="stats">
   <div class="card stat cat-brand">
     <span class="chip-ic brand">{{ icon('activity', 18) }}</span>
-    <div><div class="n" data-testid="stat-reqs">{{ totals.requests }}</div><div class="l">requêtes totales</div></div>
+    <div><div class="n" data-testid="stat-reqs">{{ totals.requests }}</div><div class="l">{{ t('dash.stat.total_reqs') }}</div></div>
   </div>
   <div class="card stat cat-success">
     <span class="chip-ic success">{{ icon('clock', 18) }}</span>
-    <div><div class="n">{{ totals.requests_24h }}</div><div class="l">dernières 24 h</div></div>
+    <div><div class="n">{{ totals.requests_24h }}</div><div class="l">{{ t('dash.stat.last24h') }}</div></div>
   </div>
   <div class="card stat cat-accent">
     <span class="chip-ic accent">{{ icon('coins', 18) }}</span>
-    <div><div class="n">{{ totals.tokens }}</div><div class="l">tokens servis</div></div>
+    <div><div class="n">{{ totals.tokens }}</div><div class="l">{{ t('dash.stat.tokens') }}</div></div>
   </div>
   <div class="card stat cat-danger">
     <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
-    <div><div class="n">{{ totals.errors }}</div><div class="l">erreurs (≥ 400)</div></div>
+    <div><div class="n">{{ totals.errors }}</div><div class="l">{{ t('dash.stat.errors') }}</div></div>
   </div>
 </div>
 
@@ -109,33 +108,33 @@
 <div class="card cat-brand">
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('key-round', 18) }}</span>
-    <h2>Clés API ({{ keys|length }})</h2>
+    <h2>{{ t('dash.keys.title', count=keys|length) }}</h2>
   </div>
   {% if keys %}
   <div class="key-filters" data-testid="key-filters">
     <input type="search" id="key-search" data-testid="key-search"
-           placeholder="Rechercher (label ou préfixe)…" autocomplete="off">
-    <select id="filter-server" data-testid="filter-server" aria-label="Filtrer par serveur">
-      <option value="">Tous les serveurs</option>
+           placeholder="{{ t('dash.keys.search_ph') }}" autocomplete="off">
+    <select id="filter-server" data-testid="filter-server" aria-label="{{ t('dash.keys.filter_server_aria') }}">
+      <option value="">{{ t('dash.keys.all_servers') }}</option>
       {% for s in servers %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}
     </select>
-    <select id="filter-api" data-testid="filter-api" aria-label="Filtrer par API">
-      <option value="">Toutes les API</option>
+    <select id="filter-api" data-testid="filter-api" aria-label="{{ t('dash.keys.filter_api_aria') }}">
+      <option value="">{{ t('dash.keys.all_apis') }}</option>
       <option value="ollama">Ollama</option>
       <option value="openai">OpenAI</option>
       <option value="anthropic">Anthropic</option>
     </select>
-    <select id="filter-state" data-testid="filter-state" aria-label="Filtrer par état">
-      <option value="">Tous les états</option>
-      <option value="active">Actives</option>
-      <option value="disabled">Désactivées</option>
+    <select id="filter-state" data-testid="filter-state" aria-label="{{ t('dash.keys.filter_state_aria') }}">
+      <option value="">{{ t('dash.keys.all_states') }}</option>
+      <option value="active">{{ t('dash.keys.active') }}</option>
+      <option value="disabled">{{ t('dash.keys.disabled') }}</option>
     </select>
   </div>
   {% endif %}
   <div class="table-wrap">
   <table data-testid="keys-table">
-    <thead><tr><th>Label</th><th>Préfixe</th><th>État</th><th>Serveur</th><th>Modèles</th><th>Origines</th>
-      <th>Quota</th><th>Dernier usage</th><th>Actions</th></tr></thead>
+    <thead><tr><th>{{ t('dash.keys.th.label') }}</th><th>{{ t('dash.keys.th.prefix') }}</th><th>{{ t('dash.keys.th.state') }}</th><th>{{ t('dash.keys.th.server') }}</th><th>{{ t('dash.keys.th.models') }}</th><th>{{ t('dash.keys.th.origins') }}</th>
+      <th>{{ t('dash.keys.th.quota') }}</th><th>{{ t('dash.keys.th.last_used') }}</th><th>{{ t('dash.keys.th.actions') }}</th></tr></thead>
     <tbody>
     {% for k in keys %}
       <tr data-testid="key-row" data-key-id="{{ k.id }}"
@@ -145,37 +144,37 @@
           data-state="{{ 'active' if k.enabled else 'disabled' }}">
         <td><a href="/admin/keys/{{ k.id }}"><strong>{{ k.label }}</strong></a></td>
         <td class="mono">{{ k.key_prefix }}…</td>
-        <td>{% if k.enabled %}<span class="badge on">active</span>{% else %}<span class="badge off">désactivée</span>{% endif %}</td>
+        <td>{% if k.enabled %}<span class="badge on">{{ t('dash.keys.badge_active') }}</span>{% else %}<span class="badge off">{{ t('dash.keys.badge_disabled') }}</span>{% endif %}</td>
         <td>{% if k.server_name %}<span class="badge neutral">{{ icon('server', 12) }} {{ k.server_name }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
-        <td class="muted">{{ (k.models|length ~ ' autorisé(s)') if k.models else 'tous' }}</td>
-        <td class="muted">{{ k.origins|join(', ') if k.origins else 'toutes' }}</td>
+        <td class="muted">{{ t('dash.keys.n_allowed', count=k.models|length) if k.models else t('common.all') }}</td>
+        <td class="muted">{{ k.origins|join(', ') if k.origins else t('dash.keys.all_origins') }}</td>
         <td class="muted">
-          {% if k.monthly_token_cap %}{{ k.monthly_token_cap }} tok/mois{% endif %}
-          {% if k.rpm_limit %}{% if k.monthly_token_cap %} · {% endif %}{{ k.rpm_limit }} req/min{% endif %}
+          {% if k.monthly_token_cap %}{{ k.monthly_token_cap }} {{ t('dash.keys.tok_month') }}{% endif %}
+          {% if k.rpm_limit %}{% if k.monthly_token_cap %} · {% endif %}{{ k.rpm_limit }} {{ t('dash.keys.req_min') }}{% endif %}
           {% if not k.monthly_token_cap and not k.rpm_limit %}—{% endif %}
         </td>
-        <td class="muted">{{ k.last_used_at or 'jamais' }}</td>
+        <td class="muted">{{ k.last_used_at or t('common.never') }}</td>
         <td style="white-space:nowrap">
           <form class="inline" method="post" action="/admin/keys/{{ k.id }}/toggle">
-            <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ 'désactiver' if k.enabled else 'activer' }}</button>
+            <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ t('dash.keys.deactivate') if k.enabled else t('dash.keys.activate') }}</button>
           </form>
           <form class="inline" method="post" action="/admin/keys/{{ k.id }}/delete"
-                onsubmit="return confirm('Supprimer la clé « {{ k.label }} » ?');">
-            <button class="btn-danger-outline btn-sm" type="submit">{{ icon('trash', 14) }} suppr.</button>
+                onsubmit="return confirm('{{ t('dash.keys.delete_confirm', label=k.label) }}');">
+            <button class="btn-danger-outline btn-sm" type="submit">{{ icon('trash', 14) }} {{ t('dash.keys.delete_short') }}</button>
           </form>
         </td>
       </tr>
     {% else %}
       <tr><td colspan="9">
         <div class="empty">{{ icon('key-round', 22) }}
-          <span>Aucune clé pour le moment — créez la première avec le formulaire ci-dessous.</span></div>
+          <span>{{ t('dash.keys.empty') }}</span></div>
       </td></tr>
     {% endfor %}
     </tbody>
   </table>
   </div>
   {% if keys %}
-  <p class="hint" id="key-empty" data-testid="key-empty" hidden>Aucune clé ne correspond aux filtres.</p>
+  <p class="hint" id="key-empty" data-testid="key-empty" hidden>{{ t('dash.keys.no_match') }}</p>
   <script>
   (function () {
     const q = document.getElementById('key-search');
@@ -209,75 +208,75 @@
 <div class="card cat-success">
   <div class="card-head">
     <span class="chip-ic success">{{ icon('plus', 18) }}</span>
-    <h2>Nouvelle clé</h2>
+    <h2>{{ t('dash.new.title') }}</h2>
   </div>
   <form method="post" action="/admin/keys" data-testid="create-form">
     <div class="row">
-      <div><label for="label">Label *</label>
+      <div><label for="label">{{ t('dash.new.label') }}</label>
         <input id="label" name="label" placeholder="client-acme" required></div>
-      <div><label for="server_id">Serveur d'exécution</label>
+      <div><label for="server_id">{{ t('dash.new.server') }}</label>
         <select id="server_id" name="server_id">
           {% for s in servers %}
           <option value="{{ s.id }}"{{ ' selected' if s.is_default }}{{ ' disabled' if not s.enabled }}>
-            {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
+            {{ s.name }}{{ ' — ' ~ t('dash.new.default') if s.is_default }}{{ ' — ' ~ t('common.disabled') if not s.enabled }}</option>
           {% endfor %}
         </select></div>
     </div>
     <div class="row">
-      <div><label for="target_id">Cible publique (env-gen)</label>
+      <div><label for="target_id">{{ t('dash.new.target') }}</label>
         <select id="target_id" name="target_id" data-testid="target-select">
-          {% for t in targets %}
-          <option value="{{ t.id }}"{{ ' selected' if t.is_default }}>
-            {{ t.name }} — {{ t.base_url }}{{ ' (par défaut)' if t.is_default }}</option>
+          {% for tg in targets %}
+          <option value="{{ tg.id }}"{{ ' selected' if tg.is_default }}>
+            {{ tg.name }} — {{ tg.base_url }}{{ ' — ' ~ t('dash.new.default') if tg.is_default }}</option>
           {% endfor %}
         </select>
-        <p class="hint">URL publique injectée dans les variables d'environnement de la clé.</p></div>
-      <div><label for="fallback_server_id">Serveur de repli (fallback)</label>
+        <p class="hint">{{ t('dash.new.target_hint') }}</p></div>
+      <div><label for="fallback_server_id">{{ t('dash.new.fallback') }}</label>
         <select id="fallback_server_id" name="fallback_server_id" data-testid="fallback-select">
-          <option value="">— aucun —</option>
+          <option value="">{{ t('dash.new.none_option') }}</option>
           {% for s in servers %}
-          <option value="{{ s.id }}">{{ s.name }}{{ ' — désactivé' if not s.enabled }}</option>
+          <option value="{{ s.id }}">{{ s.name }}{{ ' — ' ~ t('common.disabled') if not s.enabled }}</option>
           {% endfor %}
         </select>
-        <p class="hint">Repli transparent sur erreur serveur (5xx / connexion).</p></div>
+        <p class="hint">{{ t('dash.new.fallback_hint') }}</p></div>
     </div>
     <div class="row">
-      <div><label for="monthly_token_cap">Plafond tokens / mois</label>
+      <div><label for="monthly_token_cap">{{ t('dash.new.monthly_cap') }}</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1">
-        <p class="hint">Vide = illimité.</p></div>
-      <div><label for="rpm_limit">Rate-limit (req/min)</label>
+        <p class="hint">{{ t('dash.new.empty_unlimited') }}</p></div>
+      <div><label for="rpm_limit">{{ t('dash.new.rpm') }}</label>
         <input id="rpm_limit" name="rpm_limit" type="number" min="1">
-        <p class="hint">Vide = illimité.</p></div>
+        <p class="hint">{{ t('dash.new.empty_unlimited') }}</p></div>
     </div>
     <fieldset class="expiry" data-testid="expiry-fields">
-      <legend>Expiration / plafonds de vie <span class="hint">(essai à coût plafonné — distinct du rate-limit)</span></legend>
+      <legend>{{ t('dash.new.expiry_legend') }} <span class="hint">{{ t('dash.new.expiry_hint') }}</span></legend>
       <div class="row">
-        <div><label for="total_token_cap">Plafond total de tokens</label>
+        <div><label for="total_token_cap">{{ t('dash.new.total_tokens') }}</label>
           <input id="total_token_cap" name="total_token_cap" type="number" min="1">
-          <p class="hint">Budget absolu sur la vie de la clé. Vide = illimité.</p></div>
-        <div><label for="total_request_cap">Plafond total de requêtes</label>
+          <p class="hint">{{ t('dash.new.total_tokens_hint') }}</p></div>
+        <div><label for="total_request_cap">{{ t('dash.new.total_reqs') }}</label>
           <input id="total_request_cap" name="total_request_cap" type="number" min="1">
-          <p class="hint">Nombre absolu de requêtes. Vide = illimité.</p></div>
+          <p class="hint">{{ t('dash.new.total_reqs_hint') }}</p></div>
       </div>
       <div class="row">
-        <div><label for="expires_at">Expire le</label>
+        <div><label for="expires_at">{{ t('dash.new.expires_at') }}</label>
           <input id="expires_at" name="expires_at" type="datetime-local">
-          <p class="hint">Date/heure limite. Vide = jamais.</p></div>
-        <div><label for="idle_expiry_days">Expiration par inactivité (jours)</label>
+          <p class="hint">{{ t('dash.new.expires_hint') }}</p></div>
+        <div><label for="idle_expiry_days">{{ t('dash.new.idle') }}</label>
           <input id="idle_expiry_days" name="idle_expiry_days" type="number" min="1">
-          <p class="hint">Refus après N jours sans usage. Vide = jamais.</p></div>
+          <p class="hint">{{ t('dash.new.idle_hint') }}</p></div>
       </div>
     </fieldset>
-    <label for="models">Modèles autorisés</label>
+    <label for="models">{{ t('dash.new.models') }}</label>
     {{ model_picker([], []) }}
-    <label>API autorisées</label>
+    <label>{{ t('dash.new.apis') }}</label>
     {{ api_picker([]) }}
-    <label for="origins">Origines autorisées</label>
+    <label for="origins">{{ t('dash.new.origins') }}</label>
     <textarea id="origins" name="origins" placeholder="203.0.113.7&#10;192.168.0.0/24"></textarea>
-    <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>
-    <label for="note">Note</label>
-    <input id="note" name="note" placeholder="optionnel">
-    <p class="actions"><button type="submit">{{ icon('plus') }} Créer la clé</button></p>
+    <p class="hint">{{ t('dash.new.origins_hint') }}</p>
+    <label for="note">{{ t('dash.new.note') }}</label>
+    <input id="note" name="note" placeholder="{{ t('common.optional') }}">
+    <p class="actions"><button type="submit">{{ icon('plus') }} {{ t('dash.new.submit') }}</button></p>
   </form>
 </div>
 </div>

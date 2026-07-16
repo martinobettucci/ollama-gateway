@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Initialisation — Passerelle Ollama{% endblock %}
+{% block title %}{{ t('setup.title') }} — {{ t('brand.name') }}{% endblock %}
 {% block main_class %}auth-main{% endblock %}
 {% block body %}
 <div class="auth-wrap">
   <div class="hero">
     {{ icon('shield-check', 28) }}
-    <h1>Première utilisation</h1>
-    <p>Définissez le mot de passe admin de la passerelle</p>
+    <h1>{{ t('setup.heading') }}</h1>
+    <p>{{ t('setup.subtitle') }}</p>
   </div>
   <div class="auth-card">
     {% if error %}<p class="err" role="alert">{{ icon('circle-alert') }} {{ error }}</p>{% endif %}
     <form method="post" action="/admin/setup">
-      <label for="password">Mot de passe admin</label>
+      <label for="password">{{ t('setup.password') }}</label>
       <input id="password" name="password" type="password" autocomplete="new-password" required>
-      <p class="hint">8 caractères minimum.</p>
-      <label for="confirm">Confirmation</label>
+      <p class="hint">{{ t('setup.hint') }}</p>
+      <label for="confirm">{{ t('setup.confirm') }}</label>
       <input id="confirm" name="confirm" type="password" autocomplete="new-password" required>
-      <button type="submit">{{ icon('check') }} Définir et entrer</button>
+      <button type="submit">{{ icon('check') }} {{ t('setup.submit') }}</button>
     </form>
   </div>
 </div>

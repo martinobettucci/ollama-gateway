@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="{{ lang|default('fr') }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Passerelle Ollama{% endblock %}</title>
+  <title>{% block title %}{{ t('brand.name') }}{% endblock %}</title>
   <style>
     /* ── Tokens (docs/DESIGN_SYSTEM.md — charte P2Enjoy SAS, thème clair) ─────────── */
     :root {
@@ -40,6 +40,14 @@
                  border-radius:999px; font-weight:600; font-size:14px; color:var(--text-2); cursor:pointer;
                  transition:background .15s ease-out,color .15s ease-out; }
     .pill-link:hover { background:#F3F4F6; text-decoration:none; }
+    .topbar-right { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+    /* Sélecteur de langue (visible même déconnecté) */
+    .langsel { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .5rem; min-height:40px;
+               border:1px solid var(--line); border-radius:999px; background:var(--surface); }
+    .langsel-ic { display:inline-flex; color:var(--text-3); }
+    .langsel select { border:0; background:transparent; font:inherit; font-size:14px; font-weight:600;
+                      color:var(--text-2); cursor:pointer; padding:.1rem 0; }
+    .langsel select:focus-visible { outline:2px solid var(--color-brand); outline-offset:2px; border-radius:6px; }
     .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
 
     main { width:100%; flex:1; padding:1.4rem 1.6rem 2rem; }
@@ -281,23 +289,36 @@
   <header class="topbar">
     <a class="brand" href="/admin">
       <span class="brand-badge">{{ icon('key-round', 18) }}</span>
-      <span>Passerelle Ollama <small>· gestion des clés</small></span>
+      <span>{{ t('brand.name') }} <small>· {{ t('brand.tagline') }}</small></span>
     </a>
+    <div class="topbar-right">
     {% if request.session.get('admin') %}
-    <nav class="pills" aria-label="Navigation principale">
+    <nav class="pills" aria-label="{{ t('nav.aria') }}">
       <a class="pill-link{% if request.url.path == '/admin' or request.url.path.startswith('/admin/keys') %} active{% endif %}"
-         href="/admin">{{ icon('layout-dashboard') }} Tableau de bord</a>
+         href="/admin">{{ icon('layout-dashboard') }} {{ t('nav.dashboard') }}</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/servers') %} active{% endif %}"
-         href="/admin/servers">{{ icon('server') }} Serveurs</a>
+         href="/admin/servers">{{ icon('server') }} {{ t('nav.servers') }}</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/targets') %} active{% endif %}"
-         href="/admin/targets">{{ icon('globe') }} Cibles</a>
+         href="/admin/targets">{{ icon('globe') }} {{ t('nav.targets') }}</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/logs') or request.url.path.startswith('/admin/bans') %} active{% endif %}"
-         href="/admin/logs">{{ icon('scroll-text') }} Logs</a>
+         href="/admin/logs">{{ icon('scroll-text') }} {{ t('nav.logs') }}</a>
       <button type="button" class="pill-link" id="manual-open" data-testid="manual-open"
-              aria-haspopup="dialog">{{ icon('book-open') }} Manuel</button>
-      <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} Déconnexion</a>
+              aria-haspopup="dialog">{{ icon('book-open') }} {{ t('nav.manual') }}</button>
+      <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} {{ t('nav.logout') }}</a>
     </nav>
     {% endif %}
+      <form class="langsel" method="post" action="/admin/lang" data-testid="lang-form">
+        <input type="hidden" name="next" value="{{ request.url.path }}">
+        <span class="langsel-ic" aria-hidden="true">{{ icon('globe', 16) }}</span>
+        <select name="lang" aria-label="{{ t('nav.language') }}" onchange="this.form.submit()"
+                data-testid="lang-select">
+          {% for code, name in languages %}
+          <option value="{{ code }}"{% if code == lang %} selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+        <noscript><button type="submit">OK</button></noscript>
+      </form>
+    </div>
   </header>
   <main class="{% block main_class %}{% endblock %}">{% block body %}{% endblock %}</main>
 
@@ -306,21 +327,22 @@
     <a href="https://p2enjoy.studio" target="_blank" rel="noopener noreferrer">P2Enjoy</a>
     with
     <svg class="heart" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-danger)"
-         stroke="var(--color-danger)" stroke-width="1.5" role="img" aria-label="amour">
+         stroke="var(--color-danger)" stroke-width="1.5" role="img" aria-label="{{ t('foot.heart_aria') }}">
       <path d="M12 21s-7.5-4.6-10-9C.6 9 2 5 5.5 5 7.8 5 9.3 6.3 12 9c2.7-2.7 4.2-4 6.5-4C22 5 23.4 9 22 12c-2.5 4.4-10 9-10 9z"/>
     </svg>
   </footer>
   {% if request.session.get('admin') %}
-  <dialog class="manual" id="manual-dialog" aria-label="Manuel utilisateur">
+  <dialog class="manual" id="manual-dialog" aria-label="{{ t('manual.title') }}">
     <div class="manual-head">
       <span class="chip-ic brand">{{ icon('book-open', 18) }}</span>
-      <h2>Manuel utilisateur</h2>
-      <button type="button" class="btn-close" id="manual-close" aria-label="Fermer le manuel">
-        {{ icon('x') }} Fermer</button>
+      <h2>{{ t('manual.title') }}</h2>
+      <button type="button" class="btn-close" id="manual-close" aria-label="{{ t('manual.close_aria') }}">
+        {{ icon('x') }} {{ t('common.close') }}</button>
     </div>
     <div class="modal-scroll">
-      <div class="modal-col manual-body" id="manual-content" data-testid="manual-content">
-        <p class="muted">Chargement du manuel…</p>
+      <div class="modal-col manual-body" id="manual-content" data-testid="manual-content"
+           data-error="{{ t('manual.load_error') }}">
+        <p class="muted">{{ t('manual.loading') }}</p>
       </div>
     </div>
   </dialog>
@@ -336,7 +358,7 @@
             body.innerHTML = await r.text();
             body.dataset.loaded = '1';
           } catch {
-            body.innerHTML = '<p class="err">Impossible de charger le manuel.</p>';
+            body.innerHTML = '<p class="err">' + (body.dataset.error || 'Error') + '</p>';
           }
         }
       });

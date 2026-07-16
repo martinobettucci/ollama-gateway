@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% block title %}Serveurs — Passerelle Ollama{% endblock %}
+{% block title %}{{ t('nav.servers') }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
-<h1>Serveurs d'exécution</h1>
-<p class="page-meta">Chaque clé est rattachée à exactement un serveur. Le serveur par défaut
-  (local) est créé automatiquement et ne peut pas être supprimé.</p>
+<h1>{{ t('srv.title') }}</h1>
+<p class="page-meta">{{ t('srv.intro') }}</p>
 
 {% if flash %}
 <div class="flash" role="status" style="border-top-color:{{ 'var(--color-success)' if flash.ok else 'var(--color-danger)' }}">
@@ -22,13 +21,13 @@
   </div>
   <div class="server-meta">
     <span class="mono">{{ s.base_url }}</span>
-    {% if s.is_default %}<span class="badge accent">par défaut</span>{% endif %}
-    {% if s.enabled %}<span class="badge on">activé</span>{% else %}<span class="badge off">désactivé</span>{% endif %}
-    {% if s.last_online %}<span class="badge on">en ligne</span>
-    {% elif s.last_checked_at %}<span class="badge off">hors ligne</span>
-    {% else %}<span class="badge neutral">non testé</span>{% endif %}
-    {% if s.has_auth %}<span class="badge neutral">{{ icon('lock', 12) }} auth</span>{% endif %}
-    {% if s.last_checked_at %}<span class="muted">testé le {{ s.last_checked_at }}</span>{% endif %}
+    {% if s.is_default %}<span class="badge accent">{{ t('common.default') }}</span>{% endif %}
+    {% if s.enabled %}<span class="badge on">{{ t('common.enabled') }}</span>{% else %}<span class="badge off">{{ t('common.disabled') }}</span>{% endif %}
+    {% if s.last_online %}<span class="badge on">{{ t('common.online') }}</span>
+    {% elif s.last_checked_at %}<span class="badge off">{{ t('common.offline') }}</span>
+    {% else %}<span class="badge neutral">{{ t('srv.untested') }}</span>{% endif %}
+    {% if s.has_auth %}<span class="badge neutral">{{ icon('lock', 12) }} {{ t('srv.auth_badge') }}</span>{% endif %}
+    {% if s.last_checked_at %}<span class="muted">{{ t('srv.tested_on', date=s.last_checked_at) }}</span>{% endif %}
   </div>
   {% if s.last_models %}
   <div class="models-tags">
@@ -37,17 +36,15 @@
   {% endif %}
 
   {% if s.last_compat %}
-  {# Matrice de compatibilité d'API : accessibilité des chemins par famille (servi vs 404),
-     sans validation de schéma. Vert = 2xx, gris = servi mais erreur (4xx/5xx≠404), rouge = absent. #}
   <details class="edit compat" data-testid="compat-{{ s.id }}">
-    <summary>{{ icon('plug', 14) }} Compatibilité d'API{% if s.last_compat_at %} — testée le {{ s.last_compat_at }}{% endif %}</summary>
+    <summary>{{ icon('plug', 14) }} {{ t('srv.compat.title') }}{% if s.last_compat_at %} {{ t('srv.compat.tested', date=s.last_compat_at) }}{% endif %}</summary>
     {% for fam, eps in s.last_compat.items() %}
     <div class="compat-fam">
       <div class="compat-fam-name">{{ fam }}</div>
       <div class="models-tags">
         {% for e in eps %}
         <span class="badge {{ 'on' if e.status and e.status < 400 else ('neutral' if e.served else 'off') }} mono"
-              title="{{ e.method }} {{ e.path }} → {{ e.status if e.status else 'erreur réseau' }}">
+              title="{{ e.method }} {{ e.path }} → {{ e.status if e.status else t('srv.compat.net_error') }}">
           {{ e.path }} · {{ e.status if e.status else '✕' }}</span>
         {% endfor %}
       </div>
@@ -58,41 +55,41 @@
 
   <div class="server-actions">
     <a class="btn-secondary btn-sm" href="/admin/servers/{{ s.id }}/monitor"
-       data-testid="monitor-link-{{ s.id }}">{{ icon('bar-chart', 14) }} Monitor</a>
+       data-testid="monitor-link-{{ s.id }}">{{ icon('bar-chart', 14) }} {{ t('srv.actions.monitor') }}</a>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/test">
-      <button class="btn-secondary btn-sm" type="submit">{{ icon('refresh-cw', 14) }} Tester</button>
+      <button class="btn-secondary btn-sm" type="submit">{{ icon('refresh-cw', 14) }} {{ t('srv.actions.test') }}</button>
     </form>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/compat">
-      <button class="btn-secondary btn-sm" type="submit" data-testid="compat-test-{{ s.id }}">{{ icon('plug', 14) }} Vérifier la compatibilité</button>
+      <button class="btn-secondary btn-sm" type="submit" data-testid="compat-test-{{ s.id }}">{{ icon('plug', 14) }} {{ t('srv.actions.check_compat') }}</button>
     </form>
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/toggle">
-      <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ 'désactiver' if s.enabled else 'activer' }}</button>
+      <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ t('dash.keys.deactivate') if s.enabled else t('dash.keys.activate') }}</button>
     </form>
     {% if not s.is_default %}
     <form class="inline" method="post" action="/admin/servers/{{ s.id }}/delete"
-          onsubmit="return confirm('Supprimer le serveur « {{ s.name }} » ?');">
-      <button class="btn-danger-outline btn-sm" type="submit">{{ icon('trash', 14) }} suppr.</button>
+          onsubmit="return confirm('{{ t('srv.delete_confirm', name=s.name) }}');">
+      <button class="btn-danger-outline btn-sm" type="submit">{{ icon('trash', 14) }} {{ t('dash.keys.delete_short') }}</button>
     </form>
     {% endif %}
   </div>
 
   <details class="edit">
-    <summary>{{ icon('pencil', 14) }} Modifier</summary>
+    <summary>{{ icon('pencil', 14) }} {{ t('common.edit') }}</summary>
     <form method="post" action="/admin/servers/{{ s.id }}">
       <div class="row">
-        <div><label for="name-{{ s.id }}">Nom</label>
+        <div><label for="name-{{ s.id }}">{{ t('srv.edit.name') }}</label>
           <input id="name-{{ s.id }}" name="name" value="{{ s.name }}"></div>
-        <div><label for="url-{{ s.id }}">URL de base</label>
+        <div><label for="url-{{ s.id }}">{{ t('srv.edit.url') }}</label>
           <input id="url-{{ s.id }}" name="base_url" value="{{ s.base_url }}"></div>
       </div>
-      <label for="tok-{{ s.id }}">Jeton d'auth distant (Bearer)</label>
+      <label for="tok-{{ s.id }}">{{ t('srv.edit.token') }}</label>
       <input id="tok-{{ s.id }}" name="auth_token" type="password" autocomplete="off"
-             placeholder="{{ 'défini — laisser vide pour conserver' if s.has_auth else 'optionnel' }}">
+             placeholder="{{ t('srv.edit.token_ph_set') if s.has_auth else t('common.optional') }}">
       <div class="checks">
-        <label><input type="checkbox" name="enabled" {{ 'checked' if s.enabled }}> serveur activé</label>
-        {% if s.has_auth %}<label><input type="checkbox" name="clear_auth"> retirer le jeton</label>{% endif %}
+        <label><input type="checkbox" name="enabled" {{ 'checked' if s.enabled }}> {{ t('srv.edit.enabled_check') }}</label>
+        {% if s.has_auth %}<label><input type="checkbox" name="clear_auth"> {{ t('srv.edit.clear_token') }}</label>{% endif %}
       </div>
-      <p class="actions"><button class="btn-sm" type="submit">{{ icon('check', 14) }} Enregistrer</button></p>
+      <p class="actions"><button class="btn-sm" type="submit">{{ icon('check', 14) }} {{ t('common.save') }}</button></p>
     </form>
   </details>
 </div>
@@ -101,19 +98,19 @@
 <div class="card cat-success">
   <div class="card-head">
     <span class="chip-ic success">{{ icon('plus', 18) }}</span>
-    <h2>Ajouter un serveur</h2>
+    <h2>{{ t('srv.add.title') }}</h2>
   </div>
   <form method="post" action="/admin/servers" data-testid="server-create-form">
     <div class="row">
-      <div><label for="new-name">Nom *</label>
+      <div><label for="new-name">{{ t('srv.add.name') }}</label>
         <input id="new-name" name="name" placeholder="Ollama atelier" required></div>
-      <div><label for="new-url">URL de base *</label>
+      <div><label for="new-url">{{ t('srv.add.url') }}</label>
         <input id="new-url" name="base_url" placeholder="http://192.168.0.42:11434" required></div>
     </div>
-    <label for="new-tok">Jeton d'auth distant (Bearer)</label>
-    <input id="new-tok" name="auth_token" type="password" autocomplete="off" placeholder="optionnel">
-    <p class="hint">Chiffré au repos ; jamais réaffiché. Utilisé si le serveur distant exige un Bearer.</p>
-    <p class="actions"><button type="submit">{{ icon('plus') }} Ajouter le serveur</button></p>
+    <label for="new-tok">{{ t('srv.edit.token') }}</label>
+    <input id="new-tok" name="auth_token" type="password" autocomplete="off" placeholder="{{ t('common.optional') }}">
+    <p class="hint">{{ t('srv.add.token_hint') }}</p>
+    <p class="actions"><button type="submit">{{ icon('plus') }} {{ t('srv.add.submit') }}</button></p>
   </form>
 </div>
 </div>

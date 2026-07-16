@@ -1,65 +1,79 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
-{% from "_model_picker.html" import model_picker %}
-{% from "_api_picker.html" import api_picker %}
-{% block title %}{{ key.label }} — Passerelle Ollama{% endblock %}
+{% from "_model_picker.html" import model_picker with context %}
+{% from "_api_picker.html" import api_picker with context %}
+{% block title %}{{ key.label }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
-<p><a class="backlink" href="/admin">{{ icon('arrow-left') }} Tableau de bord</a></p>
+{# Libellés JS de cette page (sondes, échecs, WHOIS) exposés en JSON pour les scripts ci-dessous. #}
+<script type="application/json" id="kd-i18n">
+{
+  "probing": {{ t('mdl.probing') | tojson }},
+  "no_model": {{ t('kd.js.no_model') | tojson }},
+  "unreachable": {{ t('kd.js.unreachable') | tojson }},
+  "no_img_model": {{ t('kd.js.no_img_model') | tojson }},
+  "failed": {{ t('kd.js.failed') | tojson }},
+  "net_error": {{ t('kd.js.net_error') | tojson }},
+  "generating": {{ t('kd.js.generating') | tojson }},
+  "whois_title": {{ t('kd.js.whois_title') | tojson }},
+  "whois_resolving": {{ t('kd.js.whois_resolving') | tojson }},
+  "whois_unavailable": {{ t('kd.js.whois_unavailable') | tojson }}
+}
+</script>
+<p><a class="backlink" href="/admin">{{ icon('arrow-left') }} {{ t('nav.dashboard') }}</a></p>
 <h1>{{ key.label }}
-  {% if key.enabled %}<span class="badge on">active</span>{% else %}<span class="badge off">désactivée</span>{% endif %}
+  {% if key.enabled %}<span class="badge on">{{ t('dash.keys.badge_active') }}</span>{% else %}<span class="badge off">{{ t('dash.keys.badge_disabled') }}</span>{% endif %}
 </h1>
-<p class="page-meta mono">{{ key.key_prefix }}… · créée le {{ key.created_at }} · dernier usage : {{ key.last_used_at or 'jamais' }}</p>
+<p class="page-meta mono">{{ t('kd.meta', prefix=key.key_prefix, created=key.created_at, last_used=key.last_used_at or t('common.never')) }}</p>
 
 <p class="actions">
   <button type="button" id="try-open" data-testid="try-open" aria-haspopup="dialog">
-    {{ icon('message-square') }} Essayer maintenant</button>
+    {{ icon('message-square') }} {{ t('kd.try.open') }}</button>
 </p>
 
 {# Modale de chat de test : envoie un message au serveur rattaché à la clé (relais LAN-only via
    /admin/keys/{id}/try-chat), en respectant l'allowlist de modèles. Vérifie « en vrai » que la
    configuration répond, sans quitter le panel ni exposer le secret. #}
-<dialog class="chatmod" id="try-dialog" data-testid="try-dialog" aria-label="Essayer la clé">
+<dialog class="chatmod" id="try-dialog" data-testid="try-dialog" aria-label="{{ t('kd.try.aria') }}">
   <div class="manual-head">
     <span class="chip-ic brand">{{ icon('message-square', 18) }}</span>
-    <h2>Essayer « {{ key.label }} »</h2>
-    <button type="button" class="btn-close" id="try-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
+    <h2>{{ t('kd.try.title', label=key.label) }}</h2>
+    <button type="button" class="btn-close" id="try-close" aria-label="{{ t('common.close') }}">{{ icon('x') }} {{ t('common.close') }}</button>
   </div>
   {% set image_enabled = ('ollama-image' in key.apis) or ('openai-image' in key.apis) or key.image_models %}
   {% if image_enabled %}
   <div class="try-tabs" role="tablist" data-testid="try-tabs">
-    <button type="button" class="try-tab active" data-tab="text" data-testid="tab-text">{{ icon('message-square', 14) }} Texte</button>
-    <button type="button" class="try-tab" data-tab="image" data-testid="tab-image">{{ icon('bar-chart', 14) }} Image</button>
+    <button type="button" class="try-tab active" data-tab="text" data-testid="tab-text">{{ icon('message-square', 14) }} {{ t('kd.try.tab_text') }}</button>
+    <button type="button" class="try-tab" data-tab="image" data-testid="tab-image">{{ icon('bar-chart', 14) }} {{ t('kd.try.tab_image') }}</button>
   </div>
   {% endif %}
 
   <div class="try-panel" data-panel="text">
     <div class="chat-controls">
       <div class="chat-controls-col">
-        <label for="try-model-sel">Modèle</label>
+        <label for="try-model-sel">{{ t('kd.try.model') }}</label>
         {# Allowlist rendue côté serveur si la clé en a une ; sinon peuplée par sonde du serveur. #}
         <select id="try-model-sel" data-testid="try-model">
           {% for m in key.models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
         </select>
-        <label for="try-api-sel">API</label>
+        <label for="try-api-sel">{{ t('kd.try.api_label') }}</label>
         <select id="try-api-sel" data-testid="try-api">
-          <option value="ollama">Ollama (chat)</option>
-          <option value="openai-chat">OpenAI Chat Completions</option>
-          <option value="openai-responses">OpenAI Responses</option>
-          <option value="anthropic">Anthropic Messages</option>
+          <option value="ollama">{{ t('kd.try.api_ollama') }}</option>
+          <option value="openai-chat">{{ t('kd.try.api_openai_chat') }}</option>
+          <option value="openai-responses">{{ t('kd.try.api_openai_responses') }}</option>
+          <option value="anthropic">{{ t('kd.try.api_anthropic') }}</option>
         </select>
       </div>
     </div>
     <div class="modal-scroll" id="try-log" data-testid="try-log">
       <div class="modal-col chat-col" id="try-col">
-        <p class="chat-hint" id="try-hint">Envoyez un message : la passerelle interroge le serveur
-          rattaché à cette clé et affiche la réponse du modèle.</p>
+        <p class="chat-hint" id="try-hint">{{ t('kd.try.hint') }}</p>
       </div>
     </div>
     <div class="chat-inputbar">
       <form class="chat-input" id="try-form">
         <input id="try-msg" data-testid="try-msg" autocomplete="off"
-               placeholder="Écrivez un message…" required>
-        <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} Envoyer</button>
+               placeholder="{{ t('kd.try.msg_ph') }}" required>
+        <button type="submit" id="try-send" data-testid="try-send">{{ icon('send') }} {{ t('kd.try.send') }}</button>
       </form>
     </div>
   </div>
@@ -68,30 +82,29 @@
   <div class="try-panel" data-panel="image" hidden>
     <div class="chat-controls">
       <div class="chat-controls-col">
-        <label for="img-model-sel">Modèle d'image</label>
+        <label for="img-model-sel">{{ t('kd.try.img_model') }}</label>
         <select id="img-model-sel" data-testid="img-model">
           {% for m in key.image_models %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
         </select>
-        <label for="img-api-sel">API</label>
+        <label for="img-api-sel">{{ t('kd.try.api_label') }}</label>
         <select id="img-api-sel" data-testid="img-api">
-          {% if ('ollama-image' in key.apis) or not key.apis %}<option value="ollama-image">Ollama image (/api/generate)</option>{% endif %}
-          {% if ('openai-image' in key.apis) or not key.apis %}<option value="openai-image">OpenAI image (/v1/images/generations)</option>{% endif %}
+          {% if ('ollama-image' in key.apis) or not key.apis %}<option value="ollama-image">{{ t('kd.try.img_api_ollama') }}</option>{% endif %}
+          {% if ('openai-image' in key.apis) or not key.apis %}<option value="openai-image">{{ t('kd.try.img_api_openai') }}</option>{% endif %}
         </select>
-        <label for="img-attach">Image jointe (optionnel — image-to-image)</label>
+        <label for="img-attach">{{ t('kd.try.img_attach') }}</label>
         <input type="file" id="img-attach" accept="image/*" data-testid="img-attach">
       </div>
     </div>
     <div class="modal-scroll" id="img-log" data-testid="img-log">
       <div class="modal-col" id="img-col">
-        <p class="chat-hint" id="img-hint">Décrivez l'image à générer ; joignez éventuellement une
-          image d'entrée. La passerelle interroge le serveur rattaché et affiche l'image produite.</p>
+        <p class="chat-hint" id="img-hint">{{ t('kd.try.img_hint') }}</p>
       </div>
     </div>
     <div class="chat-inputbar">
       <form class="chat-input" id="img-form">
         <input id="img-prompt" data-testid="img-prompt" autocomplete="off"
-               placeholder="Décrivez l'image à générer…" required>
-        <button type="submit" id="img-send" data-testid="img-send">{{ icon('send') }} Générer</button>
+               placeholder="{{ t('kd.try.img_ph') }}" required>
+        <button type="submit" id="img-send" data-testid="img-send">{{ icon('send') }} {{ t('kd.try.img_send') }}</button>
       </form>
     </div>
   </div>
@@ -99,6 +112,7 @@
 </dialog>
 <script>
 (function () {
+  const I18N = JSON.parse(document.getElementById('kd-i18n').textContent);
   const dlg = document.getElementById('try-dialog');
   const log = document.getElementById('try-log');
   const col = document.getElementById('try-col');
@@ -113,7 +127,7 @@
 
   async function ensureModels() {
     if (modelsLoaded || serverId === null) return;
-    modelSel.innerHTML = '<option value="">Sonde du serveur…</option>';
+    modelSel.innerHTML = '<option value="">' + I18N.probing + '</option>';
     try {
       const r = await fetch('/admin/servers/' + serverId + '/models');
       const data = r.ok ? await r.json() : { online: false, models: [] };
@@ -127,10 +141,10 @@
         }
         modelsLoaded = true;
       } else {
-        modelSel.innerHTML = '<option value="">(aucun modèle détecté)</option>';
+        modelSel.innerHTML = '<option value="">' + I18N.no_model + '</option>';
       }
     } catch (e) {
-      modelSel.innerHTML = '<option value="">(serveur injoignable)</option>';
+      modelSel.innerHTML = '<option value="">' + I18N.unreachable + '</option>';
     }
   }
 
@@ -180,11 +194,11 @@
         pending.parentElement.prepend(m);
       } else {
         pending.parentElement.classList.add('chat-err');
-        pending.textContent = 'Échec : ' + (data.error || ('HTTP ' + r.status));
+        pending.textContent = I18N.failed + (data.error || ('HTTP ' + r.status));
       }
     } catch (err) {
       pending.parentElement.classList.add('chat-err');
-      pending.textContent = 'Erreur réseau.';
+      pending.textContent = I18N.net_error;
     } finally {
       input.disabled = send.disabled = false;
       input.focus();
@@ -197,6 +211,7 @@
 {% if image_enabled %}
 <script>
 (function () {
+  const I18N = JSON.parse(document.getElementById('kd-i18n').textContent);
   // Onglets Texte / Image.
   const dlg = document.getElementById('try-dialog');
   const tabs = Array.from(document.querySelectorAll('.try-tab'));
@@ -221,7 +236,7 @@
 
   async function ensureImageModels() {
     if (imgModelsLoaded || serverId === null) return;
-    modelSel.innerHTML = '<option value="">Sonde du serveur…</option>';
+    modelSel.innerHTML = '<option value="">' + I18N.probing + '</option>';
     try {
       const r = await fetch('/admin/servers/' + serverId + '/models');
       const data = r.ok ? await r.json() : { online: false, models: [] };
@@ -231,9 +246,9 @@
         for (const m of imgs) { const o = document.createElement('option'); o.value = m; o.textContent = m; modelSel.append(o); }
         imgModelsLoaded = true;
       } else {
-        modelSel.innerHTML = '<option value="">(aucun modèle x/ détecté)</option>';
+        modelSel.innerHTML = '<option value="">' + I18N.no_img_model + '</option>';
       }
-    } catch (e) { modelSel.innerHTML = '<option value="">(serveur injoignable)</option>'; }
+    } catch (e) { modelSel.innerHTML = '<option value="">' + I18N.unreachable + '</option>'; }
   }
   document.querySelector('[data-tab=image]')?.addEventListener('click', ensureImageModels);
 
@@ -264,7 +279,7 @@
     u.inner.textContent = prompt;
     if (image) { const im = document.createElement('img'); im.src = image; im.className = 'try-img try-img-in'; u.b.append(im); }
     promptEl.value = ''; promptEl.disabled = send.disabled = true;
-    const pending = block('bot'); pending.inner.textContent = 'Génération…';
+    const pending = block('bot'); pending.inner.textContent = I18N.generating;
     try {
       const r = await fetch('/admin/keys/{{ key.id }}/try-image', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -277,10 +292,10 @@
         im.setAttribute('data-testid', 'img-result'); pending.b.append(im);
       } else {
         pending.b.classList.add('chat-err');
-        pending.inner.textContent = 'Échec : ' + (data.error || ('HTTP ' + r.status));
+        pending.inner.textContent = I18N.failed + (data.error || ('HTTP ' + r.status));
       }
     } catch (err) {
-      pending.b.classList.add('chat-err'); pending.inner.textContent = 'Erreur réseau.';
+      pending.b.classList.add('chat-err'); pending.inner.textContent = I18N.net_error;
     } finally { promptEl.disabled = send.disabled = false; promptEl.focus(); }
   });
 })();
@@ -290,19 +305,19 @@
 <div class="stats">
   <div class="card stat cat-brand">
     <span class="chip-ic brand">{{ icon('activity', 18) }}</span>
-    <div><div class="n" data-testid="detail-reqs">{{ summary.requests }}</div><div class="l">requêtes</div></div>
+    <div><div class="n" data-testid="detail-reqs">{{ summary.requests }}</div><div class="l">{{ t('kd.stat.requests') }}</div></div>
   </div>
   <div class="card stat cat-accent">
     <span class="chip-ic accent">{{ icon('coins', 18) }}</span>
-    <div><div class="n">{{ summary.tokens }}</div><div class="l">tokens (total)</div></div>
+    <div><div class="n">{{ summary.tokens }}</div><div class="l">{{ t('kd.stat.tokens_total') }}</div></div>
   </div>
   <div class="card stat cat-success">
     <span class="chip-ic success">{{ icon('gauge', 18) }}</span>
-    <div><div class="n">{{ summary.month_tokens }}</div><div class="l">tokens ce mois</div></div>
+    <div><div class="n">{{ summary.month_tokens }}</div><div class="l">{{ t('kd.stat.tokens_month') }}</div></div>
   </div>
   <div class="card stat cat-danger">
     <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
-    <div><div class="n">{{ summary.errors }}</div><div class="l">erreurs</div></div>
+    <div><div class="n">{{ summary.errors }}</div><div class="l">{{ t('kd.stat.errors') }}</div></div>
   </div>
 </div>
 
@@ -310,94 +325,92 @@
 <div class="card cat-brand">
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('pencil', 18) }}</span>
-    <h2>Modifier</h2>
+    <h2>{{ t('common.edit') }}</h2>
   </div>
   <form method="post" action="/admin/keys/{{ key.id }}" data-testid="edit-form">
     <div class="row">
-      <div><label for="label">Label *</label>
+      <div><label for="label">{{ t('dash.new.label') }}</label>
         <input id="label" name="label" value="{{ key.label }}" required></div>
-      <div><label for="server_id">Serveur d'exécution</label>
+      <div><label for="server_id">{{ t('dash.new.server') }}</label>
         <select id="server_id" name="server_id" data-testid="server-select">
           {% for s in servers %}
           <option value="{{ s.id }}"{{ ' selected' if s.id == key.server_id }}{{ ' disabled' if not s.enabled and s.id != key.server_id }}>
-            {{ s.name }}{{ ' (par défaut)' if s.is_default }}{{ ' — désactivé' if not s.enabled }}</option>
+            {{ s.name }}{{ t('kd.opt.default') if s.is_default }}{{ t('kd.opt.disabled') if not s.enabled }}</option>
           {% endfor %}
         </select>
-        <p class="hint">Changer de serveur re-sonde ses modèles disponibles ci-dessous.</p></div>
-      <div><label for="target_id">Cible publique (env-gen)</label>
+        <p class="hint">{{ t('kd.edit.server_hint') }}</p></div>
+      <div><label for="target_id">{{ t('dash.new.target') }}</label>
         <select id="target_id" name="target_id" data-testid="target-select">
-          {% for t in targets %}
-          <option value="{{ t.id }}"{{ ' selected' if t.id == key.target_id }}>
-            {{ t.name }} — {{ t.base_url }}{{ ' (par défaut)' if t.is_default }}</option>
+          {% for tg in targets %}
+          <option value="{{ tg.id }}"{{ ' selected' if tg.id == key.target_id }}>
+            {{ tg.name }} — {{ tg.base_url }}{{ t('kd.opt.default') if tg.is_default }}</option>
           {% endfor %}
         </select>
-        <p class="hint">URL publique utilisée pour générer les variables d'environnement.</p></div>
+        <p class="hint">{{ t('kd.edit.target_hint') }}</p></div>
     </div>
     <div class="row">
-      <div><label for="fallback_server_id">Serveur de repli (fallback)</label>
+      <div><label for="fallback_server_id">{{ t('dash.new.fallback') }}</label>
         <select id="fallback_server_id" name="fallback_server_id" data-testid="fallback-select">
-          <option value="">— aucun —</option>
+          <option value="">{{ t('dash.new.none_option') }}</option>
           {% for s in servers %}
           <option value="{{ s.id }}"{{ ' selected' if s.id == key.fallback_server_id }}>
-            {{ s.name }}{{ ' — désactivé' if not s.enabled }}</option>
+            {{ s.name }}{{ t('kd.opt.disabled') if not s.enabled }}</option>
           {% endfor %}
         </select>
-        <p class="hint">Sur erreur serveur (5xx / connexion) de l'amont primaire, la requête est
-          rejouée de façon transparente vers ce serveur.</p></div>
+        <p class="hint">{{ t('kd.edit.fallback_hint') }}</p></div>
     </div>
     <div class="row">
-      <div><label for="monthly_token_cap">Plafond tokens / mois</label>
+      <div><label for="monthly_token_cap">{{ t('dash.new.monthly_cap') }}</label>
         <input id="monthly_token_cap" name="monthly_token_cap" type="number" min="1"
                value="{{ key.monthly_token_cap or '' }}">
-        <p class="hint">Vide = illimité.</p></div>
-      <div><label for="rpm_limit">Rate-limit (req/min)</label>
+        <p class="hint">{{ t('dash.new.empty_unlimited') }}</p></div>
+      <div><label for="rpm_limit">{{ t('dash.new.rpm') }}</label>
         <input id="rpm_limit" name="rpm_limit" type="number" min="1" value="{{ key.rpm_limit or '' }}">
-        <p class="hint">Vide = illimité.</p></div>
+        <p class="hint">{{ t('dash.new.empty_unlimited') }}</p></div>
     </div>
     <fieldset class="expiry" data-testid="expiry-fields">
-      <legend>Expiration / plafonds de vie <span class="hint">(essai à coût plafonné — distinct du rate-limit)</span></legend>
+      <legend>{{ t('dash.new.expiry_legend') }} <span class="hint">{{ t('dash.new.expiry_hint') }}</span></legend>
       <div class="row">
-        <div><label for="total_token_cap">Plafond total de tokens</label>
+        <div><label for="total_token_cap">{{ t('dash.new.total_tokens') }}</label>
           <input id="total_token_cap" name="total_token_cap" type="number" min="1"
                  value="{{ key.total_token_cap or '' }}">
-          <p class="hint">Budget absolu sur la vie de la clé. Vide = illimité.</p></div>
-        <div><label for="total_request_cap">Plafond total de requêtes</label>
+          <p class="hint">{{ t('dash.new.total_tokens_hint') }}</p></div>
+        <div><label for="total_request_cap">{{ t('dash.new.total_reqs') }}</label>
           <input id="total_request_cap" name="total_request_cap" type="number" min="1"
                  value="{{ key.total_request_cap or '' }}">
-          <p class="hint">Nombre absolu de requêtes. Vide = illimité.</p></div>
+          <p class="hint">{{ t('dash.new.total_reqs_hint') }}</p></div>
       </div>
       <div class="row">
-        <div><label for="expires_at">Expire le</label>
+        <div><label for="expires_at">{{ t('dash.new.expires_at') }}</label>
           <input id="expires_at" name="expires_at" type="datetime-local"
                  value="{{ (key.expires_at|replace(' ','T'))[:16] if key.expires_at else '' }}">
-          <p class="hint">Date/heure limite. Vide = jamais.</p></div>
-        <div><label for="idle_expiry_days">Expiration par inactivité (jours)</label>
+          <p class="hint">{{ t('dash.new.expires_hint') }}</p></div>
+        <div><label for="idle_expiry_days">{{ t('dash.new.idle') }}</label>
           <input id="idle_expiry_days" name="idle_expiry_days" type="number" min="1"
                  value="{{ key.idle_expiry_days or '' }}">
-          <p class="hint">Refus après N jours sans usage. Vide = jamais.</p></div>
+          <p class="hint">{{ t('dash.new.idle_hint') }}</p></div>
       </div>
     </fieldset>
 
-    <label>Modèles autorisés</label>
+    <label>{{ t('dash.new.models') }}</label>
     {{ model_picker(key.models, key.image_models) }}
 
-    <label>API autorisées</label>
+    <label>{{ t('dash.new.apis') }}</label>
     {{ api_picker(key.apis) }}
 
-    <label for="origins">Origines autorisées</label>
+    <label for="origins">{{ t('dash.new.origins') }}</label>
     <textarea id="origins" name="origins">{{ key.origins|join('\n') }}</textarea>
-    <p class="hint">Une IP ou un CIDR par ligne ; vide = toutes les origines.</p>
+    <p class="hint">{{ t('dash.new.origins_hint') }}</p>
     <div class="row">
-      <div><label for="log_retention_days">Rétention des logs (jours)</label>
+      <div><label for="log_retention_days">{{ t('kd.edit.retention') }}</label>
         <input id="log_retention_days" name="log_retention_days" type="number" min="0"
                value="{{ key.log_retention_days if key.log_retention_days is not none else '' }}"
                data-testid="retention-input">
-        <p class="hint">Contenu complet des requêtes (fichiers hors base). Vide = défaut global
-          ({{ retention_default }} j) ; 0 = purge des heures passées.</p></div>
-      <div><label for="note">Note</label>
+        <p class="hint">{{ t('kd.edit.retention_hint', days=retention_default) }}</p></div>
+      <div><label for="note">{{ t('dash.new.note') }}</label>
         <input id="note" name="note" value="{{ key.note }}"></div>
     </div>
-    <p class="actions"><button type="submit">{{ icon('check') }} Enregistrer</button></p>
+    <p class="actions"><button type="submit">{{ icon('check') }} {{ t('common.save') }}</button></p>
   </form>
 </div>
 
@@ -405,12 +418,12 @@
 <div class="card cat-success">
   <div class="card-head">
     <span class="chip-ic success">{{ icon('bar-chart', 18) }}</span>
-    <h2>Usage (30 derniers jours)</h2>
+    <h2>{{ t('kd.usage.title') }}</h2>
   </div>
   {% if summary.per_day %}
   <div class="table-wrap">
   <table>
-    <thead><tr><th>Jour</th><th>Requêtes</th><th>Tokens</th></tr></thead>
+    <thead><tr><th>{{ t('kd.usage.th_day') }}</th><th>{{ t('kd.usage.th_reqs') }}</th><th>{{ t('kd.usage.th_tokens') }}</th></tr></thead>
     <tbody>{% for d in summary.per_day %}
       <tr><td class="mono">{{ d.day }}</td><td class="mono">{{ d.reqs }}</td><td class="mono">{{ d.tokens }}</td></tr>
     {% endfor %}</tbody>
@@ -418,21 +431,21 @@
   </div>
   {% else %}
   <div class="empty">{{ icon('bar-chart', 22) }}
-    <span>Aucune requête sur la période — l'usage apparaîtra ici dès le premier appel.</span></div>
+    <span>{{ t('kd.usage.empty') }}</span></div>
   {% endif %}
 </div>
 
 <div class="card cat-brand">
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('globe', 18) }}</span>
-    <h2>Origines vues ({{ origins_seen|length }})</h2>
+    <h2>{{ t('kd.origins.title', count=origins_seen|length) }}</h2>
   </div>
   {% if origins_seen %}
   <input type="search" id="origin-search" data-testid="origin-search"
-         placeholder="Rechercher une IP…" autocomplete="off">
+         placeholder="{{ t('kd.origins.search_ph') }}" autocomplete="off">
   <div class="table-wrap">
   <table data-testid="origins-table">
-    <thead><tr><th>IP</th><th>Requêtes</th><th>Dernier vu</th><th>WHOIS</th></tr></thead>
+    <thead><tr><th>{{ t('kd.origins.th_ip') }}</th><th>{{ t('kd.origins.th_reqs') }}</th><th>{{ t('kd.origins.th_last') }}</th><th>{{ t('kd.origins.th_whois') }}</th></tr></thead>
     <tbody id="origins-body">
     {% for o in origins_seen %}
       <tr class="origin-row" data-ip="{{ o.ip }}">
@@ -440,16 +453,16 @@
         <td class="mono">{{ o.hits }}</td>
         <td class="mono muted">{{ o.last_seen }}</td>
         <td><button type="button" class="btn-secondary btn-sm origin-whois"
-                    data-ip="{{ o.ip }}" data-testid="origin-whois">{{ icon('search', 14) }} WHOIS</button></td>
+                    data-ip="{{ o.ip }}" data-testid="origin-whois">{{ icon('search', 14) }} {{ t('kd.origins.whois_btn') }}</button></td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
   </div>
-  <p class="hint" id="origin-empty" hidden>Aucune origine ne correspond à la recherche.</p>
+  <p class="hint" id="origin-empty" hidden>{{ t('kd.origins.no_match') }}</p>
   {% else %}
   <div class="empty">{{ icon('globe', 22) }}
-    <span>Aucune origine encore vue pour cette clé.</span></div>
+    <span>{{ t('kd.origins.empty') }}</span></div>
   {% endif %}
 </div>
 
@@ -457,11 +470,11 @@
 <div class="card cat-danger">
   <div class="card-head">
     <span class="chip-ic danger">{{ icon('alert-triangle', 18) }}</span>
-    <h2>Dernières erreurs</h2>
+    <h2>{{ t('kd.errors.title') }}</h2>
   </div>
   <div class="table-wrap">
   <table>
-    <thead><tr><th>Horodatage</th><th>IP</th><th>Chemin</th><th>Statut</th></tr></thead>
+    <thead><tr><th>{{ t('kd.errors.th_ts') }}</th><th>{{ t('kd.errors.th_ip') }}</th><th>{{ t('kd.errors.th_path') }}</th><th>{{ t('kd.errors.th_status') }}</th></tr></thead>
     <tbody>{% for e in summary.recent_errors %}
       <tr><td class="mono">{{ e.ts }}</td><td class="mono">{{ e.client_ip }}</td>
           <td class="mono">{{ e.path }}</td><td><span class="badge off">{{ e.status }}</span></td></tr>
@@ -474,11 +487,11 @@
 </div>
 
 {# Modale WHOIS plein écran (résolution RDAP d'une origine). #}
-<dialog class="chatmod" id="whois-dialog" data-testid="whois-dialog" aria-label="WHOIS d'une origine">
+<dialog class="chatmod" id="whois-dialog" data-testid="whois-dialog" aria-label="{{ t('kd.whois.aria') }}">
   <div class="manual-head">
     <span class="chip-ic brand">{{ icon('globe', 18) }}</span>
-    <h2 id="whois-title">WHOIS</h2>
-    <button type="button" class="btn-close" id="whois-close" aria-label="Fermer">{{ icon('x') }} Fermer</button>
+    <h2 id="whois-title">{{ t('kd.whois.title') }}</h2>
+    <button type="button" class="btn-close" id="whois-close" aria-label="{{ t('common.close') }}">{{ icon('x') }} {{ t('common.close') }}</button>
   </div>
   <div class="modal-scroll">
     <div class="modal-col" id="whois-content" data-testid="whois-content">
@@ -488,6 +501,7 @@
 </dialog>
 <script>
 (function () {
+  const I18N = JSON.parse(document.getElementById('kd-i18n').textContent);
   const esc = s => String(s).replace(/[&<>"']/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -515,8 +529,8 @@
   document.querySelectorAll('.origin-whois').forEach(btn => {
     btn.addEventListener('click', async () => {
       const ip = btn.dataset.ip;
-      title.textContent = 'WHOIS — ' + ip;
-      content.innerHTML = '<p class="muted">Résolution…</p>';
+      title.textContent = I18N.whois_title.replace('{ip}', ip);
+      content.innerHTML = '<p class="muted">' + esc(I18N.whois_resolving) + '</p>';
       dlg.showModal();
       try {
         const r = await fetch('/admin/whois?ip=' + encodeURIComponent(ip));
@@ -531,7 +545,7 @@
         }
         content.innerHTML = html;
       } catch (e) {
-        content.innerHTML = '<p class="err">WHOIS indisponible.</p>';
+        content.innerHTML = '<p class="err">' + esc(I18N.whois_unavailable) + '</p>';
       }
     });
   });

@@ -1,0 +1,322 @@
+# Locale en (English) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Ollama Gateway
+  tagline: key management
+common:
+  close: Close
+  save: Save
+  cancel: Cancel
+  delete: Delete
+  edit: Edit
+  'yes': 'yes'
+  'no': 'no'
+  none: none
+  all: all
+  never: never
+  unlimited: unlimited
+  optional: optional
+  enabled: enabled
+  disabled: disabled
+  online: online
+  offline: offline
+  default: default
+nav:
+  aria: Main navigation
+  dashboard: Dashboard
+  servers: Servers
+  targets: Targets
+  logs: Logs
+  manual: Manual
+  logout: Log out
+  language: Language
+manual:
+  title: User manual
+  close_aria: Close the manual
+  loading: Loading the manual…
+  load_error: Unable to load the manual.
+login:
+  title: Sign in
+  heading: Admin sign-in
+  password: Password
+  submit: Enter
+  wrong: Incorrect password.
+  throttled: Too many attempts — try again in a few minutes.
+setup:
+  title: Setup
+  heading: First use
+  subtitle: Set the gateway admin password
+  password: Admin password
+  hint: 8 characters minimum.
+  confirm: Confirmation
+  submit: Set and enter
+  error_pw: Password too short (min 8) or not identical.
+dash:
+  created:
+    created: Key “{label}” created.
+    copy_now: Copy it now
+    never: 'it will never be shown again:'
+  env:
+    aria: Configure the client
+    title: Key “{label}” created — configure the client
+    copy_desc: Copy these environment variables onto the client machine.
+    never: The key will never be shown again.
+    api_ollama: Ollama API
+    api_openai: OpenAI API
+    api_anthropic: Anthropic API
+    no_public_url: '`PUBLIC_BASE_URL` is not configured on the gateway: replace the placeholder with the real public URL before use.'
+    copy_btn: Copy the variables
+    copied: Copied!
+    copy_fail: Copy failed
+  stat:
+    total_reqs: total requests
+    last24h: last 24 h
+    tokens: tokens served
+    errors: errors (≥ 400)
+  keys:
+    title: API keys ({count})
+    search_ph: Search (label or prefix)…
+    filter_server_aria: Filter by server
+    all_servers: All servers
+    filter_api_aria: Filter by API
+    all_apis: All APIs
+    filter_state_aria: Filter by state
+    all_states: All states
+    active: Active
+    disabled: Disabled
+    th:
+      label: Label
+      prefix: Prefix
+      state: State
+      server: Server
+      models: Models
+      origins: Origins
+      quota: Quota
+      last_used: Last used
+      actions: Actions
+    badge_active: active
+    badge_disabled: disabled
+    n_allowed: '{count} allowed'
+    all_origins: all
+    tok_month: tok/month
+    req_min: req/min
+    deactivate: deactivate
+    activate: activate
+    delete_confirm: Delete key “{label}”?
+    delete_short: del.
+    empty: No keys yet — create the first one with the form below.
+    no_match: No key matches the filters.
+  new:
+    title: New key
+    label: Label *
+    server: Execution server
+    default: default
+    target: Public target (env-gen)
+    target_hint: Public URL injected into the key's environment variables.
+    fallback: Fallback server
+    none_option: — none —
+    fallback_hint: Transparent fallback on server error (5xx / connection).
+    monthly_cap: Token cap / month
+    empty_unlimited: Empty = unlimited.
+    rpm: Rate limit (req/min)
+    expiry_legend: Expiry / lifetime caps
+    expiry_hint: (cost-capped trial — distinct from the rate limit)
+    total_tokens: Total token cap
+    total_tokens_hint: Absolute budget over the key's lifetime. Empty = unlimited.
+    total_reqs: Total request cap
+    total_reqs_hint: Absolute number of requests. Empty = unlimited.
+    expires_at: Expires on
+    expires_hint: Deadline date/time. Empty = never.
+    idle: Idle expiry (days)
+    idle_hint: Refuse after N days without use. Empty = never.
+    models: Allowed models
+    apis: Allowed APIs
+    origins: Allowed origins
+    origins_hint: One IP or CIDR per line; empty = all origins.
+    note: Note
+    submit: Create the key
+tgt:
+  title: Public targets
+  intro: A <strong>target</strong> is the gateway's public URL as a client sees it (e.g. <span class="mono">https://llm.example:21434</span>). It is used to generate the environment variables of the attached key — <strong>it does not change routing</strong> (the upstream is still chosen by the execution server). Each key points to a target; the default target cannot be deleted.
+  keys_count: '{count} key(s)'
+  edit:
+    name: Name
+    url: Public URL
+  delete_confirm: Delete target “{name}”?
+  add:
+    title: Add a target
+    name: Name *
+    url: Public URL *
+    hint: No trailing slash. This is the URL the client will put in <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Add the target
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: requests
+    active_keys: active keys
+  reqs_day: Requests / day (30 d)
+  tokens_day: Tokens / day (30 d)
+  status_dist: Status distribution
+  tokens_key: Tokens per key (top 10)
+  reqs_key: Requests per key (top 10)
+  consumption: Consumption per key
+  th:
+    key: Key
+    reqs: Requests
+    tokens: Tokens
+    errors: Errors
+    last_used: Last used
+  empty: No request attributed to this server yet.
+logs:
+  title: Journal & bans
+  intro: Full request journal (kept in full, never purged) — {total} event(s) in total, {shown} shown. Ban an origin in one click from a row; a banned origin is refused (403) by the proxy before any key.
+  bans:
+    title: Banned origins ({count})
+    cidr_label: IP or CIDR to ban
+    reason_label: Reason (optional)
+    reason_ph: abuse, scan…
+    ban_btn: Ban
+    th:
+      origin: Origin
+      reason: Reason
+      since: Since
+    unban: Unban
+    empty: No banned origin.
+  journal:
+    title: Request journal
+    th:
+      ts: Timestamp
+      origin: Origin
+      key: Key
+      method: Method
+      path: Path
+      model: Model
+      status: Status
+      tokens: Tokens
+      duration: Duration
+      action: Action
+    banned: banned
+    ban_reason: banned from the logs console
+    empty: No request logged yet.
+srv:
+  title: Execution servers
+  intro: Each key is attached to exactly one server. The default (local) server is created automatically and cannot be deleted.
+  untested: not tested
+  auth_badge: auth
+  tested_on: tested on {date}
+  compat:
+    title: API compatibility
+    tested: — tested on {date}
+    net_error: network error
+  actions:
+    monitor: Monitor
+    test: Test
+    check_compat: Check compatibility
+  delete_confirm: Delete server “{name}”?
+  edit:
+    name: Name
+    url: Base URL
+    token: Remote auth token (Bearer)
+    token_ph_set: set — leave empty to keep
+    enabled_check: server enabled
+    clear_token: remove the token
+  add:
+    title: Add a server
+    name: Name *
+    url: Base URL *
+    token_hint: Encrypted at rest; never shown again. Used if the remote server requires a Bearer.
+    submit: Add the server
+api:
+  fam:
+    ollama: Native Ollama (/api/*)
+    openai: OpenAI-compatible (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Checked boxes = API families allowed for the key (path allow/forbid, no schema validation). <strong>None checked = all APIs allowed.</strong> Listing endpoints (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) are always served.
+  img:
+    ollama-image: Image via Ollama (x/… model on /api/generate)
+    openai-image: Image via OpenAI (/v1/images/generations)
+  img_hint: <strong>Image generation</strong> (separate capability). Enable the desired path and fill in the <strong>image models</strong> (<span class="mono">x/…</span>) below.
+mdl:
+  probing: Probing the server…
+  extra_ph: additional models, one per line
+  hint: Checked boxes + free input = the key's allowlist. Empty everywhere = all (text) models of the server allowed.
+  img_label: Allowed image models (<span class="mono">x/…</span>)
+  img_extra_ph: additional image models (x/…), one per line
+  img_hint: <strong>Separate</strong> allowlist for image models. Empty = all image models allowed (if image generation is enabled above).
+  offline: Server unreachable or without models — free input below.
+kd:
+  meta: '{prefix}… · created on {created} · last used: {last_used}'
+  try:
+    open: Try now
+    aria: Try the key
+    title: Try “{label}”
+    tab_text: Text
+    tab_image: Image
+    model: Model
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Send a message: the gateway queries the server attached to this key and shows the model''s reply.'
+    msg_ph: Write a message…
+    send: Send
+    img_model: Image model
+    img_api_ollama: Ollama image (/api/generate)
+    img_api_openai: OpenAI image (/v1/images/generations)
+    img_attach: Attached image (optional — image-to-image)
+    img_hint: Describe the image to generate; optionally attach an input image. The gateway queries the attached server and shows the produced image.
+    img_ph: Describe the image to generate…
+    img_send: Generate
+  js:
+    no_model: (no model detected)
+    unreachable: (server unreachable)
+    no_img_model: (no x/ model detected)
+    failed: 'Failed: '
+    net_error: Network error.
+    generating: Generating…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Resolving…
+    whois_unavailable: WHOIS unavailable.
+  opt:
+    default: ' (default)'
+    disabled: ' — disabled'
+  edit:
+    server_hint: Changing server re-probes its available models below.
+    target_hint: Public URL used to generate the environment variables.
+    fallback_hint: On a server error (5xx / connection) of the primary upstream, the request is transparently replayed to this server.
+    retention: Log retention (days)
+    retention_hint: Full request content (files outside the database). Empty = global default ({days} d); 0 = purge of past hours.
+  stat:
+    requests: requests
+    tokens_total: tokens (total)
+    tokens_month: tokens this month
+    errors: errors
+  usage:
+    title: Usage (last 30 days)
+    th_day: Day
+    th_reqs: Requests
+    th_tokens: Tokens
+    empty: No request over the period — usage will appear here from the first call.
+  origins:
+    title: Seen origins ({count})
+    search_ph: Search an IP…
+    th_ip: IP
+    th_reqs: Requests
+    th_last: Last seen
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: No origin matches the search.
+    empty: No origin seen yet for this key.
+  errors:
+    title: Latest errors
+    th_ts: Timestamp
+    th_ip: IP
+    th_path: Path
+    th_status: Status
+  whois:
+    aria: WHOIS of an origin
+    title: WHOIS
+foot:
+  heart_aria: love

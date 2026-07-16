@@ -1,0 +1,324 @@
+# Locale SOURCE (français) — définit l'ENSEMBLE des clés i18n du panel d'admin.
+# Les autres langues (app/locales/<code>.yaml) sont des traductions clé-à-clé ; toute clé absente
+# retombe sur le français. Interpolation : {param} — NE PAS traduire les {placeholders}.
+# Certaines valeurs contiennent du HTML minimal (<strong>, <span class=mono>) rendu en `|safe`.
+
+brand:
+  name: Passerelle Ollama
+  tagline: gestion des clés
+common:
+  close: Fermer
+  save: Enregistrer
+  cancel: Annuler
+  delete: Supprimer
+  edit: Modifier
+  'yes': oui
+  'no': non
+  none: aucun
+  all: tous
+  never: jamais
+  unlimited: illimité
+  optional: optionnel
+  enabled: activé
+  disabled: désactivé
+  online: en ligne
+  offline: hors ligne
+  default: par défaut
+nav:
+  aria: Navigation principale
+  dashboard: Tableau de bord
+  servers: Serveurs
+  targets: Cibles
+  logs: Logs
+  manual: Manuel
+  logout: Déconnexion
+  language: Langue
+manual:
+  title: Manuel utilisateur
+  close_aria: Fermer le manuel
+  loading: Chargement du manuel…
+  load_error: Impossible de charger le manuel.
+login:
+  title: Connexion
+  heading: Connexion admin
+  password: Mot de passe
+  submit: Entrer
+  wrong: Mot de passe incorrect.
+  throttled: Trop de tentatives — réessayez dans quelques minutes.
+setup:
+  title: Initialisation
+  heading: Première utilisation
+  subtitle: Définissez le mot de passe admin de la passerelle
+  password: Mot de passe admin
+  hint: 8 caractères minimum.
+  confirm: Confirmation
+  submit: Définir et entrer
+  error_pw: Mot de passe trop court (min 8) ou non identique.
+dash:
+  created:
+    created: Clé « {label} » créée.
+    copy_now: Copiez-la maintenant
+    never: 'elle ne sera plus jamais affichée :'
+  env:
+    aria: Configurer le client
+    title: Clé « {label} » créée — configurer le client
+    copy_desc: Copiez ces variables d'environnement sur la machine cliente.
+    never: La clé ne sera plus jamais réaffichée.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` n''est pas configurée côté passerelle : remplacez le placeholder par l''URL publique réelle avant usage.'
+    copy_btn: Copier les variables
+    copied: Copié !
+    copy_fail: Échec de la copie
+  stat:
+    total_reqs: requêtes totales
+    last24h: dernières 24 h
+    tokens: tokens servis
+    errors: erreurs (≥ 400)
+  keys:
+    title: Clés API ({count})
+    search_ph: Rechercher (label ou préfixe)…
+    filter_server_aria: Filtrer par serveur
+    all_servers: Tous les serveurs
+    filter_api_aria: Filtrer par API
+    all_apis: Toutes les API
+    filter_state_aria: Filtrer par état
+    all_states: Tous les états
+    active: Actives
+    disabled: Désactivées
+    th:
+      label: Label
+      prefix: Préfixe
+      state: État
+      server: Serveur
+      models: Modèles
+      origins: Origines
+      quota: Quota
+      last_used: Dernier usage
+      actions: Actions
+    badge_active: active
+    badge_disabled: désactivée
+    n_allowed: '{count} autorisé(s)'
+    all_origins: toutes
+    tok_month: tok/mois
+    req_min: req/min
+    deactivate: désactiver
+    activate: activer
+    delete_confirm: Supprimer la clé « {label} » ?
+    delete_short: suppr.
+    empty: Aucune clé pour le moment — créez la première avec le formulaire ci-dessous.
+    no_match: Aucune clé ne correspond aux filtres.
+  new:
+    title: Nouvelle clé
+    label: Label *
+    server: Serveur d'exécution
+    default: par défaut
+    target: Cible publique (env-gen)
+    target_hint: URL publique injectée dans les variables d'environnement de la clé.
+    fallback: Serveur de repli (fallback)
+    none_option: — aucun —
+    fallback_hint: Repli transparent sur erreur serveur (5xx / connexion).
+    monthly_cap: Plafond tokens / mois
+    empty_unlimited: Vide = illimité.
+    rpm: Rate-limit (req/min)
+    expiry_legend: Expiration / plafonds de vie
+    expiry_hint: (essai à coût plafonné — distinct du rate-limit)
+    total_tokens: Plafond total de tokens
+    total_tokens_hint: Budget absolu sur la vie de la clé. Vide = illimité.
+    total_reqs: Plafond total de requêtes
+    total_reqs_hint: Nombre absolu de requêtes. Vide = illimité.
+    expires_at: Expire le
+    expires_hint: Date/heure limite. Vide = jamais.
+    idle: Expiration par inactivité (jours)
+    idle_hint: Refus après N jours sans usage. Vide = jamais.
+    models: Modèles autorisés
+    apis: API autorisées
+    origins: Origines autorisées
+    origins_hint: Une IP ou un CIDR par ligne ; vide = toutes les origines.
+    note: Note
+    submit: Créer la clé
+tgt:
+  title: Cibles publiques
+  intro: Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:21434</span>). Elle sert à générer les variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong> (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible par défaut est indélébile.
+  keys_count: '{count} clé(s)'
+  edit:
+    name: Nom
+    url: URL publique
+  delete_confirm: Supprimer la cible « {name} » ?
+  add:
+    title: Ajouter une cible
+    name: Nom *
+    url: URL publique *
+    hint: Sans slash final. C'est l'URL que le client mettra dans <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Ajouter la cible
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: requêtes
+    active_keys: clés actives
+  reqs_day: Requêtes / jour (30 j)
+  tokens_day: Tokens / jour (30 j)
+  status_dist: Répartition des statuts
+  tokens_key: Tokens par clé (top 10)
+  reqs_key: Requêtes par clé (top 10)
+  consumption: Consommation par clé
+  th:
+    key: Clé
+    reqs: Requêtes
+    tokens: Tokens
+    errors: Erreurs
+    last_used: Dernier usage
+  empty: Aucune requête attribuée à ce serveur pour le moment.
+logs:
+  title: Journal & bannissements
+  intro: Journal complet des requêtes (conservé intégralement, jamais purgé) — {total} événement(s) au total, {shown} affiché(s). Bannissez une origine en un clic depuis une ligne ; une origine bannie est refusée (403) par le proxy avant toute clé.
+  bans:
+    title: Origines bannies ({count})
+    cidr_label: IP ou CIDR à bannir
+    reason_label: Motif (optionnel)
+    reason_ph: abus, scan…
+    ban_btn: Bannir
+    th:
+      origin: Origine
+      reason: Motif
+      since: Depuis
+    unban: Débannir
+    empty: Aucune origine bannie.
+  journal:
+    title: Journal des requêtes
+    th:
+      ts: Horodatage
+      origin: Origine
+      key: Clé
+      method: Méthode
+      path: Chemin
+      model: Modèle
+      status: Statut
+      tokens: Tokens
+      duration: Durée
+      action: Action
+    banned: banni
+    ban_reason: banni depuis la console de logs
+    empty: Aucune requête journalisée pour le moment.
+srv:
+  title: Serveurs d'exécution
+  intro: Chaque clé est rattachée à exactement un serveur. Le serveur par défaut (local) est créé automatiquement et ne peut pas être supprimé.
+  untested: non testé
+  auth_badge: auth
+  tested_on: testé le {date}
+  compat:
+    title: Compatibilité d'API
+    tested: — testée le {date}
+    net_error: erreur réseau
+  actions:
+    monitor: Monitor
+    test: Tester
+    check_compat: Vérifier la compatibilité
+  delete_confirm: Supprimer le serveur « {name} » ?
+  edit:
+    name: Nom
+    url: URL de base
+    token: Jeton d'auth distant (Bearer)
+    token_ph_set: défini — laisser vide pour conserver
+    enabled_check: serveur activé
+    clear_token: retirer le jeton
+  add:
+    title: Ajouter un serveur
+    name: Nom *
+    url: URL de base *
+    token_hint: Chiffré au repos ; jamais réaffiché. Utilisé si le serveur distant exige un Bearer.
+    submit: Ajouter le serveur
+api:
+  fam:
+    ollama: Ollama natif (/api/*)
+    openai: OpenAI-compatible (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Cases cochées = familles d'API autorisées pour la clé (allow/forbid de chemin, sans validation de schéma). <strong>Aucune cochée = toutes les API autorisées.</strong> Les endpoints de listing (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) restent toujours servis.
+  img:
+    ollama-image: Image via Ollama (modèle x/… sur /api/generate)
+    openai-image: Image via OpenAI (/v1/images/generations)
+  img_hint: <strong>Génération d'images</strong> (capacité séparée). Activez la voie voulue et renseignez les <strong>modèles d'image</strong> (<span class="mono">x/…</span>) ci-dessous.
+mdl:
+  probing: Sonde du serveur…
+  extra_ph: modèles supplémentaires, un par ligne
+  hint: Cases cochées + saisie libre = allowlist de la clé. Vide partout = tous les modèles (texte) du serveur autorisés.
+  img_label: Modèles d'image autorisés (<span class="mono">x/…</span>)
+  img_extra_ph: modèles d'image (x/…) supplémentaires, un par ligne
+  img_hint: Allowlist <strong>séparée</strong> des modèles d'image. Vide = tous les modèles d'image autorisés (si la génération d'images est activée ci-dessus).
+  offline: Serveur injoignable ou sans modèle — saisie libre ci-dessous.
+kd:
+  meta: '{prefix}… · créée le {created} · dernier usage : {last_used}'
+  try:
+    open: Essayer maintenant
+    aria: Essayer la clé
+    title: Essayer « {label} »
+    tab_text: Texte
+    tab_image: Image
+    model: Modèle
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Envoyez un message : la passerelle interroge le serveur rattaché à cette clé et affiche la réponse du modèle.'
+    msg_ph: Écrivez un message…
+    send: Envoyer
+    img_model: Modèle d'image
+    img_api_ollama: Ollama image (/api/generate)
+    img_api_openai: OpenAI image (/v1/images/generations)
+    img_attach: Image jointe (optionnel — image-to-image)
+    img_hint: Décrivez l'image à générer ; joignez éventuellement une image d'entrée. La passerelle interroge le serveur rattaché et affiche l'image produite.
+    img_ph: Décrivez l'image à générer…
+    img_send: Générer
+  js:
+    no_model: (aucun modèle détecté)
+    unreachable: (serveur injoignable)
+    no_img_model: (aucun modèle x/ détecté)
+    failed: 'Échec : '
+    net_error: Erreur réseau.
+    generating: Génération…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Résolution…
+    whois_unavailable: WHOIS indisponible.
+  opt:
+    default: ' (par défaut)'
+    disabled: ' — désactivé'
+  edit:
+    server_hint: Changer de serveur re-sonde ses modèles disponibles ci-dessous.
+    target_hint: URL publique utilisée pour générer les variables d'environnement.
+    fallback_hint: Sur erreur serveur (5xx / connexion) de l'amont primaire, la requête est rejouée de façon transparente vers ce serveur.
+    retention: Rétention des logs (jours)
+    retention_hint: Contenu complet des requêtes (fichiers hors base). Vide = défaut global ({days} j) ; 0 = purge des heures passées.
+  stat:
+    requests: requêtes
+    tokens_total: tokens (total)
+    tokens_month: tokens ce mois
+    errors: erreurs
+  usage:
+    title: Usage (30 derniers jours)
+    th_day: Jour
+    th_reqs: Requêtes
+    th_tokens: Tokens
+    empty: Aucune requête sur la période — l'usage apparaîtra ici dès le premier appel.
+  origins:
+    title: Origines vues ({count})
+    search_ph: Rechercher une IP…
+    th_ip: IP
+    th_reqs: Requêtes
+    th_last: Dernier vu
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Aucune origine ne correspond à la recherche.
+    empty: Aucune origine encore vue pour cette clé.
+  errors:
+    title: Dernières erreurs
+    th_ts: Horodatage
+    th_ip: IP
+    th_path: Chemin
+    th_status: Statut
+  whois:
+    aria: WHOIS d'une origine
+    title: WHOIS
+foot:
+  heart_aria: amour

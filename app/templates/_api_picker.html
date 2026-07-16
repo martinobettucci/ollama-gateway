@@ -1,26 +1,19 @@
 {# Sélecteur d'API autorisées (familles Ollama / OpenAI / Anthropic) pour une clé. Miroir du
    sélecteur de modèles : cases cochées = allowlist ; AUCUNE cochée = toutes les API autorisées.
-   Le proxy applique un allow/forbid de CHEMIN (aucune validation de schéma). #}
+   NB : importer avec `with context` pour que `t()` soit disponible dans la macro. #}
 {% macro api_picker(selected) -%}
 <div class="checks" data-testid="api-checks">
-  {% for fam, label in [('ollama', 'Ollama natif (/api/*)'),
-                        ('openai', 'OpenAI-compatible (/v1/*)'),
-                        ('anthropic', 'Anthropic Messages (/v1/messages)')] %}
+  {% for fam in ['ollama', 'openai', 'anthropic'] %}
   <label><input type="checkbox" name="api_check" value="{{ fam }}"
-    {{ 'checked' if fam in selected }}> {{ label }}</label>
+    {{ 'checked' if fam in selected }}> {{ t('api.fam.' ~ fam) }}</label>
   {% endfor %}
 </div>
-<p class="hint">Cases cochées = familles d'API autorisées pour la clé (allow/forbid de chemin,
-  sans validation de schéma). <strong>Aucune cochée = toutes les API autorisées.</strong>
-  Les endpoints de listing (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>)
-  restent toujours servis.</p>
+<p class="hint">{{ t('api.hint')|safe }}</p>
 <div class="checks" data-testid="api-image-checks">
-  {% for fam, label in [('ollama-image', 'Image via Ollama (modèle x/… sur /api/generate)'),
-                        ('openai-image', 'Image via OpenAI (/v1/images/generations)')] %}
+  {% for fam in ['ollama-image', 'openai-image'] %}
   <label><input type="checkbox" name="api_check" value="{{ fam }}"
-    {{ 'checked' if fam in selected }}> {{ label }}</label>
+    {{ 'checked' if fam in selected }}> {{ t('api.img.' ~ fam) }}</label>
   {% endfor %}
 </div>
-<p class="hint"><strong>Génération d'images</strong> (capacité séparée). Activez la voie voulue et
-  renseignez les <strong>modèles d'image</strong> (<span class="mono">x/…</span>) ci-dessous.</p>
+<p class="hint">{{ t('api.img_hint')|safe }}</p>
 {%- endmacro %}
