@@ -1,5 +1,5 @@
 # Caddy custom avec le module DNS Scaleway (challenge ACME DNS-01 : aucun port entrant requis).
-# Build multi-arch (aarch64 sur la hôte self-hosted) via xcaddy.
+# Build multi-arch (ARM64 sur l'hôte self-hosted) via xcaddy.
 # GOTOOLCHAIN=auto : le plugin scaleway exige un Go plus récent que celui du builder → Go récupère
 # la toolchain requise automatiquement (nécessite le réseau au build).
 FROM caddy:2.11-builder AS build

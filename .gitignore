@@ -14,3 +14,6 @@ e2e/e2e-data/
 e2e/test-results/
 e2e/playwright-report/
 data/
+
+# Conventions de travail perso du responsable — hors dépôt public.
+CLAUDE.md

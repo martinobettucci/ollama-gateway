@@ -1,6 +1,8 @@
-# PROD (hôte self-hosted) — termine le TLS de llm.example.com et route vers le proxy local.
-# Écoute sur 11435 (cible du forward box 21434 → 11435). Certificat Let's Encrypt obtenu
-# par challenge DNS-01 Scaleway (100 % sortant : ni 80 ni 443 requis en entrée).
+# PROD — termine le TLS du domaine public de la passerelle et route vers le proxy local.
+# Domaine et port d'écoute paramétrés par environnement (GATEWAY_DOMAIN, GATEWAY_TLS_PORT), pour
+# ne coder aucun hôte réel dans le dépôt. Certificat Let's Encrypt obtenu par challenge DNS-01
+# Scaleway (100 % sortant : ni 80 ni 443 requis en entrée), adapté à un port non standard derrière
+# un forward NAT.
 #
 # Secrets : SCW_SECRET_KEY + SCW_DEFAULT_ORGANIZATION_ID (token API Scaleway, perms Domains/DNS)
 # fournis via .env.prod — jamais committé. Aucune valeur secrète ni topologie réelle ici.
@@ -11,7 +13,7 @@
 	# email {env.ACME_EMAIL}
 }
 
-llm.example.com:11435 {
+{$GATEWAY_DOMAIN}:{$GATEWAY_TLS_PORT} {
 	tls {
 		dns scaleway {
 			secret_key {env.SCW_SECRET_KEY}

@@ -7,7 +7,7 @@ Usage :
     python -m app.bootstrap import-key    # importe une clé existante depuis l'environnement
 
 Variables d'import (import-key) — la clé n'apparaît jamais dans le repo, seulement en env :
-    IMPORT_KEY_VALUE    (obligatoire)  clé en clair à importer (ex. la clé client-exemple historique)
+    IMPORT_KEY_VALUE    (obligatoire)  clé en clair à importer (ex. une clé historique)
     IMPORT_KEY_LABEL    (défaut 'client')
     IMPORT_KEY_ORIGINS  (défaut '')    CIDR/IP séparés par des virgules
     IMPORT_KEY_CAP      (défaut vide)  plafond mensuel de tokens

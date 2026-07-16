@@ -43,11 +43,11 @@ def test_update_key_replaces_origins_and_quota():
 
 def test_origin_allowed_matrix():
     assert keys.origin_allowed("1.2.3.4", [])              # aucune restriction
-    assert keys.origin_allowed("192.168.1.10", ["192.168.0.0/24"])
-    assert not keys.origin_allowed("10.0.0.1", ["192.168.0.0/24"])
+    assert keys.origin_allowed("192.168.1.10", ["192.168.1.0/24"])
+    assert not keys.origin_allowed("10.0.0.1", ["192.168.1.0/24"])
     assert keys.origin_allowed("203.0.113.10", ["203.0.113.10"])
     assert keys.origin_allowed("2001:bc8:711::1", ["2001:bc8:711::/48"])
-    assert not keys.origin_allowed("bogus-ip", ["192.168.0.0/24"])
+    assert not keys.origin_allowed("bogus-ip", ["192.168.1.0/24"])
 
 
 def test_admin_password_store():

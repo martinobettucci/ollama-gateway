@@ -1,5 +1,5 @@
 # Image de la passerelle (rôles proxy ET admin — sélection par $GATEWAY_ROLE dans l'entrypoint).
-# Pur Python → multi-arch (build identique sur x86 de dev et aarch64 de la hôte self-hosted).
+# Pur Python → multi-arch (build identique sur x86 de dev et ARM64 de l'hôte self-hosted).
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1

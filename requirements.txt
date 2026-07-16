@@ -1,5 +1,5 @@
 # Passerelle de gestion de clés Ollama — dépendances runtime + tests.
-# Épinglées en minor pour un build reproductible (dev host x86 comme hôte self-hosted aarch64 : pur Python).
+# Épinglées en minor pour un build reproductible (dev host x86 comme hôte ARM64 : pur Python).
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 httpx==0.28.1

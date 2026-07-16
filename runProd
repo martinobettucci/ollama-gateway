@@ -13,4 +13,4 @@ $C ps
 echo
 echo "  Proxy (loopback)  : http://127.0.0.1:8787/_proxy_health"
 echo "  Admin (LAN)       : http://<ADMIN_BIND_IP>:8788/admin"
-echo "  Public via Caddy  : https://llm.example.com:21434/_proxy_health (forward 21434→11435)"
+echo "  Public via Caddy  : https://<GATEWAY_DOMAIN>:<port-public>/_proxy_health (forward NAT → GATEWAY_TLS_PORT)"

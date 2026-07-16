@@ -21,19 +21,19 @@ Règle DoD : pas de `[x]` sans ses tests propres.
 - [x] Dev self-contained/self-seeded (faux upstream Ollama, seeds déterministes).
 - [x] Caddy + module DNS Scaleway (Dockerfile.caddy, Caddy 2.11) ; Caddyfile prod + staging.
 - [x] Import de clé existante par valeur (migration) — *test_keys (import), CLI bootstrap*.
-- [x] **Build des images sur la hôte self-hosted (aarch64)** — gateway + Caddy buildés OK ; `dns.providers.scaleway`
+- [x] **Build des images ARM64 (hôte self-hosted)** — gateway + Caddy buildés OK ; `dns.providers.scaleway`
   présent dans le binaire. *Note : le plugin scaleway v0.2.2 impose Caddy 2.11 + `GOTOOLCHAIN=auto`.*
-- [x] **Smoke non-disruptif sur la hôte self-hosted** : proxy (port libre) → **vrai Ollama** avec la clé client-exemple
-  → 200 / 16 modèles ; sans clé → 401 ; health 200. Sans toucher nginx/11435/client-exemple. Nettoyé.
-- [x] **Émission TLS DNS-01 validée** (port temporaire 11436, non-disruptif) : cert Let's Encrypt
-  `llm.example.com` obtenu via Scaleway ; chaîne HTTPS complète 200 (clé client-exemple) / 401 (sans) /
+- [x] **Smoke non-disruptif sur l'hôte de prod** : proxy (port libre) → **vrai Ollama** avec la clé
+  historique → 200 ; sans clé → 401 ; health 200. Sans toucher l'ancien reverse-proxy. Nettoyé.
+- [x] **Émission TLS DNS-01 validée** (port temporaire, non-disruptif) : cert Let's Encrypt du
+  domaine public obtenu via Scaleway ; chaîne HTTPS complète 200 (clé) / 401 (sans) /
   404 (`/admin`). *Config requise : bloc `dns scaleway {secret_key; organization_id}`, `dns_ttl 3600s`
   (l'API Scaleway exige un TTL), `auto_https disable_redirects`, `handle` (pas `respond` nu).*
-- [x] **Cutover prod hôte self-hosted** — FAIT et vérifié (2026-07-06) : nginx retiré (sauvegardé), Caddy TLS
-  sur :11435, clé client-exemple migrée, agent client-exemple basculé sur `https://llm.example.com:21434` (pin
-  `/etc/hosts`→IPv4 côté client-exemple car l'IPv6 n'est pas routé par le forward). Preuves : HTTPS externe 200,
-  chat streaming + embed réels via l'agent (embed corrigé vs 403 nginx), usage journalisé (tokens).
-- [x] **Cutover client-exemple** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
+- [x] **Cutover prod** — FAIT et vérifié (2026-07-06) : ancien reverse-proxy retiré (sauvegardé),
+  Caddy TLS sur le port public, clé historique migrée, client basculé sur `https://<GATEWAY_DOMAIN>`
+  (pin `/etc/hosts`→IPv4 côté client car l'IPv6 n'est pas routée par le forward). Preuves : HTTPS
+  externe 200, chat streaming + embed réels, usage journalisé (tokens).
+- [x] **Cutover client** `OLLAMA_BASE_URL` http→https — à coordonner après bascule prod.
 
 ## Phase 3 — Conformité charte P2Enjoy & règles de repo (2026-07-07)
 
@@ -179,8 +179,8 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   /v1/images/generations). **Vision faite (capture 18)** ; **relais réel vérifié de bout en bout**
   (déployé, `x/flux2-klein:4b` pull sur l'Ollama, clé test dotée du modèle image → la requête est
   **autorisée, gatée et relayée** jusqu'à l'amont). ⚠️ **Génération réelle KO sur CE matériel** :
-  Ollama 0.30.11 utilise le runner **MLX (Apple Silicon uniquement)** pour l'image ; le hôte self-hosted est
-  Linux ARM64/CUDA → l'amont renvoie `mlx runner failed` (500), **relayé fidèlement** par la
+  Ollama 0.30.11 utilise le runner **MLX (Apple Silicon uniquement)** pour l'image ; l'hôte de prod
+  est Linux ARM64/CUDA → l'amont renvoie `mlx runner failed` (500), **relayé fidèlement** par la
   passerelle. Limite AMONT/matériel, pas passerelle ; la génération réelle nécessite un upstream
   Apple Silicon (ou un runner image compatible CUDA quand Ollama le fournira). — *tests verts :
   test_images (11 : capability/mapping, allowlist image round-trip, gating proxy ollama/openai +
