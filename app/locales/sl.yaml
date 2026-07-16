@@ -1,0 +1,322 @@
+# Locale sl (Slovenščina) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Prehod Ollama
+  tagline: upravljanje ključev
+common:
+  close: Zapri
+  save: Shrani
+  cancel: Prekliči
+  delete: Izbriši
+  edit: Uredi
+  'yes': da
+  'no': ne
+  none: brez
+  all: vse
+  never: nikoli
+  unlimited: neomejeno
+  optional: izbirno
+  enabled: omogočeno
+  disabled: onemogočeno
+  online: povezano
+  offline: brez povezave
+  default: privzeto
+nav:
+  aria: Glavna navigacija
+  dashboard: Nadzorna plošča
+  servers: Strežniki
+  targets: Cilji
+  logs: Dnevniki
+  manual: Priročnik
+  logout: Odjava
+  language: Jezik
+manual:
+  title: Uporabniški priročnik
+  close_aria: Zapri priročnik
+  loading: Nalaganje priročnika…
+  load_error: Priročnika ni mogoče naložiti.
+login:
+  title: Prijava
+  heading: Prijava skrbnika
+  password: Geslo
+  submit: Vstopi
+  wrong: Napačno geslo.
+  throttled: Preveč poskusov — poskusite znova čez nekaj minut.
+setup:
+  title: Inicializacija
+  heading: Prva uporaba
+  subtitle: Nastavite skrbniško geslo prehoda
+  password: Skrbniško geslo
+  hint: Najmanj 8 znakov.
+  confirm: Potrditev
+  submit: Nastavi in vstopi
+  error_pw: Geslo je prekratko (najmanj 8) ali ni enako.
+dash:
+  created:
+    created: Ključ »{label}« ustvarjen.
+    copy_now: Kopirajte ga zdaj
+    never: 'nikoli več ne bo prikazan:'
+  env:
+    aria: Konfiguriraj odjemalca
+    title: Ključ »{label}« ustvarjen — konfigurirajte odjemalca
+    copy_desc: Kopirajte te okoljske spremenljivke na odjemalčev računalnik.
+    never: Ključ nikoli več ne bo prikazan.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` na prehodu ni konfiguriran: pred uporabo zamenjajte označbo mesta z dejanskim javnim URL-jem.'
+    copy_btn: Kopiraj spremenljivke
+    copied: Kopirano!
+    copy_fail: Kopiranje ni uspelo
+  stat:
+    total_reqs: skupno zahtev
+    last24h: zadnjih 24 h
+    tokens: postreženi žetoni
+    errors: napake (≥ 400)
+  keys:
+    title: Ključi API ({count})
+    search_ph: Iskanje (oznaka ali predpona)…
+    filter_server_aria: Filtriraj po strežniku
+    all_servers: Vsi strežniki
+    filter_api_aria: Filtriraj po API
+    all_apis: Vsi API-ji
+    filter_state_aria: Filtriraj po stanju
+    all_states: Vsa stanja
+    active: Aktivni
+    disabled: Onemogočeni
+    th:
+      label: Oznaka
+      prefix: Predpona
+      state: Stanje
+      server: Strežnik
+      models: Modeli
+      origins: Izvori
+      quota: Kvota
+      last_used: Zadnja uporaba
+      actions: Dejanja
+    badge_active: aktiven
+    badge_disabled: onemogočen
+    n_allowed: '{count} dovoljenih'
+    all_origins: vsi
+    tok_month: žet/mesec
+    req_min: zaht./min
+    deactivate: deaktiviraj
+    activate: aktiviraj
+    delete_confirm: Izbrisati ključ »{label}«?
+    delete_short: izbriši
+    empty: Zaenkrat ni ključev — ustvarite prvega z obrazcem spodaj.
+    no_match: Noben ključ ne ustreza filtrom.
+  new:
+    title: Nov ključ
+    label: Oznaka *
+    server: Izvajalni strežnik
+    default: privzeto
+    target: Javni cilj (env-gen)
+    target_hint: Javni URL, vstavljen v okoljske spremenljivke ključa.
+    fallback: Nadomestni strežnik (fallback)
+    none_option: — brez —
+    fallback_hint: Pregledni preklop ob napaki strežnika (5xx / povezava).
+    monthly_cap: Omejitev žetonov / mesec
+    empty_unlimited: Prazno = neomejeno.
+    rpm: Omejitev hitrosti (zaht./min)
+    expiry_legend: Potek / omejitve življenjske dobe
+    expiry_hint: (preizkus z omejenimi stroški — ločen od omejitve hitrosti)
+    total_tokens: Skupna omejitev žetonov
+    total_tokens_hint: Absolutni proračun v življenjski dobi ključa. Prazno = neomejeno.
+    total_reqs: Skupna omejitev zahtev
+    total_reqs_hint: Absolutno število zahtev. Prazno = neomejeno.
+    expires_at: Poteče dne
+    expires_hint: Skrajni datum/čas. Prazno = nikoli.
+    idle: Potek zaradi nedejavnosti (dni)
+    idle_hint: Zavrnitev po N dneh brez uporabe. Prazno = nikoli.
+    models: Dovoljeni modeli
+    apis: Dovoljeni API-ji
+    origins: Dovoljeni izvori
+    origins_hint: En IP ali CIDR na vrstico; prazno = vsi izvori.
+    note: Opomba
+    submit: Ustvari ključ
+tgt:
+  title: Javni cilji
+  intro: <strong>Cilj</strong> je javni URL prehoda, kot ga vidi odjemalec (npr. <span class="mono">https://llm.example:21434</span>). Uporablja se za ustvarjanje okoljskih spremenljivk povezanega ključa — <strong>ne spremeni usmerjanja</strong> (upstream še vedno izbere izvajalni strežnik). Vsak ključ kaže na cilj; privzetega cilja ni mogoče izbrisati.
+  keys_count: '{count} ključ(ev)'
+  edit:
+    name: Ime
+    url: Javni URL
+  delete_confirm: Izbrisati cilj »{name}«?
+  add:
+    title: Dodaj cilj
+    name: Ime *
+    url: Javni URL *
+    hint: Brez končne poševnice. To je URL, ki ga odjemalec vnese v <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Dodaj cilj
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: zahteve
+    active_keys: aktivni ključi
+  reqs_day: Zahteve / dan (30 d)
+  tokens_day: Žetoni / dan (30 d)
+  status_dist: Porazdelitev stanj
+  tokens_key: Žetoni na ključ (top 10)
+  reqs_key: Zahteve na ključ (top 10)
+  consumption: Poraba na ključ
+  th:
+    key: Ključ
+    reqs: Zahteve
+    tokens: Žetoni
+    errors: Napake
+    last_used: Zadnja uporaba
+  empty: Temu strežniku še ni bila pripisana nobena zahteva.
+logs:
+  title: Dnevnik in prepovedi
+  intro: Popoln dnevnik zahtev (v celoti ohranjen, nikoli počiščen) — skupaj {total} dogodek(-ov), prikazanih {shown}. Prepovejte izvor z enim klikom iz vrstice; prepovedan izvor proxy zavrne (403) pred vsakim ključem.
+  bans:
+    title: Prepovedani izvori ({count})
+    cidr_label: IP ali CIDR za prepoved
+    reason_label: Razlog (izbirno)
+    reason_ph: zloraba, pregledovanje…
+    ban_btn: Prepovej
+    th:
+      origin: Izvor
+      reason: Razlog
+      since: Od
+    unban: Odpravi prepoved
+    empty: Noben prepovedan izvor.
+  journal:
+    title: Dnevnik zahtev
+    th:
+      ts: Časovni žig
+      origin: Izvor
+      key: Ključ
+      method: Metoda
+      path: Pot
+      model: Model
+      status: Stanje
+      tokens: Žetoni
+      duration: Trajanje
+      action: Dejanje
+    banned: prepovedan
+    ban_reason: prepovedan iz konzole dnevnika
+    empty: Zaenkrat ni zabeležene nobene zahteve.
+srv:
+  title: Izvajalni strežniki
+  intro: Vsak ključ je povezan s točno enim strežnikom. Privzeti strežnik (lokalni) se ustvari samodejno in ga ni mogoče izbrisati.
+  untested: nepreizkušen
+  auth_badge: auth
+  tested_on: preizkušen {date}
+  compat:
+    title: Združljivost API
+    tested: — preizkušena {date}
+    net_error: napaka omrežja
+  actions:
+    monitor: Monitor
+    test: Preizkusi
+    check_compat: Preveri združljivost
+  delete_confirm: Izbrisati strežnik »{name}«?
+  edit:
+    name: Ime
+    url: Osnovni URL
+    token: Žeton oddaljene avt. (Bearer)
+    token_ph_set: nastavljeno — pustite prazno za ohranitev
+    enabled_check: strežnik omogočen
+    clear_token: odstrani žeton
+  add:
+    title: Dodaj strežnik
+    name: Ime *
+    url: Osnovni URL *
+    token_hint: Šifriran v mirovanju; nikoli več prikazan. Uporabljen, če oddaljeni strežnik zahteva Bearer.
+    submit: Dodaj strežnik
+api:
+  fam:
+    ollama: Izvorni Ollama (/api/*)
+    openai: Združljiv z OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Označena polja = družine API dovoljene za ključ (dovoli/prepovej pot, brez validacije sheme). <strong>Nobeno označeno = vsi API-ji dovoljeni.</strong> Končne točke seznama (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) so vedno postrežene.
+  img:
+    ollama-image: Slika prek Ollama (model x/… na /api/generate)
+    openai-image: Slika prek OpenAI (/v1/images/generations)
+  img_hint: <strong>Ustvarjanje slik</strong> (ločena zmožnost). Omogočite želeno pot in vnesite <strong>slikovne modele</strong> (<span class="mono">x/…</span>) spodaj.
+mdl:
+  probing: Poizvedovanje strežnika…
+  extra_ph: dodatni modeli, en na vrstico
+  hint: Označena polja + prosti vnos = seznam dovoljenih ključa. Povsod prazno = vsi (besedilni) modeli strežnika dovoljeni.
+  img_label: Dovoljeni slikovni modeli (<span class="mono">x/…</span>)
+  img_extra_ph: dodatni slikovni modeli (x/…), en na vrstico
+  img_hint: <strong>Ločen</strong> seznam dovoljenih za slikovne modele. Prazno = vsi slikovni modeli dovoljeni (če je ustvarjanje slik omogočeno zgoraj).
+  offline: Strežnik nedosegljiv ali brez modelov — prosti vnos spodaj.
+kd:
+  meta: '{prefix}… · ustvarjen {created} · zadnja uporaba: {last_used}'
+  try:
+    open: Preizkusi zdaj
+    aria: Preizkusi ključ
+    title: Preizkusi »{label}«
+    tab_text: Besedilo
+    tab_image: Slika
+    model: Model
+    api_label: API
+    api_ollama: Ollama (klepet)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Pošljite sporočilo: prehod poizve pri strežniku, povezanem s tem ključem, in prikaže odgovor modela.'
+    msg_ph: Napišite sporočilo…
+    send: Pošlji
+    img_model: Slikovni model
+    img_api_ollama: Slika Ollama (/api/generate)
+    img_api_openai: Slika OpenAI (/v1/images/generations)
+    img_attach: Priložena slika (izbirno — slika v sliko)
+    img_hint: Opišite sliko za ustvarjanje; po želji priložite vhodno sliko. Prehod poizve pri povezanem strežniku in prikaže ustvarjeno sliko.
+    img_ph: Opišite sliko za ustvarjanje…
+    img_send: Ustvari
+  js:
+    no_model: (noben model zaznan)
+    unreachable: (strežnik nedosegljiv)
+    no_img_model: (noben model x/ zaznan)
+    failed: 'Neuspeh: '
+    net_error: Napaka omrežja.
+    generating: Ustvarjanje…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Razreševanje…
+    whois_unavailable: WHOIS ni na voljo.
+  opt:
+    default: ' (privzeto)'
+    disabled: ' — onemogočen'
+  edit:
+    server_hint: Zamenjava strežnika znova poizve po njegovih razpoložljivih modelih spodaj.
+    target_hint: Javni URL, uporabljen za ustvarjanje okoljskih spremenljivk.
+    fallback_hint: Ob napaki strežnika (5xx / povezava) primarnega upstreama se zahteva pregledno posreduje temu strežniku.
+    retention: Hramba dnevnikov (dni)
+    retention_hint: Popolna vsebina zahtev (datoteke zunaj podatkovne baze). Prazno = globalna privzeta vrednost ({days} d); 0 = čiščenje preteklih ur.
+  stat:
+    requests: zahteve
+    tokens_total: žetoni (skupaj)
+    tokens_month: žetoni ta mesec
+    errors: napake
+  usage:
+    title: Uporaba (zadnjih 30 dni)
+    th_day: Dan
+    th_reqs: Zahteve
+    th_tokens: Žetoni
+    empty: Nobena zahteva v obdobju — uporaba se bo prikazala tukaj od prvega klica.
+  origins:
+    title: Vidni izvori ({count})
+    search_ph: Iskanje IP…
+    th_ip: IP
+    th_reqs: Zahteve
+    th_last: Nazadnje viden
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Noben izvor ne ustreza iskanju.
+    empty: Za ta ključ še ni bil viden noben izvor.
+  errors:
+    title: Zadnje napake
+    th_ts: Časovni žig
+    th_ip: IP
+    th_path: Pot
+    th_status: Stanje
+  whois:
+    aria: WHOIS izvora
+    title: WHOIS
+foot:
+  heart_aria: ljubezen

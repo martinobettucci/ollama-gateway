@@ -1,0 +1,322 @@
+# Locale cs (Čeština) — traduction clé-à-clé de la source française (app/locales/fr.yaml).
+# Toute clé absente retombe sur le français, puis sur la clé brute. NE PAS traduire les
+# {placeholders} ni les valeurs contenant du HTML minimal (<strong>, <span class=mono>).
+brand:
+  name: Brána Ollama
+  tagline: správa klíčů
+common:
+  close: Zavřít
+  save: Uložit
+  cancel: Zrušit
+  delete: Smazat
+  edit: Upravit
+  'yes': ano
+  'no': ne
+  none: žádné
+  all: vše
+  never: nikdy
+  unlimited: neomezeně
+  optional: volitelné
+  enabled: povoleno
+  disabled: zakázáno
+  online: online
+  offline: offline
+  default: výchozí
+nav:
+  aria: Hlavní navigace
+  dashboard: Přehled
+  servers: Servery
+  targets: Cíle
+  logs: Protokoly
+  manual: Příručka
+  logout: Odhlásit
+  language: Jazyk
+manual:
+  title: Uživatelská příručka
+  close_aria: Zavřít příručku
+  loading: Načítání příručky…
+  load_error: Příručku nelze načíst.
+login:
+  title: Přihlášení
+  heading: Přihlášení správce
+  password: Heslo
+  submit: Vstoupit
+  wrong: Nesprávné heslo.
+  throttled: Příliš mnoho pokusů — zkuste to znovu za několik minut.
+setup:
+  title: Inicializace
+  heading: První použití
+  subtitle: Nastavte heslo správce brány
+  password: Heslo správce
+  hint: Minimálně 8 znaků.
+  confirm: Potvrzení
+  submit: Nastavit a vstoupit
+  error_pw: Heslo příliš krátké (min. 8) nebo neshodné.
+dash:
+  created:
+    created: Klíč „{label}“ vytvořen.
+    copy_now: Zkopírujte jej nyní
+    never: 'už nikdy nebude zobrazen:'
+  env:
+    aria: Konfigurace klienta
+    title: Klíč „{label}“ vytvořen — nakonfigurujte klienta
+    copy_desc: Zkopírujte tyto proměnné prostředí na klientský počítač.
+    never: Klíč už nikdy nebude zobrazen.
+    api_ollama: API Ollama
+    api_openai: API OpenAI
+    api_anthropic: API Anthropic
+    no_public_url: '`PUBLIC_BASE_URL` není na bráně nakonfigurována: před použitím nahraďte zástupný symbol skutečnou veřejnou URL.'
+    copy_btn: Zkopírovat proměnné
+    copied: Zkopírováno!
+    copy_fail: Kopírování se nezdařilo
+  stat:
+    total_reqs: celkem požadavků
+    last24h: posledních 24 h
+    tokens: obsloužené tokeny
+    errors: chyby (≥ 400)
+  keys:
+    title: Klíče API ({count})
+    search_ph: Hledat (popisek nebo předpona)…
+    filter_server_aria: Filtrovat podle serveru
+    all_servers: Všechny servery
+    filter_api_aria: Filtrovat podle API
+    all_apis: Všechna API
+    filter_state_aria: Filtrovat podle stavu
+    all_states: Všechny stavy
+    active: Aktivní
+    disabled: Zakázané
+    th:
+      label: Popisek
+      prefix: Předpona
+      state: Stav
+      server: Server
+      models: Modely
+      origins: Původy
+      quota: Kvóta
+      last_used: Poslední použití
+      actions: Akce
+    badge_active: aktivní
+    badge_disabled: zakázaný
+    n_allowed: '{count} povoleno'
+    all_origins: vše
+    tok_month: tok/měsíc
+    req_min: pož./min
+    deactivate: deaktivovat
+    activate: aktivovat
+    delete_confirm: Smazat klíč „{label}“?
+    delete_short: smazat
+    empty: Zatím žádné klíče — vytvořte první pomocí formuláře níže.
+    no_match: Žádný klíč neodpovídá filtrům.
+  new:
+    title: Nový klíč
+    label: Popisek *
+    server: Vykonávací server
+    default: výchozí
+    target: Veřejný cíl (env-gen)
+    target_hint: Veřejná URL vkládaná do proměnných prostředí klíče.
+    fallback: Záložní server (fallback)
+    none_option: — žádný —
+    fallback_hint: Transparentní záloha při chybě serveru (5xx / připojení).
+    monthly_cap: Limit tokenů / měsíc
+    empty_unlimited: Prázdné = neomezeně.
+    rpm: Limit rychlosti (pož./min)
+    expiry_legend: Vypršení / limity životnosti
+    expiry_hint: (zkouška s omezenými náklady — oddělená od limitu rychlosti)
+    total_tokens: Celkový limit tokenů
+    total_tokens_hint: Absolutní rozpočet po dobu životnosti klíče. Prázdné = neomezeně.
+    total_reqs: Celkový limit požadavků
+    total_reqs_hint: Absolutní počet požadavků. Prázdné = neomezeně.
+    expires_at: Vyprší dne
+    expires_hint: Mezní datum/čas. Prázdné = nikdy.
+    idle: Vypršení z důvodu nečinnosti (dny)
+    idle_hint: Odmítnutí po N dnech bez použití. Prázdné = nikdy.
+    models: Povolené modely
+    apis: Povolená API
+    origins: Povolené původy
+    origins_hint: Jedna IP nebo CIDR na řádek; prázdné = všechny původy.
+    note: Poznámka
+    submit: Vytvořit klíč
+tgt:
+  title: Veřejné cíle
+  intro: <strong>Cíl</strong> je veřejná URL brány, jak ji vidí klient (např. <span class="mono">https://llm.example:21434</span>). Slouží ke generování proměnných prostředí připojeného klíče — <strong>nemění směrování</strong> (upstream stále vybírá vykonávací server). Každý klíč ukazuje na cíl; výchozí cíl nelze smazat.
+  keys_count: '{count} klíč(ů)'
+  edit:
+    name: Název
+    url: Veřejná URL
+  delete_confirm: Smazat cíl „{name}“?
+  add:
+    title: Přidat cíl
+    name: Název *
+    url: Veřejná URL *
+    hint: Bez koncového lomítka. Je to URL, kterou klient zadá do <span class="mono">OLLAMA_HOST</span> / <span class="mono">OPENAI_BASE_URL</span> / <span class="mono">ANTHROPIC_BASE_URL</span>.
+    submit: Přidat cíl
+mon:
+  heading: Monitor — {name}
+  stat:
+    reqs: požadavky
+    active_keys: aktivní klíče
+  reqs_day: Požadavky / den (30 d)
+  tokens_day: Tokeny / den (30 d)
+  status_dist: Rozložení stavů
+  tokens_key: Tokeny na klíč (top 10)
+  reqs_key: Požadavky na klíč (top 10)
+  consumption: Spotřeba na klíč
+  th:
+    key: Klíč
+    reqs: Požadavky
+    tokens: Tokeny
+    errors: Chyby
+    last_used: Poslední použití
+  empty: Tomuto serveru zatím nebyl přiřazen žádný požadavek.
+logs:
+  title: Deník a blokace
+  intro: Úplný deník požadavků (uchováván celý, nikdy nečištěn) — celkem {total} událost(í), {shown} zobrazeno. Zablokujte původ jedním kliknutím z řádku; zablokovaný původ je odmítnut (403) proxy před jakýmkoli klíčem.
+  bans:
+    title: Zablokované původy ({count})
+    cidr_label: IP nebo CIDR k zablokování
+    reason_label: Důvod (volitelný)
+    reason_ph: zneužití, skenování…
+    ban_btn: Zablokovat
+    th:
+      origin: Původ
+      reason: Důvod
+      since: Od
+    unban: Odblokovat
+    empty: Žádný zablokovaný původ.
+  journal:
+    title: Deník požadavků
+    th:
+      ts: Časové razítko
+      origin: Původ
+      key: Klíč
+      method: Metoda
+      path: Cesta
+      model: Model
+      status: Stav
+      tokens: Tokeny
+      duration: Doba trvání
+      action: Akce
+    banned: zablokováno
+    ban_reason: zablokováno z konzole deníku
+    empty: Zatím nebyl zaznamenán žádný požadavek.
+srv:
+  title: Vykonávací servery
+  intro: Každý klíč je připojen přesně k jednomu serveru. Výchozí server (místní) je vytvořen automaticky a nelze jej smazat.
+  untested: netestováno
+  auth_badge: auth
+  tested_on: testováno {date}
+  compat:
+    title: Kompatibilita API
+    tested: — testována {date}
+    net_error: chyba sítě
+  actions:
+    monitor: Monitor
+    test: Testovat
+    check_compat: Zkontrolovat kompatibilitu
+  delete_confirm: Smazat server „{name}“?
+  edit:
+    name: Název
+    url: Základní URL
+    token: Token vzdáleného auth (Bearer)
+    token_ph_set: nastaveno — ponechte prázdné pro zachování
+    enabled_check: server povolen
+    clear_token: odebrat token
+  add:
+    title: Přidat server
+    name: Název *
+    url: Základní URL *
+    token_hint: Šifrováno v klidu; nikdy znovu nezobrazeno. Použije se, pokud vzdálený server vyžaduje Bearer.
+    submit: Přidat server
+api:
+  fam:
+    ollama: Nativní Ollama (/api/*)
+    openai: Kompatibilní s OpenAI (/v1/*)
+    anthropic: Anthropic Messages (/v1/messages)
+  hint: Zaškrtnutá políčka = rodiny API povolené pro klíč (povolit/zakázat cestu, bez validace schématu). <strong>Žádné zaškrtnuté = všechna API povolena.</strong> Koncové body výpisu (<span class="mono">/api/tags</span>, <span class="mono">/v1/models</span>) jsou vždy obsluhovány.
+  img:
+    ollama-image: Obrázek přes Ollama (model x/… na /api/generate)
+    openai-image: Obrázek přes OpenAI (/v1/images/generations)
+  img_hint: <strong>Generování obrázků</strong> (samostatná funkce). Povolte požadovanou cestu a zadejte <strong>modely obrázků</strong> (<span class="mono">x/…</span>) níže.
+mdl:
+  probing: Sondování serveru…
+  extra_ph: další modely, jeden na řádek
+  hint: Zaškrtnutá políčka + volný vstup = seznam povolených klíče. Všude prázdné = všechny (textové) modely serveru povoleny.
+  img_label: Povolené modely obrázků (<span class="mono">x/…</span>)
+  img_extra_ph: další modely obrázků (x/…), jeden na řádek
+  img_hint: <strong>Samostatný</strong> seznam povolených pro modely obrázků. Prázdné = všechny modely obrázků povoleny (pokud je generování obrázků povoleno výše).
+  offline: Server nedostupný nebo bez modelů — volný vstup níže.
+kd:
+  meta: '{prefix}… · vytvořen {created} · poslední použití: {last_used}'
+  try:
+    open: Vyzkoušet nyní
+    aria: Vyzkoušet klíč
+    title: Vyzkoušet „{label}“
+    tab_text: Text
+    tab_image: Obrázek
+    model: Model
+    api_label: API
+    api_ollama: Ollama (chat)
+    api_openai_chat: OpenAI Chat Completions
+    api_openai_responses: OpenAI Responses
+    api_anthropic: Anthropic Messages
+    hint: 'Odešlete zprávu: brána se dotáže serveru připojeného k tomuto klíči a zobrazí odpověď modelu.'
+    msg_ph: Napište zprávu…
+    send: Odeslat
+    img_model: Model obrázku
+    img_api_ollama: Obrázek Ollama (/api/generate)
+    img_api_openai: Obrázek OpenAI (/v1/images/generations)
+    img_attach: Přiložený obrázek (volitelný — obrázek na obrázek)
+    img_hint: Popište obrázek k vygenerování; případně přiložte vstupní obrázek. Brána se dotáže připojeného serveru a zobrazí vytvořený obrázek.
+    img_ph: Popište obrázek k vygenerování…
+    img_send: Generovat
+  js:
+    no_model: (nezjištěn žádný model)
+    unreachable: (server nedostupný)
+    no_img_model: (nezjištěn žádný model x/)
+    failed: 'Selhání: '
+    net_error: Chyba sítě.
+    generating: Generování…
+    whois_title: WHOIS — {ip}
+    whois_resolving: Překlad…
+    whois_unavailable: WHOIS nedostupné.
+  opt:
+    default: ' (výchozí)'
+    disabled: ' — zakázaný'
+  edit:
+    server_hint: Změna serveru znovu prohledá jeho dostupné modely níže.
+    target_hint: Veřejná URL použitá ke generování proměnných prostředí.
+    fallback_hint: Při chybě serveru (5xx / připojení) primárního upstreamu je požadavek transparentně přeposlán na tento server.
+    retention: Uchování protokolů (dny)
+    retention_hint: Úplný obsah požadavků (soubory mimo databázi). Prázdné = globální výchozí ({days} d); 0 = vyčištění uplynulých hodin.
+  stat:
+    requests: požadavky
+    tokens_total: tokeny (celkem)
+    tokens_month: tokeny tento měsíc
+    errors: chyby
+  usage:
+    title: Využití (posledních 30 dní)
+    th_day: Den
+    th_reqs: Požadavky
+    th_tokens: Tokeny
+    empty: Žádný požadavek za období — využití se zde zobrazí od prvního volání.
+  origins:
+    title: Zaznamenané původy ({count})
+    search_ph: Hledat IP…
+    th_ip: IP
+    th_reqs: Požadavky
+    th_last: Naposledy viděno
+    th_whois: WHOIS
+    whois_btn: WHOIS
+    no_match: Žádný původ neodpovídá hledání.
+    empty: Pro tento klíč zatím nebyl zaznamenán žádný původ.
+  errors:
+    title: Poslední chyby
+    th_ts: Časové razítko
+    th_ip: IP
+    th_path: Cesta
+    th_status: Stav
+  whois:
+    aria: WHOIS původu
+    title: WHOIS
+foot:
+  heart_aria: láska
