@@ -186,6 +186,23 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   test_images (11 : capability/mapping, allowlist image round-trip, gating proxy ollama/openai +
   séparation texte, try_image, route admin), E2E images.spec (onglet Image + image-to-image).*
 
+## Phase 10 — Internationalisation du panel (2026-07-16)
+
+- [x] **i18n du panel d'admin — 24 langues officielles de l'UE, un YAML par langue.** Module
+  `app/i18n.py` (catalogue `app/locales/<code>.yaml` aplati en clés pointées, source `fr` ;
+  `translate` avec interpolation `{param}` + repli langue→fr→clé ; `negotiate` session→cookie→
+  `Accept-Language`→fr, borné par `SUPPORTED_LANGS`). Tous les templates passés à `t()` (base,
+  login, setup, dashboard, targets, monitor, logs, servers, key_detail + partiels `_api_picker`/
+  `_model_picker`), libellés JS injectés via JSON/`data-*`. Sélecteur de langue dans la barre
+  (`POST /admin/lang`, redirection bornée `/admin`). Les 24 locales sont **complètes clé-à-clé**
+  (275 clés) ; placeholders et identifiants `mono` (env/chemins/URLs) préservés. Docs synchronisées
+  (CHANGELOG, DAT, DESIGN_SYSTEM, manuel + capture `19-lang-en.jpg`). Correctif annexe : garde
+  anti-course dans la sonde du `_model_picker`. — *tests verts : `test_i18n` (12 : complétude des 24
+  locales, invariance placeholders/`mono`, `<strong>`, repli+interpolation, route `/admin/lang`
+  (rendu + anti-open-redirect), sélecteur présent, négociation) ; E2E `i18n.spec` (bascule
+  en/de/es du dashboard/serveurs/détail de clé + modale « Essayer », persistance session,
+  navigateur fr-FR) ; **vision faite** (dashboards EN/DE, détail de clé EN, modale « Essayer » EN).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

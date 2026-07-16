@@ -3,6 +3,37 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-16 — Internationalisation du panel (24 langues UE)
+
+- **Un YAML par langue, français source.** Les catalogues vivent dans `app/locales/<code>.yaml`
+  (clés imbriquées → aplaties en clés pointées au chargement). Le **français est la source** : toute
+  clé absente d'une traduction retombe sur le fr, puis sur la clé brute — l'UI ne casse jamais, même
+  traduction partielle. Format YAML (et non JSON/gettext) pour rester **lisible et éditable à la
+  main** par un non-développeur, cohérent avec le reste du repo ; seule dépendance ajoutée : PyYAML.
+- **Négociation session → cookie → `Accept-Language` → fr.** Le choix explicite (sélecteur, écrit en
+  `session['lang']`) prime ; sinon on respecte la langue du navigateur. Conséquence testée : un
+  navigateur `en-US` rend le panel en anglais **par défaut** — c'est voulu. Les tests E2E fixent donc
+  `locale: 'fr-FR'` (les captures du manuel et les assertions restent en français, langue de réf.).
+- **Libellés JS = piège classique.** Les chaînes construites côté client (options de sonde, « Échec »,
+  WHOIS…) ne passent pas par Jinja au moment de l'exécution. On les expose une fois dans un bloc
+  `<script type="application/json">` (échappé via `tojson`) ou en `data-*`, puis le JS lit ces valeurs.
+  Évite tout texte en dur résiduel et garde une seule source de vérité (le YAML).
+- **Pièges Jinja rencontrés.** (1) `{% for t in … %}` **masque** la fonction `t()` de traduction →
+  variable de boucle renommée (`tg`). (2) Les macros importées sont **isolées du contexte** : import
+  avec `with context` pour que `t()`/`languages` y soient visibles.
+- **Complétude garantie par test, pas par discipline.** `test_i18n` vérifie que les 24 locales ont
+  **exactement** le jeu de clés du fr, et que chaque valeur conserve les mêmes `{placeholders}` et les
+  identifiants `<span class=mono>` (noms d'env, chemins, URLs) — une traduction qui casserait une
+  variable ou traduirait `OLLAMA_HOST` échoue le CI.
+- **Correctif annexe (course de sonde).** En basculant rapidement de serveur, la réponse d'une sonde
+  antérieure pouvait re-rendre des cases après qu'une sonde plus récente ait vidé la liste. Garde
+  ajoutée dans `refresh()` (`_model_picker`) : on capture le serveur ciblé et on **abandonne** toute
+  réponse périmée (sélection changée pendant l'`await`). Rend l'E2E « serveur hors ligne » déterministe.
+- **Choix i18n vs conventions du repo.** L'admin reste en Jinja rendu serveur (écart React assumé,
+  cf. DESIGN_SYSTEM §6) : l'i18n est donc côté serveur (pas de lib front). Les traductions ont été
+  **rédigées à la main** (pas de sous-agent/délégation, conformément aux conventions), une locale par
+  fichier, validées par un builder de complétude stricte.
+
 ## 2026-07-09 — Contenu des requêtes sur fichiers + origines/WHOIS
 
 - **Contenu complet hors base, par choix explicite.** Le corps des requêtes peut être volumineux
