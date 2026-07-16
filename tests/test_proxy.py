@@ -234,6 +234,51 @@ async def test_disabled_server_returns_503(fake_upstream):
     assert r.status_code == 503 and "serveur d'exécution" in r.text
 
 
+# --- Résistance à l'usurpation de X-Forwarded-For (sécurité) ----------------------------------
+
+async def test_xff_spoof_does_not_bypass_origin_allowlist(fake_upstream):
+    """Un client externe forge `X-Forwarded-For: <IP-autorisée>` ; Caddy (pair de confiance) ajoute
+    l'IP RÉELLE à droite. Le proxy doit retenir l'IP réelle (droite), pas l'IP forgée (gauche)."""
+    _, key = keys.create_key("x", ["203.0.113.0/24"], None, None)
+    # Pair = 127.0.0.1 (Caddy, de confiance). Chaîne telle que Caddy la produit : forgée, réelle.
+    async with proxy_client(fake_upstream, source_ip="127.0.0.1") as c:
+        r = await c.post("/api/chat", headers={**_auth(key),
+                                               "x-forwarded-for": "203.0.113.9, 9.9.9.9"},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 403  # l'IP réelle 9.9.9.9 n'est pas dans l'allowlist
+
+
+async def test_xff_legit_client_ip_from_trusted_proxy(fake_upstream):
+    """XFF légitime (Caddy n'a ajouté que l'IP réelle) : l'origine autorisée passe."""
+    _, key = keys.create_key("x", ["203.0.113.0/24"], None, None)
+    async with proxy_client(fake_upstream, source_ip="127.0.0.1") as c:
+        r = await c.post("/api/chat", headers={**_auth(key),
+                                               "x-forwarded-for": "203.0.113.9"},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 200
+
+
+async def test_xff_ignored_from_untrusted_peer(fake_upstream):
+    """Un pair NON de confiance ne peut pas injecter d'IP via XFF : c'est l'IP du pair qui compte."""
+    _, key = keys.create_key("x", ["203.0.113.0/24"], None, None)
+    async with proxy_client(fake_upstream, source_ip="203.0.113.9") as c:
+        r = await c.post("/api/chat", headers={**_auth(key), "x-forwarded-for": "10.0.0.1"},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 200  # XFF ignoré (pair non de confiance) → IP du pair, autorisée
+
+
+async def test_xff_spoof_does_not_bypass_ban(fake_upstream):
+    """Une origine bannie ne peut pas s'échapper en forgeant une IP non bannie à gauche du XFF."""
+    from app import bans
+    bans.add_ban("9.9.9.9")
+    _, key = keys.create_key("x", [], None, None)
+    async with proxy_client(fake_upstream, source_ip="127.0.0.1") as c:
+        r = await c.post("/api/chat", headers={**_auth(key),
+                                               "x-forwarded-for": "1.2.3.4, 9.9.9.9"},
+                         json={"model": "demo:latest"})
+    assert r.status_code == 403 and "bannie" in r.text  # IP réelle 9.9.9.9 bannie
+
+
 async def test_forwards_server_auth_token_to_upstream(fake_upstream):
     # Un serveur avec jeton : le proxy l'injecte vers l'amont (déchiffré), la clé cliente reste strippée.
     from app import servers

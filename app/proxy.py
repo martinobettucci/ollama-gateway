@@ -80,12 +80,25 @@ def _peer_trusted(peer: str) -> bool:
 
 
 def client_ip(request: Request) -> str:
-    """IP source réelle : XFF si le pair immédiat est un proxy de confiance (Caddy), sinon le pair."""
+    """IP source réelle, résistante à l'usurpation de `X-Forwarded-For`.
+
+    Le proxy n'accepte le XFF QUE si le pair immédiat est de confiance (Caddy). Caddy **ajoute**
+    l'IP réelle du client **à droite** de tout XFF déjà présent : un client malveillant qui envoie
+    `X-Forwarded-For: <IP-autorisée>` produit `…, <IP-autorisée>, <IP-réelle>`. Prendre l'entrée la
+    plus à GAUCHE laisserait donc usurper une origine autorisée (contournant l'allowlist par clé)
+    ou échapper à un ban. On remonte la chaîne **depuis la droite** en sautant les proxys de
+    confiance ; la première adresse non de confiance est le client réel."""
     peer = request.client.host if request.client else ""
+    if not _peer_trusted(peer):
+        return peer
     xff = request.headers.get("x-forwarded-for")
-    if xff and _peer_trusted(peer):
-        return xff.split(",")[0].strip()
-    return peer
+    if not xff:
+        return peer
+    parts = [p.strip() for p in xff.split(",") if p.strip()]
+    for candidate in reversed(parts):
+        if not _peer_trusted(candidate):
+            return candidate
+    return parts[0] if parts else peer
 
 
 class _TokenSniffer:

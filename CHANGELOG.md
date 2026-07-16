@@ -6,6 +6,11 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Sécurité — `X-Forwarded-For` résistant à l'usurpation.** L'IP source réelle est désormais
+  lue à la **droite** de la chaîne `X-Forwarded-For` (l'entrée ajoutée par l'edge de confiance),
+  en sautant les proxys de confiance. Un client externe ne peut plus forger une IP à gauche du
+  header pour **usurper une origine autorisée** (allowlist par clé) ni **échapper à un ban**.
+
 - **Génération d'images (Ollama & OpenAI) — capacité et modèles séparés.** Nouvelle capacité de
   **génération d'images**, distincte du texte, avec **cases à cocher dédiées** par voie : *Image via
   Ollama* (modèles du namespace `x/…` sur `POST /api/generate`) et *Image via OpenAI*
