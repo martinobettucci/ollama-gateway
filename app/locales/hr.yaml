@@ -169,6 +169,21 @@ mon:
     last_used: Zadnja upotreba
   empty: Ovom poslužitelju još nije pripisan nijedan zahtjev.
 logs:
+  content:
+    link: Contenu des requêtes
+    title: Contenu complet des requêtes
+    disabled: La journalisation du contenu des requêtes est désactivée (<span class="mono">REQUEST_LOG_DIR</span> non défini).
+    key_label: Clé
+    file_label: Fichier (heure)
+    grep_label: Filtre (grep)
+    grep_ph: Filtrer le contenu…
+    filter_btn: Filtrer
+    download: Télécharger le fichier
+    count: '{matched} sur {total} ligne(s)'
+    truncated: Affichage tronqué à {limit} lignes — affinez le filtre.
+    empty_files: Aucun fichier de contenu pour cette clé.
+    empty_keys: Aucun contenu de requête enregistré pour le moment.
+    unauth: (non authentifié)
   title: Dnevnik i zabrane
   intro: Potpuni dnevnik zahtjeva (čuva se u cijelosti, nikada se ne čisti) — ukupno {total} događaj(a), prikazano {shown}. Zabranite izvor jednim klikom iz retka; zabranjeni izvor proxy odbija (403) prije bilo kojeg ključa.
   bans:

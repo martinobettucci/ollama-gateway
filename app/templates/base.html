@@ -198,6 +198,15 @@
     .whois-fields { width:auto; margin:.6rem 0; } .whois-fields th { text-align:left; padding:.35rem .9rem .35rem 0;
       color:var(--text-3); font-weight:600; text-transform:capitalize; white-space:nowrap; }
     .whois-fields td { padding:.35rem 0; }
+    /* Visionneuse du contenu des requêtes (logs) */
+    .reqlog-lines { display:flex; flex-direction:column; gap:.5rem; margin-top:.6rem; }
+    .reqline { border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--surface); }
+    .reqline > summary { cursor:pointer; list-style:none; display:flex; flex-wrap:wrap; gap:.5rem .8rem;
+      align-items:center; padding:.5rem .8rem; font-size:13px; }
+    .reqline > summary::-webkit-details-marker { display:none; }
+    .reqline[open] > summary { border-bottom:1px solid var(--line); }
+    .reqline pre { margin:0; padding:.7rem .9rem; overflow-x:auto; font-size:12.5px; line-height:1.5;
+      white-space:pre; background:#F9FAFB; border-radius:0 0 var(--radius-sm) var(--radius-sm); }
 
     /* ── Messages & états ─────────────────────────────────────────────────────────── */
     .flash { display:flex; gap:.7rem; border:1px solid var(--line); border-top:3px solid var(--color-success);

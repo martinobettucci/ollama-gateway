@@ -211,6 +211,44 @@ test('origines vues : liste + recherche + WHOIS (modale)', async ({ page, reques
   await expect(dlg).toBeHidden();
 });
 
+test('contenu des requêtes : visionneuse ouvre le fichier + grep filtre', async ({ page, request }) => {
+  const PROXY = 'http://127.0.0.1:8791';
+  const DEMO = 'sk-ollama-devdemokey000000000000000000000000000000000000000000000000';
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+
+  // Génère un contenu identifiable pour la clé de démo (écrit dans les fichiers reqlog).
+  await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}` },
+    data: { model: 'demo:latest', prompt: 'grep-me-please-xyz' },
+  });
+  await page.waitForTimeout(400);  // laisse la tâche de fond écrire le fichier
+
+  // Console de logs → lien « Contenu des requêtes ».
+  await page.goto('/admin/logs');
+  await page.locator('[data-testid=content-link]').click();
+  await expect(page.locator('h1')).toContainText('Contenu');
+
+  // Sélection explicite de la clé de démo (dossier), puis lecture de son contenu.
+  const demoVal = await page.locator('[data-testid=content-key] option', { hasText: 'demo (dev)' })
+    .first().getAttribute('value');
+  await page.goto('/admin/logs/content?key=' + demoVal);
+  const results = page.locator('[data-testid=content-results]');
+  await expect(results).toContainText('/api/chat');
+  await expect(results).toContainText('grep-me-please-xyz');
+  await expect(results).toContainText('«masqué»');       // secret masqué, jamais la clé
+  await page.screenshot({ path: `${OUT}/25-logs-content.jpg`, type: 'jpeg', fullPage: true });
+
+  // grep : terme présent → au moins une ligne ; terme absent → aucune.
+  await page.locator('[data-testid=content-grep]').fill('grep-me-please-xyz');
+  await page.locator('[data-testid=content-filter]').click();
+  await expect(page.locator('[data-testid=content-line]').first()).toBeVisible();
+  await page.locator('[data-testid=content-grep]').fill('zzz-absent-term');
+  await page.locator('[data-testid=content-filter]').click();
+  await expect(page.locator('[data-testid=content-line]')).toHaveCount(0);
+});
+
 test('plein viewport : le layout occupe toute la largeur, pas de colonne centrée', async ({ page }) => {
   // Règle dure : l'app remplit 100 % du viewport (largeur ET hauteur), login compris.
   await page.goto('/admin/login');

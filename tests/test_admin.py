@@ -209,6 +209,37 @@ async def test_key_detail_shows_origins_and_retention(admin_client):
     assert 'data-testid="retention-input"' in page.text and 'value="7"' in page.text
 
 
+async def test_logs_content_requires_login(admin_client):
+    keys.set_admin_password("mdp")
+    async with admin_client as c:
+        r = await c.get("/admin/logs/content")
+    assert r.status_code == 303 and r.headers["location"] == "/admin/login"
+
+
+async def test_logs_content_viewer_grep_and_raw(admin_client, monkeypatch, tmp_path):
+    """Visionneuse : rend le contenu (secrets masqués), le grep filtre, le brut se télécharge."""
+    from datetime import datetime, timezone
+    from app import config, reqlog
+    monkeypatch.setattr(config, "REQUEST_LOG_DIR", str(tmp_path / "reqlogs"))
+    keys.set_admin_password("mdp")
+    rec, _ = keys.create_key("cli-view", [], None, None)
+    ts = datetime(2026, 7, 9, 13, 0, tzinfo=timezone.utc)
+    reqlog.record(key_id=rec.id, ip="4.4.4.4", method="POST", path="/api/chat",
+                  headers={"Authorization": "Bearer sk-zz"}, body=b'{"model":"demo:latest"}',
+                  status=200, model="demo:latest", ts=ts)
+    base = f"/admin/logs/content?key=key-{rec.id}&file=2026-07-09_13.jsonl"
+    async with admin_client as c:
+        await c.post("/admin/login", data={"password": "mdp"})
+        page = await c.get(base)
+        assert page.status_code == 200
+        assert "demo:latest" in page.text and "«masqué»" in page.text
+        assert "sk-zz" not in page.text                    # secret jamais relu dans l'UI
+        no = await c.get(base + "&q=zzz-none")
+        assert 'data-testid="content-line"' not in no.text  # grep sans match → aucune ligne
+        raw = await c.get(base.replace("/content?", "/content/raw?"))
+        assert raw.status_code == 200 and "/api/chat" in raw.text and "sk-zz" not in raw.text
+
+
 async def test_guard_blocks_key_creation_without_session(admin_client):
     keys.set_admin_password("x")
     async with admin_client as c:

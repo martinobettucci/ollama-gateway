@@ -169,6 +169,21 @@ mon:
     last_used: Ostatnie użycie
   empty: Do tego serwera nie przypisano jeszcze żadnego żądania.
 logs:
+  content:
+    link: Contenu des requêtes
+    title: Contenu complet des requêtes
+    disabled: La journalisation du contenu des requêtes est désactivée (<span class="mono">REQUEST_LOG_DIR</span> non défini).
+    key_label: Clé
+    file_label: Fichier (heure)
+    grep_label: Filtre (grep)
+    grep_ph: Filtrer le contenu…
+    filter_btn: Filtrer
+    download: Télécharger le fichier
+    count: '{matched} sur {total} ligne(s)'
+    truncated: Affichage tronqué à {limit} lignes — affinez le filtre.
+    empty_files: Aucun fichier de contenu pour cette clé.
+    empty_keys: Aucun contenu de requête enregistré pour le moment.
+    unauth: (non authentifié)
   title: Dziennik i blokady
   intro: Pełny dziennik żądań (przechowywany w całości, nigdy nieczyszczony) — łącznie {total} zdarzenie(a), {shown} wyświetlone. Zablokuj źródło jednym kliknięciem z wiersza; zablokowane źródło jest odrzucane (403) przez proxy przed jakimkolwiek kluczem.
   bans:

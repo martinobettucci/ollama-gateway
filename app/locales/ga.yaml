@@ -169,6 +169,21 @@ mon:
     last_used: Úsáid dheireanach
   empty: Níl aon iarratas curtha i leith an fhreastalaí seo go fóill.
 logs:
+  content:
+    link: Contenu des requêtes
+    title: Contenu complet des requêtes
+    disabled: La journalisation du contenu des requêtes est désactivée (<span class="mono">REQUEST_LOG_DIR</span> non défini).
+    key_label: Clé
+    file_label: Fichier (heure)
+    grep_label: Filtre (grep)
+    grep_ph: Filtrer le contenu…
+    filter_btn: Filtrer
+    download: Télécharger le fichier
+    count: '{matched} sur {total} ligne(s)'
+    truncated: Affichage tronqué à {limit} lignes — affinez le filtre.
+    empty_files: Aucun fichier de contenu pour cette clé.
+    empty_keys: Aucun contenu de requête enregistré pour le moment.
+    unauth: (non authentifié)
   title: Loga agus coisc
   intro: Loga iomlán iarratas (coinnithe ina iomláine, ná glantar riamh) — {total} imeacht san iomlán, {shown} ar taispeáint. Cuir cosc ar bhunús le cliceáil amháin ó ró; diúltaítear (403) do bhunús coiscthe ag an seachfhreastalaí roimh aon eochair.
   bans:

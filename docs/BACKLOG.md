@@ -203,6 +203,17 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   en/de/es du dashboard/serveurs/détail de clé + modale « Essayer », persistance session,
   navigateur fr-FR) ; **vision faite** (dashboards EN/DE, détail de clé EN, modale « Essayer » EN).*
 
+## Phase 11 — Visionneuse du contenu des requêtes (2026-07-17)
+
+- [x] **Consultation + grep du contenu des logs dans le panel** : page `/admin/logs/content`
+  (choix clé/heure + filtre grep insensible à la casse + dépliage par requête), téléchargement
+  brut `/admin/logs/content/raw`, lecture gzip transparente, noms de fichiers validés (anti
+  path-traversal), secrets restant masqués ; câblage `REQUEST_LOG_DIR` côté admin (composes +
+  E2E). i18n `logs.content.*` (fr/en réelles, 22 autres = source fr en repli, complétude testée)
+  — *tests : test_reqlog (list_keys_with_logs, list_files, read_content + grep, lecture gzip,
+  resolve anti-traversal), test_admin (login requis, rendu + secret masqué + grep 0-match + brut),
+  E2E admin.spec « contenu des requêtes : visionneuse + grep » ; vision : capture 25-logs-content.*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

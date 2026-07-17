@@ -3,6 +3,30 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-17 — Visionneuse du contenu des requêtes (grep dans le panel)
+
+- **Le contenu était consultable seulement au shell → on l'ouvre dans le panel.** Le journal de
+  contenu (fichiers hors base) n'avait pas d'accès UI (seules les métadonnées `usage_events` le
+  sont, dans la console de logs). Nouvelle page `/admin/logs/content` : sélection clé/heure +
+  **filtre grep** (sous-chaîne insensible à la casse, appliqué **côté serveur** pour lire aussi
+  les fichiers **gzip** et éviter d'envoyer tout le fichier au navigateur), rendu déplié par
+  requête, et téléchargement brut (`/content/raw`).
+- **Grep serveur, pas client.** Les fichiers peuvent être gros et compactés en gzip ; filtrer au
+  serveur (streaming ligne à ligne, cap d'affichage à 2000 lignes signalé) évite de charger tout
+  le fichier en mémoire navigateur et fonctionne identiquement sur `.jsonl` et `.jsonl.gz`.
+- **Sécurité : noms validés + confinement.** `reqlog.resolve` n'accepte que `key-<id>`/
+  `unauthenticated` et un nom de fichier horaire strict, et vérifie que le chemin résolu reste
+  **sous** la racine (défense anti-traversal, testée). Le contenu est déjà sanitisé à l'écriture
+  (secrets masqués) → aucune re-fuite à la lecture.
+- **Piège de config : l'ADMIN doit voir le dossier.** Le viewer tourne dans l'app **admin**, qui
+  lit `REQUEST_LOG_DIR` ; or seul le **proxy** l'avait en E2E → l'admin affichait « désactivé ».
+  Corrigé : `REQUEST_LOG_DIR` câblé aussi côté admin (E2E + rappel composes, où le volume `/data`
+  est partagé entre les deux rôles). Détecté **en vision** (capture montrant le message désactivé).
+- **i18n pragmatique.** Le test de complétude impose les mêmes clés dans les 24 locales. J'ai
+  fourni fr (source) et en réels ; les 22 autres reprennent la **source fr** (politique de repli
+  déjà en place) faute de pouvoir produire 24 traductions fiables à la main — clés présentes,
+  placeholders et jetons `mono` préservés, tests verts. À traduire ultérieurement.
+
 ## 2026-07-16 — Internationalisation du panel (24 langues UE)
 
 - **Un YAML par langue, français source.** Les catalogues vivent dans `app/locales/<code>.yaml`

@@ -48,7 +48,11 @@ car Ollama est en loopback natif (hors Docker).
 - `bans.py` — liste de bannissement **globale** d'origines (IP/CIDR), appliquée par le proxy
   avant l'auth ; pilotée depuis la console de logs.
 - `reqlog.py` — journal de **contenu** des requêtes **sur fichiers** (hors base), secrets
-  masqués ; CLI `compact` (cron) : gzip des heures passées + purge (rétention par clé).
+  masqués ; CLI `compact` (cron) : gzip des heures passées + purge (rétention par clé). **Lecture
+  pour la console** : `list_keys_with_logs`/`list_files`/`read_content` (filtre grep, gzip
+  transparent) + `resolve` (noms validés, confinement anti-traversal) ; servis par
+  `GET /admin/logs/content` (viewer + grep) et `/admin/logs/content/raw` (téléchargement brut).
+  Le rôle **admin** doit voir le même `REQUEST_LOG_DIR` que le proxy (volume partagé).
 - `whois.py` — résolution **RDAP** d'une IP (bouton WHOIS des origines) ; court-circuit local.
 - `i18n.py` — **internationalisation** du panel : un catalogue **YAML par langue**
   (`app/locales/<code>.yaml`), aplati en clés pointées au chargement, source de référence `fr`.

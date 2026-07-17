@@ -169,6 +169,21 @@ mon:
     last_used: Last used
   empty: No request attributed to this server yet.
 logs:
+  content:
+    link: Request content
+    title: Full request content
+    disabled: Request-content logging is disabled (<span class="mono">REQUEST_LOG_DIR</span> not set).
+    key_label: Key
+    file_label: File (hour)
+    grep_label: Filter (grep)
+    grep_ph: Filter content…
+    filter_btn: Filter
+    download: Download file
+    count: '{matched} of {total} line(s)'
+    truncated: Display truncated to {limit} lines — refine the filter.
+    empty_files: No content file for this key.
+    empty_keys: No request content recorded yet.
+    unauth: (unauthenticated)
   title: Journal & bans
   intro: Full request journal (kept in full, never purged) — {total} event(s) in total, {shown} shown. Ban an origin in one click from a row; a banned origin is refused (403) by the proxy before any key.
   bans:

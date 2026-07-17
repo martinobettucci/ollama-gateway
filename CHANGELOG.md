@@ -6,6 +6,14 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Visionneuse du contenu des requêtes (dans le panel).** Depuis la console de **Logs**, un
+  bouton **Contenu des requêtes** ouvre une page où l'on choisit une **clé** puis une **heure**
+  (fichier) et où l'on **filtre le contenu façon grep** (recherche insensible à la casse sur
+  toutes les lignes). Chaque entrée se déplie sur la requête complète (méthode, chemin, en-têtes
+  sanitisés, corps) ; le fichier brut est **téléchargeable** ; les fichiers compactés (gzip) sont
+  lus de façon transparente. Lecture **LAN-only** avec noms de fichiers validés (défense
+  anti-traversal) ; les secrets restent masqués (jamais de clé en clair). Nécessite l'admin
+  configuré avec le même `REQUEST_LOG_DIR` que le proxy.
 - **Internationalisation (i18n) du panel — 24 langues de l'UE.** L'admin est désormais entièrement
   traduisible via un **fichier YAML par langue** (`app/locales/<code>.yaml`), le français étant la
   source de référence. Les 24 langues officielles de l'Union européenne sont fournies (bg, cs, da,

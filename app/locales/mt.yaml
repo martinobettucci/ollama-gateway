@@ -169,6 +169,21 @@ mon:
     last_used: L-aħħar użu
   empty: L-ebda talba għadha attribwita lil dan is-server.
 logs:
+  content:
+    link: Contenu des requêtes
+    title: Contenu complet des requêtes
+    disabled: La journalisation du contenu des requêtes est désactivée (<span class="mono">REQUEST_LOG_DIR</span> non défini).
+    key_label: Clé
+    file_label: Fichier (heure)
+    grep_label: Filtre (grep)
+    grep_ph: Filtrer le contenu…
+    filter_btn: Filtrer
+    download: Télécharger le fichier
+    count: '{matched} sur {total} ligne(s)'
+    truncated: Affichage tronqué à {limit} lignes — affinez le filtre.
+    empty_files: Aucun fichier de contenu pour cette clé.
+    empty_keys: Aucun contenu de requête enregistré pour le moment.
+    unauth: (non authentifié)
   title: Ġurnal u projbizzjonijiet
   intro: Ġurnal sħiħ tat-talbiet (miżmum kollu, qatt ma jitnaddaf) — {total} avveniment(i) b'kollox, {shown} murija. Ipprojbixxi oriġini bi klikk wieħed minn ringiela; oriġini pprojbita tiġi rrifjutata (403) mill-proxy qabel kwalunkwe ċavetta.
   bans:

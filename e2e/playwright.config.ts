@@ -52,7 +52,9 @@ export default defineConfig({
       env: { ...baseEnv, ADMIN_SESSION_SECRET: 'e2e-secret',
              OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', P2E_MASTER_KEY: 'e2e-master',
              // URL publique vue des clients (modale des variables d'env) = le proxy E2E.
-             PUBLIC_BASE_URL: 'http://127.0.0.1:8791' },
+             PUBLIC_BASE_URL: 'http://127.0.0.1:8791',
+             // MÊME dossier de logs que le proxy : l'admin lit le contenu écrit par le proxy.
+             REQUEST_LOG_DIR: path.join(__dirname, 'e2e-data', 'reqlogs') },
     },
   ],
 });

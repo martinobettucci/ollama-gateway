@@ -352,6 +352,15 @@ vide = valeur par défaut globale). Une tâche planifiée (**cron**) `python -m 
 **compacte** les fichiers des heures passées (gzip) et **purge** au-delà de la rétention. La
 conservation du contenu est activée uniquement si l'exploitant configure un répertoire dédié.
 
+Ce contenu se **consulte directement dans le panel** : depuis la console de **Logs**, le bouton
+**Contenu des requêtes** ouvre une visionneuse où l'on choisit une **clé** et une **heure**
+(fichier), puis on **filtre le contenu façon grep** (recherche insensible à la casse dans toutes
+les lignes). Chaque entrée se déplie pour montrer la requête complète (méthode, chemin, en-têtes
+sanitisés, corps) ; le fichier brut peut aussi être **téléchargé**. Les fichiers compactés (gzip)
+sont lus de façon transparente.
+
+![Visionneuse du contenu des requêtes avec filtre grep](../app/static/manual/25-logs-content.jpg)
+
 ### Suivi de l'usage
 
 Dès qu'une clé sert des requêtes, les compteurs du tableau de bord et le dernier usage par

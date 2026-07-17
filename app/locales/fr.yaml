@@ -171,6 +171,21 @@ mon:
     last_used: Dernier usage
   empty: Aucune requête attribuée à ce serveur pour le moment.
 logs:
+  content:
+    link: Contenu des requêtes
+    title: Contenu complet des requêtes
+    disabled: La journalisation du contenu des requêtes est désactivée (<span class="mono">REQUEST_LOG_DIR</span> non défini).
+    key_label: Clé
+    file_label: Fichier (heure)
+    grep_label: Filtre (grep)
+    grep_ph: Filtrer le contenu…
+    filter_btn: Filtrer
+    download: Télécharger le fichier
+    count: '{matched} sur {total} ligne(s)'
+    truncated: Affichage tronqué à {limit} lignes — affinez le filtre.
+    empty_files: Aucun fichier de contenu pour cette clé.
+    empty_keys: Aucun contenu de requête enregistré pour le moment.
+    unauth: (non authentifié)
   title: Journal & bannissements
   intro: Journal complet des requêtes (conservé intégralement, jamais purgé) — {total} événement(s) au total, {shown} affiché(s). Bannissez une origine en un clic depuis une ligne ; une origine bannie est refusée (403) par le proxy avant toute clé.
   bans:

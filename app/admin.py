@@ -11,12 +11,14 @@ from urllib.parse import urlsplit
 
 import markdown
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import (HTMLResponse, JSONResponse, PlainTextResponse,
+                               RedirectResponse)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import apis, auth, bans, charts, config, db, i18n, keys, servers, targets, usage, whois
+from . import (apis, auth, bans, charts, config, db, i18n, keys, reqlog, servers,
+               targets, usage, whois)
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -485,6 +487,45 @@ async def logs_ban(request: Request):
         {"ok": True, "text": f"Origine bannie : {norm}"} if norm
         else {"ok": False, "text": "IP/CIDR invalide — rien banni."})
     return RedirectResponse("/admin/logs", status_code=303)
+
+
+@app.get("/admin/logs/content", response_class=HTMLResponse)
+async def logs_content(request: Request):
+    """Visionneuse du CONTENU complet des requêtes (fichiers hors base) : choix clé/heure +
+    filtre grep, rendu des lignes correspondantes. Contenu déjà sanitisé (secrets masqués)."""
+    if (r := _guard(request)):
+        return r
+    keys_with_logs = reqlog.list_keys_with_logs()
+    valid_dirs = {k["dir"] for k in keys_with_logs}
+    sel_key = request.query_params.get("key", "")
+    if sel_key not in valid_dirs:
+        sel_key = keys_with_logs[0]["dir"] if keys_with_logs else ""
+    files = reqlog.list_files(sel_key) if sel_key else []
+    valid_files = {f["name"] for f in files}
+    sel_file = request.query_params.get("file", "")
+    if sel_file not in valid_files:
+        sel_file = files[0]["name"] if files else ""
+    q = request.query_params.get("q", "")
+    result = reqlog.read_content(sel_key, sel_file, grep=q) if sel_file else None
+    return render(request, "logs_content.html", {
+        "enabled": bool(config.REQUEST_LOG_DIR),
+        "keys_with_logs": keys_with_logs, "files": files,
+        "sel_key": sel_key, "sel_file": sel_file, "q": q, "result": result, "limit": 2000,
+    })
+
+
+@app.get("/admin/logs/content/raw")
+async def logs_content_raw(request: Request):
+    """Télécharge le fichier de log sélectionné en texte brut (gzip décompressé). LAN-only."""
+    if (r := _guard(request)):
+        return r
+    p = reqlog.resolve(request.query_params.get("key", ""),
+                       request.query_params.get("file", ""))
+    if p is None:
+        return JSONResponse({"error": "fichier introuvable"}, status_code=404)
+    with reqlog.open_text(p) as f:
+        content = f.read()
+    return PlainTextResponse(content)
 
 
 @app.get("/admin/whois")

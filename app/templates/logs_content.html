@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ t('logs.content.title') }} — {{ t('brand.name') }}{% endblock %}
+{% block body %}
+<p><a class="backlink" href="/admin/logs">{{ icon('arrow-left') }} {{ t('logs.title') }}</a></p>
+<h1>{{ t('logs.content.title') }}</h1>
+
+<div class="card cat-brand">
+  <div class="card-head">
+    <span class="chip-ic brand">{{ icon('scroll-text', 18) }}</span>
+    <h2>{{ t('logs.content.title') }}</h2>
+  </div>
+
+  {% if not enabled %}
+  <div class="empty">{{ icon('circle-alert', 22) }}
+    <span>{{ t('logs.content.disabled')|safe }}</span></div>
+  {% elif not keys_with_logs %}
+  <div class="empty">{{ icon('scroll-text', 22) }}
+    <span>{{ t('logs.content.empty_keys') }}</span></div>
+  {% else %}
+  <form method="get" action="/admin/logs/content" class="ban-add" data-testid="content-form">
+    <div>
+      <label for="content-key">{{ t('logs.content.key_label') }}</label>
+      <select id="content-key" name="key" data-testid="content-key"
+              onchange="this.form.file.value=''; this.form.submit()">
+        {% for k in keys_with_logs %}
+        <option value="{{ k.dir }}"{{ ' selected' if k.dir == sel_key }}>
+          {{ k.label or t('logs.content.unauth') }} · {{ k.files }} · {{ k.latest }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="content-file">{{ t('logs.content.file_label') }}</label>
+      <select id="content-file" name="file" data-testid="content-file">
+        {% for f in files %}
+        <option value="{{ f.name }}"{{ ' selected' if f.name == sel_file }}>
+          {{ f.hour }}{{ ' · gz' if f.gz }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="flex:2 1 260px">
+      <label for="content-grep">{{ t('logs.content.grep_label') }}</label>
+      <input id="content-grep" name="q" value="{{ q }}" autocomplete="off"
+             placeholder="{{ t('logs.content.grep_ph') }}" data-testid="content-grep">
+    </div>
+    <button type="submit" data-testid="content-filter">{{ icon('search', 14) }} {{ t('logs.content.filter_btn') }}</button>
+    {% if sel_file %}
+    <a class="btn btn-secondary" data-testid="content-download"
+       href="/admin/logs/content/raw?key={{ sel_key|urlencode }}&file={{ sel_file|urlencode }}">
+      {{ icon('scroll-text', 14) }} {{ t('logs.content.download') }}</a>
+    {% endif %}
+  </form>
+
+  {% if not files %}
+  <div class="empty">{{ icon('scroll-text', 22) }}
+    <span>{{ t('logs.content.empty_files') }}</span></div>
+  {% elif result %}
+  <p class="hint" data-testid="content-count">{{ t('logs.content.count', matched=result.matched, total=result.total) }}</p>
+  {% if result.truncated %}<p class="err">{{ t('logs.content.truncated', limit=limit) }}</p>{% endif %}
+  <div class="reqlog-lines" data-testid="content-results">
+    {% for ln in result.lines %}
+    <details class="reqline" data-testid="content-line"{{ ' open' if result.lines|length == 1 }}>
+      <summary>
+        <span class="mono">{{ ln.summary.ts }}</span>
+        <span class="mono">{{ ln.summary.method }} {{ ln.summary.path }}</span>
+        {% if ln.summary.status %}<span class="badge {{ 'off' if ln.summary.status >= 400 else 'on' }}">{{ ln.summary.status }}</span>{% endif %}
+        {% if ln.summary.model %}<span class="mono muted">{{ ln.summary.model }}</span>{% endif %}
+        {% if ln.summary.ip %}<span class="mono muted">{{ ln.summary.ip }}</span>{% endif %}
+      </summary>
+      <pre class="mono">{{ ln.pretty }}</pre>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

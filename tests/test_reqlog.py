@@ -71,6 +71,52 @@ def test_purge_respects_per_key_retention(logdir):
     assert names == ["2026-07-08_10.jsonl.gz"]                          # -2h compacté
 
 
+def test_list_keys_files_and_read_content_with_grep(logdir):
+    rec, _ = keys.create_key("cli-A", [], None, None)
+    ts = datetime(2026, 7, 9, 10, 0, tzinfo=UTC)
+    reqlog.record(key_id=rec.id, ip="1.2.3.4", method="POST", path="/api/chat",
+                  headers={"Authorization": "Bearer sk-x"}, body=b'{"model":"demo:latest"}',
+                  status=200, model="demo:latest", ts=ts)
+    reqlog.record(key_id=rec.id, ip="9.9.9.9", method="POST", path="/v1/messages",
+                  headers={}, body=b'{"model":"other"}', status=403, model="other", ts=ts)
+    ks = reqlog.list_keys_with_logs()
+    mine = next(k for k in ks if k["dir"] == f"key-{rec.id}")
+    assert mine["label"] == "cli-A" and mine["files"] == 1
+    files = reqlog.list_files(f"key-{rec.id}")
+    assert len(files) == 1 and files[0]["name"] == "2026-07-09_10.jsonl"
+
+    res = reqlog.read_content(f"key-{rec.id}", "2026-07-09_10.jsonl")
+    assert res["ok"] and res["total"] == 2 and res["matched"] == 2
+    assert all("sk-x" not in ln["pretty"] for ln in res["lines"])   # secret jamais relu
+    assert any("«masqué»" in ln["pretty"] for ln in res["lines"])
+
+    g = reqlog.read_content(f"key-{rec.id}", "2026-07-09_10.jsonl", grep="MESSAGES")
+    assert g["total"] == 2 and g["matched"] == 1
+    assert "/v1/messages" in g["lines"][0]["pretty"]
+    g0 = reqlog.read_content(f"key-{rec.id}", "2026-07-09_10.jsonl", grep="zzz-none")
+    assert g0["total"] == 2 and g0["matched"] == 0 and g0["lines"] == []
+
+
+def test_read_content_reads_gzip(logdir):
+    rec, _ = keys.create_key("cli", [], None, None)
+    now = datetime(2026, 7, 9, 11, 0, tzinfo=UTC)
+    _write(rec.id, now - timedelta(hours=1), path="/api/tags")
+    reqlog.compact_and_purge(now=now)  # gzip l'heure passée
+    gz = [f for f in reqlog.list_files(f"key-{rec.id}") if f["gz"]]
+    assert gz and gz[0]["name"].endswith(".gz")
+    res = reqlog.read_content(f"key-{rec.id}", gz[0]["name"])
+    assert res["ok"] and res["total"] == 1 and "/api/tags" in res["lines"][0]["pretty"]
+
+
+def test_resolve_rejects_traversal_and_bad_names(logdir):
+    rec, _ = keys.create_key("cli", [], None, None)
+    _write(rec.id, datetime(2026, 7, 9, 12, 0, tzinfo=UTC))
+    assert reqlog.resolve("../../etc", "passwd") is None
+    assert reqlog.resolve(f"key-{rec.id}", "../../../etc/passwd") is None
+    assert reqlog.resolve(f"key-{rec.id}", "evil.txt") is None
+    assert reqlog.resolve(f"key-{rec.id}", "2026-07-09_12.jsonl") is not None
+
+
 def test_global_default_retention_when_key_null(logdir, monkeypatch):
     monkeypatch.setattr(config, "REQUEST_LOG_RETENTION_DAYS", 2)
     rec, _ = keys.create_key("k", [], None, None)  # log_retention_days NULL → défaut global

@@ -14,6 +14,7 @@ Aucune écriture ne doit jamais faire échouer une requête proxy : toute erreur
 import base64
 import gzip
 import json
+import re
 import shutil
 import sqlite3
 import sys
@@ -24,6 +25,9 @@ from . import config, db
 
 _SECRET_HEADERS = {"authorization", "x-api-key", "cookie"}
 _HOUR_FMT = "%Y-%m-%d_%H"
+# Noms sûrs (défense anti-traversal) : dossier `key-<id>` / `unauthenticated`, fichier horaire.
+_DIR_RE = re.compile(r"^(key-\d+|unauthenticated)$")
+_FILE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_\d{2}\.jsonl(\.gz)?$")
 
 
 def _base_dir() -> Path | None:
@@ -147,6 +151,120 @@ def compact_and_purge(now: datetime | None = None) -> dict:
                 f.unlink()
                 compacted += 1
     return {"compacted": compacted, "purged": purged}
+
+
+# --- Lecture pour la CONSOLE (viewer + grep dans le panel) ------------------------------------
+
+def _hour_label(name: str) -> str:
+    h = _file_hour(name)
+    return h.strftime("%Y-%m-%d %H:00") if h else name
+
+
+def _key_label(dirname: str) -> str | None:
+    """Label de la clé pour un dossier `key-<id>` (None si inconnu / `unauthenticated`)."""
+    if not dirname.startswith("key-"):
+        return None
+    try:
+        key_id = int(dirname[len("key-"):])
+    except ValueError:
+        return None
+    try:
+        conn = db.connect()
+    except sqlite3.Error:
+        return None
+    try:
+        row = conn.execute("SELECT label FROM api_keys WHERE id = ?", (key_id,)).fetchone()
+    finally:
+        conn.close()
+    return row["label"] if row else None
+
+
+def list_keys_with_logs() -> list[dict]:
+    """Dossiers de logs disponibles (un par clé) : `{dir, label, files, latest}`, récents d'abord."""
+    base = _base_dir()
+    if base is None or not base.exists():
+        return []
+    out = []
+    for d in base.iterdir():
+        if not d.is_dir() or not _DIR_RE.match(d.name):
+            continue
+        hours = sorted((h for h in (_file_hour(f.name) for f in d.iterdir()
+                                    if f.is_file() and _FILE_RE.match(f.name)) if h), reverse=True)
+        if not hours:
+            continue
+        out.append({"dir": d.name, "label": _key_label(d.name),
+                    "files": len(hours), "latest": hours[0].strftime("%Y-%m-%d %H:00")})
+    out.sort(key=lambda x: x["latest"], reverse=True)
+    return out
+
+
+def list_files(dirname: str) -> list[dict]:
+    """Fichiers horaires d'un dossier de clé : `{name, hour, gz, size}`, plus récents d'abord."""
+    base = _base_dir()
+    if base is None or not _DIR_RE.match(dirname or ""):
+        return []
+    d = base / dirname
+    if not d.is_dir():
+        return []
+    files = [f for f in d.iterdir() if f.is_file() and _FILE_RE.match(f.name)]
+    files.sort(key=lambda f: f.name, reverse=True)
+    return [{"name": f.name, "hour": _hour_label(f.name),
+             "gz": f.name.endswith(".gz"), "size": f.stat().st_size} for f in files]
+
+
+def resolve(dirname: str, filename: str) -> Path | None:
+    """Chemin sûr d'un fichier de log (noms validés + confinement sous la racine), ou None."""
+    base = _base_dir()
+    if base is None or not _DIR_RE.match(dirname or "") or not _FILE_RE.match(filename or ""):
+        return None
+    p = base / dirname / filename
+    try:
+        p.resolve().relative_to(base.resolve())
+    except ValueError:
+        return None
+    return p if p.is_file() else None
+
+
+def open_text(path: Path):
+    """Ouvre un fichier de log en texte (gzip transparent)."""
+    if path.name.endswith(".gz"):
+        return gzip.open(path, "rt", encoding="utf-8", errors="replace")
+    return open(path, "r", encoding="utf-8", errors="replace")
+
+
+def read_content(dirname: str, filename: str, grep: str = "", limit: int = 2000) -> dict:
+    """Lit un fichier de log, filtre les lignes (`grep`, sous-chaîne insensible à la casse) et
+    renvoie `{ok, total, matched, truncated, lines:[{summary, pretty}]}`. Le contenu est déjà
+    sanitisé à l'écriture (secrets masqués) — aucune re-fuite possible."""
+    p = resolve(dirname, filename)
+    if p is None:
+        return {"ok": False, "total": 0, "matched": 0, "truncated": False, "lines": []}
+    q = (grep or "").strip().lower()
+    lines: list[dict] = []
+    total = matched = 0
+    truncated = False
+    with open_text(p) as f:
+        for raw in f:
+            raw = raw.rstrip("\n")
+            if not raw:
+                continue
+            total += 1
+            if q and q not in raw.lower():
+                continue
+            matched += 1
+            if len(lines) >= limit:
+                truncated = True
+                continue
+            try:
+                obj = json.loads(raw)
+                pretty = json.dumps(obj, ensure_ascii=False, indent=2)
+                summary = {"ts": obj.get("ts", ""), "method": obj.get("method", ""),
+                           "path": obj.get("path", ""), "status": obj.get("status", ""),
+                           "ip": obj.get("ip", ""), "model": obj.get("model", "")}
+            except (ValueError, TypeError):
+                pretty, summary = raw, {}
+            lines.append({"summary": summary, "pretty": pretty})
+    return {"ok": True, "total": total, "matched": matched, "truncated": truncated, "lines": lines}
 
 
 if __name__ == "__main__":  # `python -m app.reqlog compact`

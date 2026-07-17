@@ -57,6 +57,8 @@
   <div class="card-head">
     <span class="chip-ic brand">{{ icon('scroll-text', 18) }}</span>
     <h2>{{ t('logs.journal.title') }}</h2>
+    <a class="btn btn-secondary btn-sm" href="/admin/logs/content"
+       data-testid="content-link" style="margin-left:auto">{{ icon('search', 14) }} {{ t('logs.content.link') }}</a>
   </div>
   {% if events %}
   <div class="table-wrap">
