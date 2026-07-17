@@ -1,0 +1,34 @@
+{# Drapeaux vectoriels (SVG, JAMAIS d'emoji — charte : icônes vectorielles, et rendu identique sur
+   tous les OS y compris Windows) pour le sélecteur de langue. viewBox 30×20. Un drapeau représentatif
+   par langue ; le nom natif accompagne toujours le drapeau dans la liste, donc les tricolores proches
+   restent distinguables. #}
+{% macro flag(code, size=20) -%}
+<svg class="flag" viewBox="0 0 30 20" width="{{ size }}" role="img" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+{%- if code == 'fr' -%}<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#0055A4"/><rect x="20" width="10" height="20" fill="#EF4135"/>
+{%- elif code == 'it' -%}<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#009246"/><rect x="20" width="10" height="20" fill="#CE2B37"/>
+{%- elif code == 'ga' -%}<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#169B62"/><rect x="20" width="10" height="20" fill="#FF883E"/>
+{%- elif code == 'ro' -%}<rect width="30" height="20" fill="#FCD116"/><rect width="10" height="20" fill="#002B7F"/><rect x="20" width="10" height="20" fill="#CE1126"/>
+{%- elif code == 'de' -%}<rect width="30" height="20" fill="#000"/><rect y="6.67" width="30" height="6.67" fill="#DD0000"/><rect y="13.33" width="30" height="6.67" fill="#FFCE00"/>
+{%- elif code == 'bg' -%}<rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#00966E"/><rect y="13.33" width="30" height="6.67" fill="#D62612"/>
+{%- elif code == 'hu' -%}<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#CD2A3E"/><rect y="13.33" width="30" height="6.67" fill="#436F4D"/>
+{%- elif code == 'lt' -%}<rect width="30" height="20" fill="#006A44"/><rect width="30" height="6.67" fill="#FDB913"/><rect y="13.33" width="30" height="6.67" fill="#C1272D"/>
+{%- elif code == 'nl' -%}<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#AE1C28"/><rect y="13.33" width="30" height="6.67" fill="#21468B"/>
+{%- elif code == 'et' -%}<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#0072CE"/><rect y="6.67" width="30" height="6.67" fill="#000"/>
+{%- elif code == 'es' -%}<rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/>
+{%- elif code == 'lv' -%}<rect width="30" height="20" fill="#9E3039"/><rect y="8" width="30" height="4" fill="#fff"/>
+{%- elif code == 'pl' -%}<rect width="30" height="20" fill="#fff"/><rect y="10" width="30" height="10" fill="#DC143C"/>
+{%- elif code == 'cs' -%}<rect width="30" height="20" fill="#fff"/><rect y="10" width="30" height="10" fill="#D7141A"/><path d="M0 0 L15 10 L0 20 Z" fill="#11457E"/>
+{%- elif code == 'da' -%}<rect width="30" height="20" fill="#C8102E"/><rect x="9" width="3.33" height="20" fill="#fff"/><rect y="8.33" width="30" height="3.33" fill="#fff"/>
+{%- elif code == 'fi' -%}<rect width="30" height="20" fill="#fff"/><rect x="9" width="3.33" height="20" fill="#003580"/><rect y="8.33" width="30" height="3.33" fill="#003580"/>
+{%- elif code == 'sv' -%}<rect width="30" height="20" fill="#006AA7"/><rect x="9" width="3.33" height="20" fill="#FECC00"/><rect y="8.33" width="30" height="3.33" fill="#FECC00"/>
+{%- elif code == 'el' -%}<rect width="30" height="20" fill="#0D5EAF"/><rect y="2.22" width="30" height="2.22" fill="#fff"/><rect y="6.67" width="30" height="2.22" fill="#fff"/><rect y="11.11" width="30" height="2.22" fill="#fff"/><rect y="15.56" width="30" height="2.22" fill="#fff"/><rect width="11.11" height="11.11" fill="#0D5EAF"/><rect x="4.44" width="2.22" height="11.11" fill="#fff"/><rect y="4.44" width="11.11" height="2.22" fill="#fff"/>
+{%- elif code == 'hr' -%}<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#FF0000"/><rect y="13.33" width="30" height="6.67" fill="#171796"/><rect x="12.5" y="7.5" width="5" height="5" fill="#fff"/><rect x="12.5" y="7.5" width="2.5" height="2.5" fill="#FF0000"/><rect x="15" y="10" width="2.5" height="2.5" fill="#FF0000"/>
+{%- elif code == 'mt' -%}<rect width="30" height="20" fill="#CF142B"/><rect width="15" height="20" fill="#fff"/><rect x="2" y="2.5" width="5" height="4" fill="none" stroke="#B0B0B0" stroke-width="1"/><path d="M4.5 3 V6 M2.5 4.5 H6.5" stroke="#B0B0B0" stroke-width=".8"/>
+{%- elif code == 'pt' -%}<rect width="30" height="20" fill="#FF0000"/><rect width="12" height="20" fill="#006600"/><circle cx="12" cy="10" r="3" fill="none" stroke="#FFD700" stroke-width="1.4"/><circle cx="12" cy="10" r="1" fill="#FFD700"/>
+{%- elif code == 'sk' -%}<rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#0B4EA2"/><rect y="13.33" width="30" height="6.67" fill="#EE1C25"/><path d="M4.5 4.5 H10.5 V10 Q10.5 14 7.5 15 Q4.5 14 4.5 10 Z" fill="#EE1C25" stroke="#fff" stroke-width=".6"/><path d="M7.5 6 V12.5 M6.1 7.6 H8.9 M5.7 9.4 H9.3" stroke="#fff" stroke-width=".7"/>
+{%- elif code == 'sl' -%}<rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#0F47AF"/><rect y="13.33" width="30" height="6.67" fill="#D50000"/><path d="M5 4 H11 L8 10 Z" fill="#0F47AF" stroke="#fff" stroke-width=".5"/>
+{%- elif code == 'en' -%}<rect width="30" height="20" fill="#012169"/><path d="M0 0 L30 20 M30 0 L0 20" stroke="#fff" stroke-width="4"/><path d="M0 0 L30 20" stroke="#C8102E" stroke-width="2"/><path d="M30 0 L0 20" stroke="#C8102E" stroke-width="2"/><rect x="12" width="6" height="20" fill="#fff"/><rect y="7" width="30" height="6" fill="#fff"/><rect x="13.5" width="3" height="20" fill="#C8102E"/><rect y="8.5" width="30" height="3" fill="#C8102E"/>
+{%- else -%}<rect width="30" height="20" fill="#E5E7EB"/><text x="15" y="14" font-size="9" text-anchor="middle" fill="#4B5563" font-family="sans-serif">{{ code|upper }}</text>
+{%- endif -%}
+</svg>
+{%- endmacro %}

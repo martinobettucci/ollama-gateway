@@ -23,12 +23,13 @@ MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
 
 
 def render(request: Request, name: str, ctx: dict | None = None, status_code: int = 200):
-    """Rend un template en injectant l'i18n de la requête (`t`, `lang`, `languages`)."""
+    """Rend un template en injectant l'i18n de la requête (`t`, `lang`, `languages`, `native_name`)."""
     lang = i18n.negotiate(request)
     c = dict(ctx or {})
     c["t"] = lambda key, **kw: i18n.translate(key, lang, **kw)
     c["lang"] = lang
     c["languages"] = i18n.languages()
+    c["native_name"] = i18n.native_name
     return TEMPLATES.TemplateResponse(request, name, c, status_code=status_code)
 
 

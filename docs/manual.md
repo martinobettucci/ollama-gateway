@@ -178,16 +178,16 @@ L'interface applique la charte graphique P2Enjoy (voir `docs/DESIGN_SYSTEM.md`).
 ### Langue de l'interface
 
 Le panel est **internationalisé** : les 24 langues officielles de l'Union européenne sont
-disponibles. Un **sélecteur de langue** (icône globe) est présent en haut à droite de la barre,
-visible même sur l'écran de connexion. La langue choisie est **mémorisée pour la session** ; à
-défaut de choix explicite, le panel détecte la langue du navigateur (en-tête `Accept-Language`)
-et retombe sur le français si aucune langue reconnue n'est proposée. Chaque libellé non traduit
-retombe automatiquement sur le français, puis sur la clé technique — l'interface ne casse jamais.
+disponibles. Un **sélecteur de langue discret** est calé **en bas à droite du pied de page**,
+visible sur toutes les pages (écran de connexion compris) : replié, il n'affiche que le **drapeau**
+de la langue courante ; déplié, il liste chaque langue par **drapeau + nom natif** (les drapeaux sont
+des SVG vectoriels, jamais des emoji — charte, et rendu identique sur tous les OS). La langue choisie
+est **mémorisée pour la session** ; à défaut de choix explicite, le panel détecte la langue du
+navigateur (en-tête `Accept-Language`) et retombe sur le français si aucune langue reconnue n'est
+proposée. Chaque libellé non traduit retombe automatiquement sur le français, puis sur la clé
+technique — l'interface ne casse jamais.
 
-Le même tableau de bord, basculé en anglais via le sélecteur (la charte et la mise en page sont
-identiques, seul le texte change) :
-
-![Le panel basculé en anglais via le sélecteur de langue](../app/static/manual/19-lang-en.jpg)
+![Le sélecteur de langue déplié (pied de page) — drapeau + nom natif par langue](../app/static/manual/24-lang-menu.jpg)
 
 Les traductions vivent dans un fichier **YAML par langue** (`app/locales/<code>.yaml`), le
 français étant la source de référence. Le sous-ensemble de langues proposé peut être restreint

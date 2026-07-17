@@ -29,6 +29,14 @@ Journal chronologique des décisions (le plus récent en premier). Complète `CH
   antérieure pouvait re-rendre des cases après qu'une sonde plus récente ait vidé la liste. Garde
   ajoutée dans `refresh()` (`_model_picker`) : on capture le serveur ciblé et on **abandonne** toute
   réponse périmée (sélection changée pendant l'`await`). Rend l'E2E « serveur hors ligne » déterministe.
+- **Placement du sélecteur : pied de page, pas la barre (retour responsable).** La 1ʳᵉ version
+  glissait le sélecteur dans la topbar via un wrapper `.topbar-right` englobant nav + sélecteur — ce
+  qui **reflowait la navigation**. Corrigé : la topbar revient à `marque | nav` (aucun ajout), et le
+  sélecteur descend **en bas à droite du pied de page**, discret. Repli = **drapeau seul** (SVG,
+  jamais emoji — charte + rendu Windows), dépli = **drapeau + nom natif**. Implémenté en disclosure
+  natif `<details>` (ouverture vers le haut, aucun JS) : chaque option est un `<button submit>` de la
+  form POST `/admin/lang`. L'E2E pilote donc un vrai menu (ouvrir le disclosure puis cliquer l'option),
+  plus un `<select>`.
 - **Choix i18n vs conventions du repo.** L'admin reste en Jinja rendu serveur (écart React assumé,
   cf. DESIGN_SYSTEM §6) : l'i18n est donc côté serveur (pas de lib front). Les traductions ont été
   **rédigées à la main** (pas de sous-agent/délégation, conformément aux conventions), une locale par

@@ -14,21 +14,29 @@ async function login(page) {
   await expect(page.locator('h1')).toContainText('Tableau de bord');
 }
 
-// Bascule de langue via le sélecteur de la barre (select onchange → POST /admin/lang).
+// Bascule de langue via le sélecteur du pied de page : ouvrir le disclosure (drapeau) puis
+// cliquer l'option (drapeau + nom natif) → POST /admin/lang.
 async function switchTo(page, code: string) {
-  await page.selectOption('[data-testid=lang-select]', code);
+  const dd = page.locator('[data-testid=lang-form]');               // le <details>
+  if (!(await dd.evaluate((el: HTMLDetailsElement) => el.open))) {
+    await page.locator('[data-testid=lang-select]').click();        // ouvre si replié
+  }
+  await page.locator(`.langsel-opt[data-lang="${code}"]`).click();  // soumet lang=code
   await expect(page.locator('html')).toHaveAttribute('lang', code);
 }
 
 test('i18n : le sélecteur bascule le panel dans la langue choisie et la mémorise', async ({ page }) => {
   await login(page);
 
-  // Le sélecteur de langue est présent et propose les langues européennes.
+  // Le sélecteur de langue vit dans le pied de page (bas à droite), replié sur le seul drapeau.
   const sel = page.locator('[data-testid=lang-select]');
   await expect(sel).toBeVisible();
-  await expect(sel.locator('option')).toHaveCount(24);
-  // FR est la valeur par défaut (source, en tête de liste).
-  await expect(sel).toHaveValue('fr');
+  await expect(page.locator('[data-testid=app-footer] .langsel')).toBeVisible();
+  // Ouvrir la liste : 24 langues (drapeau + nom natif), FR marquée comme courante par défaut.
+  await sel.click();
+  await expect(page.locator('.langsel-opt')).toHaveCount(24);
+  await expect(page.locator('.langsel-opt[data-lang="fr"]')).toHaveClass(/current/);
+  await page.screenshot({ path: `${OUT}/24-lang-menu.jpg`, type: 'jpeg', fullPage: true });
 
   // → Anglais : le tableau de bord et la navigation passent en anglais.
   await switchTo(page, 'en');

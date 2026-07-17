@@ -40,22 +40,39 @@
                  border-radius:999px; font-weight:600; font-size:14px; color:var(--text-2); cursor:pointer;
                  transition:background .15s ease-out,color .15s ease-out; }
     .pill-link:hover { background:#F3F4F6; text-decoration:none; }
-    .topbar-right { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
-    /* Sélecteur de langue (visible même déconnecté) */
-    .langsel { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .5rem; min-height:40px;
-               border:1px solid var(--line); border-radius:999px; background:var(--surface); }
-    .langsel-ic { display:inline-flex; color:var(--text-3); }
-    .langsel select { border:0; background:transparent; font:inherit; font-size:14px; font-weight:600;
-                      color:var(--text-2); cursor:pointer; padding:.1rem 0; }
-    .langsel select:focus-visible { outline:2px solid var(--color-brand); outline-offset:2px; border-radius:6px; }
     .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
 
     main { width:100%; flex:1; padding:1.4rem 1.6rem 2rem; }
     /* ── Pied de page (attribution P2Enjoy, lien vers le site) ──────────────────────── */
-    .appfooter { padding:.85rem 1.4rem; text-align:center; font-size:12.5px; color:var(--text-3);
-                 background:var(--surface); border-top:1px solid var(--line); }
+    .appfooter { position:relative; padding:.85rem 1.4rem; text-align:center; font-size:12.5px;
+                 color:var(--text-3); background:var(--surface); border-top:1px solid var(--line); }
     .appfooter a { color:var(--color-brand); font-weight:600; }
     .appfooter .heart { vertical-align:-2px; margin:0 1px; }
+    /* ── Sélecteur de langue (discret, drapeaux SVG) : calé en bas à droite du pied de page ── */
+    .langsel { position:absolute; right:1rem; bottom:.5rem; }
+    .langsel[open] { z-index:60; }
+    .flag { display:block; height:auto; border-radius:2px; box-shadow:0 0 0 1px rgba(13,13,13,.12); }
+    .langsel-btn { list-style:none; display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .45rem;
+                   border:1px solid var(--line); border-radius:999px; background:var(--surface); cursor:pointer;
+                   min-height:32px; }
+    .langsel-btn::-webkit-details-marker { display:none; }
+    .langsel-btn:hover { border-color:var(--color-brand); }
+    .langsel-caret { display:inline-flex; color:var(--text-3); }
+    .langsel > summary:focus-visible { outline:2px solid var(--color-brand); outline-offset:2px; border-radius:999px; }
+    .langsel-menu { position:absolute; right:0; bottom:calc(100% + .45rem); display:flex; flex-direction:column;
+                    gap:1px; max-height:min(60vh,420px); overflow-y:auto; padding:.35rem; min-width:186px;
+                    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+                    box-shadow:var(--shadow-hover); }
+    .langsel-opt { display:flex; align-items:center; gap:.55rem; width:100%; padding:.4rem .55rem; border:0;
+                   background:transparent; border-radius:8px; font:inherit; font-size:13.5px; color:var(--text-2);
+                   text-align:left; cursor:pointer; }
+    .langsel-opt:hover { background:#F3F4F6; }
+    .langsel-opt .flag { flex:none; }
+    .langsel-opt.current { color:var(--color-brand); font-weight:600; background:var(--color-brand-soft); }
+    @media (max-width:640px) {
+      .appfooter { padding-bottom:2.6rem; }
+      .langsel { left:0; right:0; bottom:.5rem; display:flex; justify-content:center; }
+    }
     /* Composition large : deux colonnes qui se partagent toute la largeur sur grand écran. */
     .grid-split { display:grid; grid-template-columns:minmax(0,1fr); gap:0 1.1rem; align-items:start; }
     @media (min-width:1360px) { .grid-split { grid-template-columns:minmax(0,58fr) minmax(0,42fr); } }
@@ -286,12 +303,12 @@
 </head>
 <body>
   {% from "_icons.html" import icon %}
+  {% from "_flags.html" import flag %}
   <header class="topbar">
     <a class="brand" href="/admin">
       <span class="brand-badge">{{ icon('key-round', 18) }}</span>
       <span>{{ t('brand.name') }} <small>· {{ t('brand.tagline') }}</small></span>
     </a>
-    <div class="topbar-right">
     {% if request.session.get('admin') %}
     <nav class="pills" aria-label="{{ t('nav.aria') }}">
       <a class="pill-link{% if request.url.path == '/admin' or request.url.path.startswith('/admin/keys') %} active{% endif %}"
@@ -307,29 +324,36 @@
       <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} {{ t('nav.logout') }}</a>
     </nav>
     {% endif %}
-      <form class="langsel" method="post" action="/admin/lang" data-testid="lang-form">
-        <input type="hidden" name="next" value="{{ request.url.path }}">
-        <span class="langsel-ic" aria-hidden="true">{{ icon('globe', 16) }}</span>
-        <select name="lang" aria-label="{{ t('nav.language') }}" onchange="this.form.submit()"
-                data-testid="lang-select">
-          {% for code, name in languages %}
-          <option value="{{ code }}"{% if code == lang %} selected{% endif %}>{{ name }}</option>
-          {% endfor %}
-        </select>
-        <noscript><button type="submit">OK</button></noscript>
-      </form>
-    </div>
   </header>
   <main class="{% block main_class %}{% endblock %}">{% block body %}{% endblock %}</main>
 
   <footer class="appfooter" data-testid="app-footer">
-    Made proudly with AI by
-    <a href="https://p2enjoy.studio" target="_blank" rel="noopener noreferrer">P2Enjoy</a>
-    with
-    <svg class="heart" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-danger)"
-         stroke="var(--color-danger)" stroke-width="1.5" role="img" aria-label="{{ t('foot.heart_aria') }}">
-      <path d="M12 21s-7.5-4.6-10-9C.6 9 2 5 5.5 5 7.8 5 9.3 6.3 12 9c2.7-2.7 4.2-4 6.5-4C22 5 23.4 9 22 12c-2.5 4.4-10 9-10 9z"/>
-    </svg>
+    <span class="foot-attr">Made proudly with AI by
+      <a href="https://p2enjoy.studio" target="_blank" rel="noopener noreferrer">P2Enjoy</a>
+      with
+      <svg class="heart" width="14" height="14" viewBox="0 0 24 24" fill="var(--color-danger)"
+           stroke="var(--color-danger)" stroke-width="1.5" role="img" aria-label="{{ t('foot.heart_aria') }}">
+        <path d="M12 21s-7.5-4.6-10-9C.6 9 2 5 5.5 5 7.8 5 9.3 6.3 12 9c2.7-2.7 4.2-4 6.5-4C22 5 23.4 9 22 12c-2.5 4.4-10 9-10 9z"/>
+      </svg>
+    </span>
+    {# Sélecteur de langue discret (drapeau seul replié, drapeau + nom natif dans la liste),
+       calé en bas à droite. Disclosure natif (<details>) : ouverture vers le HAUT, sans JS. #}
+    <details class="langsel" data-testid="lang-form">
+      <summary class="langsel-btn" data-testid="lang-select"
+               title="{{ t('nav.language') }}" aria-label="{{ t('nav.language') }} : {{ native_name(lang) }}">
+        {{ flag(lang, 22) }}<span class="langsel-caret" aria-hidden="true">{{ icon('chevron-down', 14) }}</span>
+      </summary>
+      <form class="langsel-menu" method="post" action="/admin/lang" role="menu">
+        <input type="hidden" name="next" value="{{ request.url.path }}">
+        {% for code, name in languages %}
+        <button type="submit" name="lang" value="{{ code }}" role="menuitem"
+                class="langsel-opt{% if code == lang %} current{% endif %}"
+                data-lang="{{ code }}"{% if code == lang %} aria-current="true"{% endif %}>
+          {{ flag(code, 20) }}<span>{{ name }}</span>
+        </button>
+        {% endfor %}
+      </form>
+    </details>
   </footer>
   {% if request.session.get('admin') %}
   <dialog class="manual" id="manual-dialog" aria-label="{{ t('manual.title') }}">

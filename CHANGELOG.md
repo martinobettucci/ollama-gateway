@@ -10,8 +10,10 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   traduisible via un **fichier YAML par langue** (`app/locales/<code>.yaml`), le français étant la
   source de référence. Les 24 langues officielles de l'Union européenne sont fournies (bg, cs, da,
   de, el, en, es, et, fi, fr, ga, hr, hu, it, lt, lv, mt, nl, pl, pt, ro, sk, sl, sv). Un **sélecteur
-  de langue** (icône globe) apparaît dans la barre, visible même déconnecté ; le choix est mémorisé
-  en session. À défaut, la langue est **négociée** depuis l'en-tête `Accept-Language` du navigateur,
+  de langue discret** est calé **en bas à droite du pied de page** (replié : drapeau seul de la langue
+  courante ; déplié : drapeau + nom natif par langue — drapeaux en **SVG vectoriel**, jamais d'emoji),
+  visible même déconnecté ; le choix est mémorisé en session. À défaut, la langue est **négociée**
+  depuis l'en-tête `Accept-Language` du navigateur,
   avec repli sur le français puis sur la clé technique (l'interface ne casse jamais). Le sous-ensemble
   proposé peut être restreint via `SUPPORTED_LANGS`. Les libellés injectés côté JavaScript (sondes,
   échecs, WHOIS…) sont eux aussi traduits. Placeholders (`{param}`) et identifiants techniques (noms

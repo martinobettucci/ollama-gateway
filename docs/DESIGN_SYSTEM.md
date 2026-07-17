@@ -50,20 +50,25 @@ charte n'en définit pas un.
 3. **Icônes pastilles** : carré arrondi (10 px) en fond doux de la couleur de catégorie,
    icône de la couleur pleine. Icônes **lucide**, trait 2 px, jamais d'emoji.
 4. **Navigation en pilules** : item actif = fond `--color-brand-soft`, texte `--color-brand`,
-   icône + libellé toujours ; inactif = texte `#4B5563`, hover fond gris `#F3F4F6`. Le **sélecteur
-   de langue** (i18n) est calé à droite de la barre (`.topbar-right`) sous forme d'une pilule
-   `rounded-full` bordée (icône lucide `globe` + `<select>` natif discret) ; visible même sur
-   l'écran de connexion, il ne porte pas de couleur de catégorie.
-5. **Boutons** : primaire = fond `#23468C`, texte blanc, `rounded-lg`, hover `#1B3670` ;
+   icône + libellé toujours ; inactif = texte `#4B5563`, hover fond gris `#F3F4F6`. La barre ne
+   contient **que** la marque et la navigation (pas de sélecteur de langue — évite tout reflow).
+5. **Sélecteur de langue (i18n)** : discret, calé **en bas à droite du pied de page** (`.langsel`,
+   `position:absolute`), présent sur toutes les pages (login compris). Disclosure natif
+   (`<details>`/`<summary>`, ouverture vers le haut, sans JS) : replié = **drapeau seul** de la
+   langue courante + chevron ; déplié = liste **drapeau + nom natif**, item courant en
+   `--color-brand-soft`. Les **drapeaux sont des SVG vectoriels** (`app/templates/_flags.html`),
+   **jamais des emoji** (respect de la charte « icônes vectorielles » + rendu identique sur tous les
+   OS, Windows compris). Écart assumé au « lucide only » : un drapeau est polychrome par nature.
+6. **Boutons** : primaire = fond `#23468C`, texte blanc, `rounded-lg`, hover `#1B3670` ;
    secondaire = bordure `#E5E7EB`, fond blanc, hover fond gris ; destructif = rouge (plein ou
    contour). Hauteur ≥ 40 px, focus ring 2 px `#23468C` avec offset.
-6. **Badges/chips `rounded-full`** : fond couleur à 10–15 %, texte couleur pleine + point de
+7. **Badges/chips `rounded-full`** : fond couleur à 10–15 %, texte couleur pleine + point de
    couleur (état de clé : `active` vert / `désactivée` rouge — jamais la couleur seule).
-7. **Le jaune s'utilise avec parcimonie** : un surlignage par vue au maximum (la tuile
+8. **Le jaune s'utilise avec parcimonie** : un surlignage par vue au maximum (la tuile
    « tokens ») ; il ne porte **jamais** de texte (fond de pastille avec icône encre, ou liseré).
-8. **Dégradé navy→vert** : réservé aux zones « héros » (panneau gauche du login/setup) ;
+9. **Dégradé navy→vert** : réservé aux zones « héros » (panneau gauche du login/setup) ;
    jamais sur les surfaces de travail.
-9. **Plein viewport, toujours (règle dure).** L'app occupe **100 % de la largeur ET de la
+10. **Plein viewport, toujours (règle dure).** L'app occupe **100 % de la largeur ET de la
    hauteur** de l'écran — aucun conteneur centré à `max-width`. Sur grand écran, le contenu
    se répartit en colonnes (`grid-split` ≥ 1360 px : table | formulaire, édition | usage ;
    `grid-cards` : grilles de cartes auto-remplies). Le login/setup est un split
@@ -89,6 +94,9 @@ charte n'en définit pas un.
 - **Icônes** : lucide en SVG inline via la macro Jinja `app/templates/_icons.html`
   (`{% from "_icons.html" import icon %}`), taille 14–28 px, `stroke-width` 2,
   `aria-hidden` (le libellé texte accompagne toujours l'icône).
+- **Drapeaux** (sélecteur de langue) : SVG inline via la macro `app/templates/_flags.html`
+  (`{% from "_flags.html" import flag %}`), `flag(code, size)`, viewBox 30×20, `aria-hidden`
+  (le nom natif accompagne le drapeau). Jamais d'emoji-drapeau (rendu incohérent selon l'OS).
 - **Captures de référence** : `e2e/output/*.jpg` (+ vidéos `.webm`), observées en vision à
   chaque livraison.
 
