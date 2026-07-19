@@ -68,6 +68,14 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 REQUEST_LOG_DIR = os.environ.get("REQUEST_LOG_DIR", "").rstrip("/")
 REQUEST_LOG_RETENTION_DAYS = int(os.environ.get("REQUEST_LOG_RETENTION_DAYS", "30"))
 
+# Journaliser le CORPS des requêtes (prompts) ou seulement les métadonnées. Défaut True (corps
+# complet, comportement historique). Mettre à 0/false pour un mode « métadonnées seules » : les
+# prompts (données potentiellement personnelles/sensibles) ne sont PAS écrits sur disque, on ne
+# conserve que ts/ip/méthode/chemin/statut/modèle + en-têtes sanitisés. Contrôle de confidentialité
+# indépendant de REQUEST_LOG_DIR (qui, vide, désactive tout le journal de contenu).
+REQUEST_LOG_BODIES = os.environ.get("REQUEST_LOG_BODIES", "1").strip().lower() not in (
+    "0", "false", "no", "off")
+
 # Chemins amont explicitement proxifiables. Tout le reste → 404 (défense en profondeur ; Caddy
 # filtre déjà, mais le proxy re-vérifie). Préfixes, pas exact-match.
 ALLOWED_PATH_PREFIXES = ("/api/", "/v1/")

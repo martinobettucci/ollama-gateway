@@ -71,7 +71,9 @@ def record(*, key_id, ip, method, path, headers, body, status, model, ts=None) -
             "ts": now.isoformat(timespec="seconds"),
             "ip": ip, "method": method, "path": path, "status": status, "model": model,
             "headers": _sanitize_headers(headers),
-            "body": _decode_body(body if isinstance(body, (bytes, bytearray)) else b""),
+            "body": (_decode_body(body if isinstance(body, (bytes, bytearray)) else b"")
+                     if config.REQUEST_LOG_BODIES
+                     else "«corps non journalisé (REQUEST_LOG_BODIES=0)»"),
         }
         line = json.dumps(rec, ensure_ascii=False)
         with open(d / f"{now.strftime(_HOUR_FMT)}.jsonl", "a", encoding="utf-8") as f:

@@ -359,6 +359,11 @@ vide = valeur par défaut globale). Une tâche planifiée (**cron**) `python -m 
 **compacte** les fichiers des heures passées (gzip) et **purge** au-delà de la rétention. La
 conservation du contenu est activée uniquement si l'exploitant configure un répertoire dédié.
 
+Pour la **confidentialité**, la journalisation du **corps** des requêtes (les prompts, qui peuvent
+contenir des données personnelles ou sensibles) peut être désactivée sans perdre les métadonnées :
+`REQUEST_LOG_BODIES=0` conserve ts/IP/méthode/chemin/statut/modèle et en-têtes sanitisés, mais
+n'écrit **pas** les prompts sur disque (le corps est remplacé par un marqueur).
+
 Ce contenu se **consulte directement dans le panel** : depuis la console de **Logs**, le bouton
 **Contenu des requêtes** ouvre une visionneuse où l'on choisit une **clé** et une **heure**
 (fichier), puis on **filtre le contenu façon grep** (recherche insensible à la casse dans toutes

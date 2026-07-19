@@ -1,6 +1,9 @@
 # Image de la passerelle (rôles proxy ET admin — sélection par $GATEWAY_ROLE dans l'entrypoint).
 # Pur Python → multi-arch (build identique sur x86 de dev et ARM64 de l'hôte self-hosted).
-FROM python:3.12-slim
+# Base épinglée par DIGEST (intégrité/reproductibilité supply-chain). Le digest est celui de la
+# LISTE de manifestes `python:3.12-slim` (multi-arch : Docker résout amd64/arm64 depuis la liste).
+# Rafraîchir périodiquement (nouvelle CVE base) : docker-content-digest de `python:3.12-slim`.
+FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de
 
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app

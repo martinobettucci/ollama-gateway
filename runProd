@@ -6,6 +6,21 @@ if [ ! -f .env.prod ]; then
   echo "ERREUR : .env.prod manquant. Copier .env.prod.example et le renseigner." >&2
   exit 1
 fi
+
+# ── Gate de sécurité pré-déploiement (règle dure, cf. CLAUDE.md) ──────────────────────────────
+# Balayage complet (secrets, CVE deps, SAST, tests) ; TOUTE découverte STOPPE le déploiement.
+# Contournement explicite et tracé : ALLOW_INSECURE_DEPLOY=1 ./runProd (décision consciente).
+if [ "${ALLOW_INSECURE_DEPLOY:-0}" = "1" ]; then
+  echo "⚠️  ALLOW_INSECURE_DEPLOY=1 : balayage de sécurité CONTOURNÉ (déploiement forcé)." >&2
+else
+  if ! ./scripts/security-sweep.sh; then
+    echo >&2
+    echo "⛔ Déploiement STOPPÉ par le balayage de sécurité (voir le résumé ci-dessus)." >&2
+    echo "   Corriger les découvertes, ou forcer : ALLOW_INSECURE_DEPLOY=1 ./runProd" >&2
+    exit 2
+  fi
+fi
+
 # --env-file : compose interpole ${ADMIN_BIND_IP} depuis .env.prod (pas seulement env_file interne).
 C="docker compose --env-file .env.prod -f docker-compose.prod.yml"
 $C up -d --build

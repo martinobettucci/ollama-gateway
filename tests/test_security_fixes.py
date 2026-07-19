@@ -1,13 +1,15 @@
 """Tests dédiés aux correctifs de l'audit de sécurité pré-open-source.
 
-Chaque classe cible un item de l'audit (docs/SECURITY_AUDIT.md) : H2, M1, M2, L1, L2, L3.
+Chaque classe cible un item de l'audit (docs/SECURITY_AUDIT.md) : H2, M1, M2, L1, L2, L3, I1.
 (H1 = bump des dépendances, prouvé par `pip-audit` ; L4 = flag cookie, couvert par config.)
 """
+import glob
 import hashlib
+import json
 
 import pytest
 
-from app import auth, config, db, keys, quotas, servers
+from app import auth, config, db, keys, quotas, reqlog, servers
 from tests.conftest import proxy_client
 
 
@@ -194,3 +196,34 @@ class TestAdminSecurity:
             assert r.status_code == 303
             after = len(servers.list_servers())
         assert after == before  # serveur non créé (URL rejetée)
+
+
+# --- I1 : opt-out de la journalisation du CORPS des requêtes (confidentialité) -----------------
+
+class TestRequestBodyLoggingOptOut:
+    def _read_line(self, base):
+        files = glob.glob(str(base / "key-1" / "*.jsonl"))
+        assert files, "aucun fichier de log écrit"
+        return json.loads(open(files[0], encoding="utf-8").read().strip())
+
+    def test_body_stored_by_default(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(config, "REQUEST_LOG_DIR", str(tmp_path))
+        monkeypatch.setattr(config, "REQUEST_LOG_BODIES", True)
+        reqlog.record(key_id=1, ip="1.2.3.4", method="POST", path="/api/chat",
+                      headers={"authorization": "Bearer sk-x",
+                               "content-type": "application/json"},
+                      body=b'{"model":"m","prompt":"prompt sensible"}', status=200, model="m")
+        rec = self._read_line(tmp_path)
+        assert rec["body"]["prompt"] == "prompt sensible"       # corps conservé
+        assert rec["headers"]["authorization"] == "«masqué»"    # secret masqué (inchangé)
+
+    def test_body_suppressed_when_disabled(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(config, "REQUEST_LOG_DIR", str(tmp_path))
+        monkeypatch.setattr(config, "REQUEST_LOG_BODIES", False)
+        reqlog.record(key_id=1, ip="1.2.3.4", method="POST", path="/api/chat",
+                      headers={"authorization": "Bearer sk-x"},
+                      body=b'{"prompt":"prompt sensible"}', status=200, model="m")
+        rec = self._read_line(tmp_path)
+        assert "prompt sensible" not in json.dumps(rec)         # prompt jamais écrit
+        assert "non journalisé" in rec["body"]
+        assert rec["path"] == "/api/chat" and rec["model"] == "m"  # métadonnées conservées

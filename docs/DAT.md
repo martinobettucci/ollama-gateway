@@ -200,8 +200,23 @@ illisibles (il faut les ressaisir).
   mutantes) en plus du cookie `SameSite=Lax` ; **verrouillage temporaire** du login après échecs
   répétés (anti-brute-force).
 - **Fail-closed prod** : refus de démarrer si `ADMIN_SESSION_SECRET`/`P2E_MASTER_KEY` absents ou
-  laissés au défaut dev (publics). **Conteneur non-root**. Borne de taille de requête
-  (`MAX_REQUEST_BYTES`, 413 au-delà).
+  laissés au défaut dev (publics), **ou** si le rôle admin a un `ADMIN_HOST` vide/`0.0.0.0`/`::`
+  (jamais exposé hors LAN par mégarde). **Conteneur non-root**, **image de base épinglée par
+  digest**. Borne de taille de requête (`MAX_REQUEST_BYTES`, 413 au-delà) + `request_body` côté edge.
+- **Endpoints de gestion du catalogue** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`) **non
+  proxifiés** (403) : la passerelle sert l'inférence, pas l'administration d'Ollama.
+- **Rate-limit résistant à la concurrence** : les requêtes en vol (streaming) comptent dans le
+  débit par clé (pas seulement les requêtes déjà journalisées).
+- **URL amont validée** (schéma `http(s)`, plage link-local/métadonnées refusée) ; défense en
+  profondeur contre une SSRF post-auth admin. **En-têtes de sécurité** : HSTS/nosniff (edge) ;
+  CSP/`X-Frame-Options`/`Referrer-Policy` (panel).
+- **Confidentialité des logs de contenu** : le corps des requêtes (prompts) est journalisé sur
+  disque uniquement si `REQUEST_LOG_DIR` est posé ; `REQUEST_LOG_BODIES=0` conserve les
+  métadonnées sans écrire les prompts. En-têtes secrets (`Authorization`/`x-api-key`/`cookie`)
+  toujours masqués.
+- **Gate de sécurité pré-déploiement** (`scripts/security-sweep.sh`, appelé par `./runProd`) :
+  balayage secrets + CVE + SAST + tests ; toute découverte STOPPE le déploiement (contournement
+  explicite `ALLOW_INSECURE_DEPLOY=1`).
 - Secrets hors repo (`.gitignore` : `.env.prod`, `*.db`). Surface publique (CHANGELOG, manuel)
   sans secret, sans hôte/IP réel, sans topologie d'infrastructure.
 - TLS obtenu par DNS-01 (sortant) : n'exige aucun port entrant hormis celui déjà forwardé.

@@ -22,6 +22,12 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   - **En-têtes de sécurité** : HSTS + `X-Content-Type-Options` côté public (Caddy) ; CSP +
     `X-Frame-Options`/`Referrer-Policy` côté panel ; borne de taille de corps au niveau de l'edge.
   - **Cookie de session `Secure` optionnel** (`ADMIN_COOKIE_SECURE`) pour un admin derrière TLS.
+  - **Confidentialité des logs de contenu** : `REQUEST_LOG_BODIES=0` conserve les métadonnées des
+    requêtes sans écrire le **corps** (prompts) sur disque (les en-têtes secrets restent masqués).
+  - **Image de base épinglée par digest** (intégrité/reproductibilité de la supply-chain).
+  - **Gate de sécurité avant déploiement** : `./runProd` lance un **balayage complet**
+    (`scripts/security-sweep.sh` : secrets, CVE, SAST, tests) et **refuse de déployer** en cas de
+    découverte ; contournement explicite et tracé via `ALLOW_INSECURE_DEPLOY=1`.
 - **Visionneuse du contenu des requêtes (dans le panel).** Depuis la console de **Logs**, un
   bouton **Contenu des requêtes** ouvre une page où l'on choisit une **clé** puis une **heure**
   (fichier) et où l'on **filtre le contenu façon grep** (recherche insensible à la casse sur
