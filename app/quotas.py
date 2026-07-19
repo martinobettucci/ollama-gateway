@@ -11,6 +11,33 @@ import sqlite3
 from . import usage
 from .keys import KeyRecord
 
+# --- Compteur « en vol » par clé (rate-limit anti-concurrence) --------------------------------
+# L'usage n'est journalisé qu'à la FIN de la requête (BackgroundTask du proxy). Sans correctif, N
+# requêtes lentes concurrentes passent toutes le contrôle rpm avant qu'aucune ne soit journalisée.
+# On compte donc les requêtes ACTUELLEMENT en vol pour la clé et on les ajoute au débit observé.
+# État MÉMOIRE : suffisant car le proxy tourne en mono-process (entrypoint sans --workers) ; en
+# multi-process il faudrait un compteur partagé (ex. Redis).
+_INFLIGHT: dict[int, int] = {}
+
+
+def enter(key_id: int) -> None:
+    """Marque une requête de la clé comme « en vol » (à appeler à l'admission, avant l'amont)."""
+    _INFLIGHT[key_id] = _INFLIGHT.get(key_id, 0) + 1
+
+
+def leave(key_id: int) -> None:
+    """Libère une requête « en vol » (à appeler en fin de flux, exactement une fois)."""
+    n = _INFLIGHT.get(key_id, 0) - 1
+    if n > 0:
+        _INFLIGHT[key_id] = n
+    else:
+        _INFLIGHT.pop(key_id, None)
+
+
+def inflight(key_id: int) -> int:
+    """Nombre de requêtes de la clé actuellement en vol (non encore journalisées)."""
+    return _INFLIGHT.get(key_id, 0)
+
 
 def check(rec: KeyRecord, conn: sqlite3.Connection) -> tuple[bool, str | None]:
     """Renvoie (autorisé, motif). Motif renseigné seulement si refus.
@@ -36,7 +63,9 @@ def check(rec: KeyRecord, conn: sqlite3.Connection) -> tuple[bool, str | None]:
             return False, f"clé expirée par inactivité ({rec.idle_expiry_days} j sans usage)"
 
     if rec.rpm_limit is not None:
-        if usage.recent_request_count(rec.id, 60, conn) >= rec.rpm_limit:
+        # Débit journalisé (60 s) + requêtes en vol non encore journalisées (anti-concurrence).
+        recent = usage.recent_request_count(rec.id, 60, conn) + inflight(rec.id)
+        if recent >= rec.rpm_limit:
             return False, f"rate-limit dépassé ({rec.rpm_limit} req/min)"
     if rec.monthly_token_cap is not None:
         if usage.month_tokens(rec.id, conn) >= rec.monthly_token_cap:

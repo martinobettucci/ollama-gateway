@@ -51,10 +51,30 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(SessionMiddleware, secret_key=config.ADMIN_SESSION_SECRET,
-                   session_cookie="ollama_gw_admin", same_site="lax", https_only=False)
+                   session_cookie="ollama_gw_admin", same_site="lax",
+                   https_only=config.ADMIN_COOKIE_SECURE)
 app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """En-têtes de sécurité sur toutes les réponses de l'admin (LAN-only, hors Caddy).
+
+    CSP avec `'unsafe-inline'` : le panel assume des styles/scripts inline (rendu serveur sans
+    build front, cf. DESIGN_SYSTEM §6). La CSP bloque tout de même les origines externes, le
+    mixed-content et le cadrage ; défense en profondeur (l'admin n'a pas de faille XSS connue)."""
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; "
+        "object-src 'none'")
+    return response
 
 
 @app.middleware("http")
@@ -565,9 +585,13 @@ async def server_create(request: Request):
     form = await request.form()
     base = form.get("base_url", "").strip()
     if base:
-        servers.create_server(
-            name=form.get("name", "").strip() or "serveur",
-            base_url=base, auth_token=form.get("auth_token", "").strip())
+        try:
+            servers.validate_base_url(base)
+            servers.create_server(
+                name=form.get("name", "").strip() or "serveur",
+                base_url=base, auth_token=form.get("auth_token", "").strip())
+        except ValueError as exc:
+            request.session["server_flash"] = {"ok": False, "text": f"URL amont invalide : {exc}"}
     return RedirectResponse("/admin/servers", status_code=303)
 
 
@@ -576,9 +600,16 @@ async def server_update(request: Request, server_id: int):
     if (r := _guard(request)):
         return r
     form = await request.form()
+    base = form.get("base_url", "").strip()
+    if base:
+        try:
+            servers.validate_base_url(base)
+        except ValueError as exc:
+            request.session["server_flash"] = {"ok": False, "text": f"URL amont invalide : {exc}"}
+            return RedirectResponse("/admin/servers", status_code=303)
     servers.update_server(
         server_id, name=form.get("name", "").strip() or "serveur",
-        base_url=form.get("base_url", "").strip(),
+        base_url=base,
         enabled=form.get("enabled") is not None,
         auth_token=form.get("auth_token", ""),
         clear_auth=form.get("clear_auth") is not None)

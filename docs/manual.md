@@ -53,7 +53,9 @@ flowchart LR
 Depuis la page **Serveurs** :
 
 - **Ajouter un serveur** : un nom, une URL de base, et — si le serveur distant exige une
-  authentification — un **jeton Bearer** (chiffré au repos, jamais réaffiché).
+  authentification — un **jeton Bearer** (chiffré au repos, jamais réaffiché). L'URL de base doit
+  être en `http`/`https` ; les cibles locales/LAN sont acceptées (un Ollama local ou du réseau),
+  seules les plages de métadonnées d'hébergeur (link-local) sont refusées.
 - **Tester** un serveur : la passerelle interroge sa liste de modèles ; le serveur passe
   « en ligne » ou « hors ligne » et ses modèles détectés s'affichent.
 - **Activer / désactiver** ou **supprimer** un serveur (le serveur par défaut et un serveur
@@ -126,6 +128,8 @@ sequenceDiagram
         P-->>C: 401
     else origine non autorisée
         P-->>C: 403
+    else endpoint de gestion du catalogue (pull/push/delete/create/copy/blobs)
+        P-->>C: 403
     else quota mensuel ou rate-limit dépassé
         P-->>C: 429
     else serveur rattaché indisponible
@@ -144,8 +148,11 @@ Points de comportement :
 
 - Le **bannissement d'origine est vérifié en premier** (avant toute clé) : une IP/CIDR de la
   liste globale est refusée (403), quelle que soit la clé présentée.
-- **Tous** les endpoints Ollama sont proxifiés (`/api/*`, `/v1/*`) ; `/_proxy_health`
+- Les endpoints d'**inférence et de lecture** (`/api/*`, `/v1/*`) sont proxifiés ; `/_proxy_health`
   répond sans authentification pour la supervision.
+- Les endpoints de **gestion du catalogue** (`pull`, `push`, `delete`, `create`, `copy`, `blobs`)
+  ne sont **jamais** proxifiés (403) : la passerelle sert l'inférence, pas l'administration du
+  serveur Ollama (télécharger/supprimer un modèle se fait côté serveur, hors passerelle).
 - La requête est routée vers le **serveur d'exécution rattaché à la clé** (local ou distant) ;
   si ce serveur est désactivé/absent → 503.
 - La **restriction de modèle** est appliquée avant le relais, quelle que soit l'API (Ollama,

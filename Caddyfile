@@ -24,9 +24,23 @@
 		propagation_timeout 300s
 	}
 
+	# En-têtes de sécurité côté public (API JSON). HSTS force le TLS ; nosniff bloque le MIME
+	# sniffing ; on retire la bannière `Server`. Pas de CSP ici : la surface publique ne rend pas
+	# de HTML navigateur (le panel HTML est LAN-only et hors Caddy).
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
 	# Seuls les chemins d'inférence sont proxifiés ; tout le reste (dont /admin) → 404.
 	@infer path /api/* /v1/* /_proxy_health
 	handle @infer {
+		# Borne de taille du corps (défense en profondeur anti-DoS mémoire ; le proxy re-vérifie
+		# via MAX_REQUEST_BYTES). Généreux pour l'image-to-image base64.
+		request_body {
+			max_size 100MB
+		}
 		reverse_proxy 127.0.0.1:8787 {
 			flush_interval -1        # streaming NDJSON/SSE en temps réel (pas de buffering)
 			transport http {

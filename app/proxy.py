@@ -220,6 +220,16 @@ async def proxy(request: Request, full_path: str):
         _log(rec.id, ip, method, path, "", 403, t0)
         return JSONResponse({"error": "origine non autorisée pour cette clé"}, status_code=403)
 
+    # --- Endpoints de GESTION du catalogue (pull/push/delete/create/copy/blobs) : jamais
+    #     proxifiés. Ils échappent à l'allowlist de modèles (qui ne lit que le champ `model` du
+    #     corps, absent de ces requêtes) et muteraient l'état du serveur partagé. Refus pour TOUTE
+    #     clé — la passerelle est un proxy d'inférence, pas d'administration d'Ollama. ---
+    if apis.is_management_path(path):
+        _log(rec.id, ip, method, path, "", 403, t0)
+        return JSONResponse(
+            {"error": "endpoint de gestion non proxifié (inférence uniquement)"},
+            status_code=403)
+
     # --- Quotas + résolution du serveur d'exécution rattaché ---
     conn = db.connect()
     try:
@@ -272,6 +282,18 @@ async def proxy(request: Request, full_path: str):
 
     keys.touch_last_used(rec.id)
 
+    # --- Rate-limit anti-concurrence : la requête compte comme « en vol » pour la clé dès
+    #     l'admission (avant l'amont) et jusqu'à la fin du flux (cf. quotas.check / quotas.enter). ---
+    quotas.enter(rec.id)
+    _inflight_released = False
+
+    def _release() -> None:
+        """Libère le compteur « en vol » de la clé, au plus une fois (fin de flux / erreur)."""
+        nonlocal _inflight_released
+        if not _inflight_released:
+            _inflight_released = True
+            quotas.leave(rec.id)
+
     # --- Relais amont (streaming) avec REPLI transparent ---
     # Candidats : serveur primaire, puis serveur de repli (si défini/activé/distinct). Sur ERREUR
     # SERVEUR (5xx) ou erreur de connexion du primaire, on rejoue la MÊME requête vers le repli.
@@ -314,6 +336,7 @@ async def proxy(request: Request, full_path: str):
             _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body),
                  server_id=srv.id)
             _content_log(502, req_model)
+            _release()
             return JSONResponse({"error": "upstream indisponible"}, status_code=502)
         content = up_resp.content
         if up_resp.status_code == 200:
@@ -321,6 +344,7 @@ async def proxy(request: Request, full_path: str):
         _log(rec.id, ip, method, path, "", up_resp.status_code, t0,
              bytes_in=len(body), bytes_out=len(content), server_id=used.id)
         _content_log(up_resp.status_code, req_model)
+        _release()
         media = up_resp.headers.get("content-type", "application/json")
         return Response(content, status_code=up_resp.status_code, media_type=media)
 
@@ -328,6 +352,7 @@ async def proxy(request: Request, full_path: str):
     if up_resp is None:
         _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body), server_id=srv.id)
         _content_log(502, req_model)
+        _release()
         return JSONResponse({"error": "upstream indisponible"}, status_code=502)
 
     sniff = _TokenSniffer()
@@ -344,6 +369,7 @@ async def proxy(request: Request, full_path: str):
         finally:
             sniff.finish()
             await up_resp.aclose()
+            _release()  # fin de flux (y compris déconnexion client) → libère le compteur en vol
 
     def finalize():
         model = sniff.model or _model_from_body(body)

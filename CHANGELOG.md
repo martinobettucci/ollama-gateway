@@ -6,6 +6,22 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Durcissement de sécurité (audit pré-open-source).** Série de correctifs issus d'un audit complet
+  (SAST + revue manuelle), chacun couvert par ses tests dédiés (`tests/test_security_fixes.py`) :
+  - **Dépendances à jour** : purge des CVE connues des dépendances épinglées (`pip-audit` propre).
+  - **Endpoints de gestion du catalogue non proxifiés** : `pull`/`push`/`delete`/`create`/`copy`/
+    `blobs` renvoient désormais **403** pour toute clé — la passerelle est un proxy d'**inférence**,
+    pas d'administration d'Ollama (ces chemins échappaient à l'allowlist de modèles).
+  - **Bind admin fail-closed en prod** : le rôle admin **refuse de démarrer** si son adresse d'écoute
+    est absente ou « toutes interfaces » (jamais exposé hors LAN par mégarde).
+  - **Rate-limit résistant à la concurrence** : les requêtes en vol (streaming) comptent dans le
+    débit par clé, plus seulement les requêtes déjà journalisées.
+  - **Validation de l'URL amont d'un serveur** : schéma `http(s)` requis et plage link-local
+    (métadonnées) refusée (les cibles loopback/LAN restent autorisées).
+  - **Hachage du mot de passe admin renforcé** (pbkdf2 : nombre de tours relevé ; rétro-compatible).
+  - **En-têtes de sécurité** : HSTS + `X-Content-Type-Options` côté public (Caddy) ; CSP +
+    `X-Frame-Options`/`Referrer-Policy` côté panel ; borne de taille de corps au niveau de l'edge.
+  - **Cookie de session `Secure` optionnel** (`ADMIN_COOKIE_SECURE`) pour un admin derrière TLS.
 - **Visionneuse du contenu des requêtes (dans le panel).** Depuis la console de **Logs**, un
   bouton **Contenu des requêtes** ouvre une page où l'on choisit une **clé** puis une **heure**
   (fichier) et où l'on **filtre le contenu façon grep** (recherche insensible à la casse sur

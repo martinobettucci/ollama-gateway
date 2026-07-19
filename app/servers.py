@@ -6,13 +6,38 @@ orphelines (le reconciler `ensure_default` réassigne toute clé au serveur par 
 d'auth d'un serveur distant est chiffré au repos (`crypto.py`) et **jamais réaffiché** en clair.
 """
 import asyncio
+import ipaddress
 import json
 import sqlite3
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 import httpx
 
 from . import apis, config, crypto, db
+
+
+def validate_base_url(url: str) -> None:
+    """Lève `ValueError` si l'URL amont est inutilisable/dangereuse.
+
+    Refuse : schéma non `http`/`https`, hôte absent, et hôtes en plage **link-local**
+    (169.254.0.0/16, fe80::/10 — endpoints de métadonnées cloud). Les cibles **loopback/LAN
+    privées** restent AUTORISÉES : un serveur d'exécution Ollama légitime est souvent local
+    (127.0.0.1) ou sur le LAN (RFC 1918). Défense en profondeur contre une SSRF post-auth de
+    l'admin (bouton « Essayer » / sonde) qui viserait les métadonnées de l'hébergeur.
+    """
+    parts = urlsplit((url or "").strip())
+    if parts.scheme not in ("http", "https"):
+        raise ValueError("schéma d'URL invalide (http/https requis)")
+    host = parts.hostname or ""
+    if not host:
+        raise ValueError("hôte d'URL manquant")
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        ip = None
+    if ip is not None and ip.is_link_local:
+        raise ValueError("hôte en plage link-local interdite (métadonnées cloud)")
 
 
 @dataclass

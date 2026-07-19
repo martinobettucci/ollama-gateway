@@ -30,7 +30,10 @@ def key_prefix(key: str, n: int = 18) -> str:
 
 # --- Mot de passe admin -----------------------------------------------------------------------
 
-_PBKDF2_ROUNDS = 240_000
+# ≥ 600 000 tours (recommandation OWASP courante). `verify_password` lit le nombre de tours DANS le
+# hash stocké → augmenter ici est rétro-compatible (anciens hachages toujours vérifiables ; ré-encodés
+# au prochain changement de mot de passe).
+_PBKDF2_ROUNDS = 600_000
 
 
 def hash_password(password: str) -> str:

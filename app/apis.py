@@ -75,6 +75,19 @@ CATALOG: dict[str, list[tuple[str, str, str]]] = {
 # SDK (ex. client Anthropic qui interroge /v1/models) restreint à une autre famille.
 LISTING_PATHS = {"/api/tags", "/v1/models"}
 
+# Endpoints de GESTION du catalogue de modèles d'Ollama : `pull`/`push`/`delete`/`create`/`copy`/
+# `blobs`. Ils MUTENT l'état du serveur d'exécution partagé (télécharger un modèle géant = DoS
+# disque, supprimer un modèle = indispo). La passerelle est un proxy d'INFÉRENCE : ces endpoints
+# n'y ont pas leur place et sont refusés pour toute clé (ils échappaient sinon à l'allowlist de
+# modèles, qui ne s'applique qu'aux corps portant un champ `model` — pull/delete utilisent `name`).
+MANAGEMENT_PATHS = ("/api/pull", "/api/push", "/api/delete", "/api/create",
+                    "/api/copy", "/api/blobs")
+
+
+def is_management_path(path: str) -> bool:
+    """True si `path` est un endpoint de gestion du catalogue (jamais proxifié)."""
+    return path.rstrip("/") in MANAGEMENT_PATHS or path.startswith("/api/blobs/")
+
 
 def family_for_path(path: str) -> str | None:
     """Famille d'API d'un chemin amont, ou None s'il n'appartient à aucune famille connue.

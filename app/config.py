@@ -39,6 +39,12 @@ DEV_MASTER_KEY = "dev-insecure-master-key"
 # Secret de signature des sessions admin (cookie). OBLIGATOIRE en prod ; défaut dev non secret.
 ADMIN_SESSION_SECRET = os.environ.get("ADMIN_SESSION_SECRET", DEV_SESSION_SECRET)
 
+# Pose l'attribut `Secure` sur le cookie de session admin. Défaut False : l'admin est servi en
+# HTTP clair sur le LAN (pas de TLS). À activer (1/true) UNIQUEMENT si l'admin passe derrière du TLS,
+# sinon le cookie `Secure` ne serait jamais renvoyé et le login casserait.
+ADMIN_COOKIE_SECURE = os.environ.get("ADMIN_COOKIE_SECURE", "").strip().lower() in (
+    "1", "true", "yes", "on")
+
 # Clé maître de chiffrement au repos (jetons d'auth des serveurs distants, cf. crypto.py).
 # OBLIGATOIRE en prod ; défaut dev non secret. Changer cette clé rend les jetons stockés illisibles.
 P2E_MASTER_KEY = os.environ.get("P2E_MASTER_KEY", DEV_MASTER_KEY)
@@ -94,3 +100,11 @@ def check_runtime_secrets() -> None:
             "Secret(s) de production absent(s) ou laissé(s) au défaut dev (publics) : "
             + ", ".join(missing)
             + ". Renseignez-les dans .env.prod (ex. `openssl rand -hex 32`) avant de démarrer.")
+    # Fail-closed du BIND admin : l'admin est LAN-only par conception. Un ADMIN_HOST absent ou
+    # « toutes interfaces » (0.0.0.0 / ::) sous network_mode: host exposerait le panel sur l'IP
+    # publique. On refuse de démarrer le rôle admin sans une IP LAN explicite (ADMIN_BIND_IP dans
+    # .env.prod). Le rôle proxy n'écoute pas l'admin → non concerné.
+    if GATEWAY_ROLE == "admin" and ADMIN_HOST.strip() in ("", "0.0.0.0", "::"):
+        raise RuntimeError(
+            "ADMIN_HOST absent ou « toutes interfaces » (0.0.0.0/::) en prod : l'admin doit se "
+            "lier à une IP LAN explicite (ADMIN_BIND_IP dans .env.prod), jamais à l'Internet.")
