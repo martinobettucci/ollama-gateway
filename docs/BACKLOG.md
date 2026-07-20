@@ -268,11 +268,19 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   disable/delete sans « Ollama local » parasite ; base partagée : clé importée acceptée par le
   proxy + en-tête `x-ratelimit` + visible au dashboard + désactivée au retrait) ; **vision faite**
   (capture 28-reconcile).*
-- [ ] **Sous-phase 2 — Livraison du secret des clés générées.** Canal **e-mail** (SMTP configuré en
-  YAML via `${NOM}`, **Inbucket** en dev pour l'assertion E2E) et **webhook** (template libre +
-  presets `slack`/`discord`/`generic`, jetons `#OllamaKey`/`#OllamaUrl` + variables d'environnement
-  valorisées). Idempotence : `delivered_at` par clé/canal, une seule livraison. — *tests à venir
-  (unit + E2E Inbucket + webhook mock).*
+- [x] **Sous-phase 2 — Livraison du secret des clés générées.** `app/deliver.py` : canal **e-mail**
+  (`smtplib`, TLS none/starttls/tls, SMTP configuré en YAML via `${NOM}`) et **webhook** (`httpx`
+  POST, presets `slack`/`discord`/`generic` ou **template libre**, jetons `#OllamaKey`/`#OllamaUrl`/
+  `#OllamaLabel`) ; corps = **variables d'environnement valorisées** (`client_env`). Livraison HORS
+  verrou juste après la génération (secret en mémoire) ; idempotence `secret_delivered_at`
+  (migration 0011) ; best-effort (canal en échec n'interrompt pas les autres, rapporté). Puits SMTP
+  de test sans dépendance (`devfixtures/smtp_sink.py`, Python 3.13) + capteur webhook du faux
+  Ollama ; Inbucket optionnel en dev (profil compose `mail`). — *tests : `tests/test_deliver.py` (8 :
+  env valorisé, presets slack/discord/generic + template, POST webhook rendu, dialogue SMTP
+  starttls + tls none, best-effort multi-canal) ; `tests/test_reconcile.py` (livraison + horodatage
+  + idempotence, échec rapporté non marqué, clé importée non livrée, e-mail exige SMTP) ; E2E
+  `e2e/tests/delivery.spec.ts` (même secret livré par e-mail ET webhook, env valorisé, horodatage) ;
+  **vision faite** (capture 29-delivery).*
 - [ ] **Sous-phase 3 — Export de la configuration en YAML.** Depuis l'UI (et CLI) : dump des
   serveurs/cibles/clés courants au format `gateway.yaml` (sans secret : clés sans valeur, SMTP en
   `${NOM}`). — *tests à venir (unit + E2E).*

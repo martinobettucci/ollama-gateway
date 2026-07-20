@@ -258,9 +258,37 @@ keys:
 En mode headless, on lance `./runProdHeadless` (proxy + TLS, **sans service d'administration**). Le
 modèle complet est fourni dans `gateway.example.yaml`.
 
-> La **livraison** automatique du secret d'une clé **générée** (par webhook ou e-mail) est une
-> évolution en cours ; aujourd'hui, pour obtenir une clé exploitable côté client en headless, on
-> **importe** une clé au secret connu via `value: ${NOM}`.
+### Livraison du secret d'une clé générée
+
+Une clé déclarative **sans `value`** est **générée** : son secret n'apparaît qu'une fois. Sans
+interface pour le copier, la passerelle le **livre** vers les canaux déclarés dans `deliver`, dans
+le même passage de réconciliation (une seule fois — une clé déjà livrée ne l'est pas à nouveau) :
+
+- **e-mail** — le message contient les **variables d'environnement valorisées** prêtes à coller. La
+  configuration SMTP est un bloc `smtp:` (hôte, port, TLS `none`/`starttls`/`tls`, identifiants par
+  `${NOM}`). En dev, un mail catcher **Inbucket** peut être lancé (profil compose `mail`).
+- **webhook** — un `POST` dont la charge utile s'adapte au service via un **preset**
+  (`slack`, `discord`, `generic`) ou un **template libre**. Jetons remplacés dans le template :
+  `#OllamaKey` (le secret), `#OllamaUrl` (l'URL publique), `#OllamaLabel` (le libellé).
+
+```yaml
+smtp:
+  host: ${SMTP_HOST}
+  port: 587
+  tls: starttls
+  username: ${SMTP_USER}
+  password: ${SMTP_PASSWORD}
+  from: gateway@exemple.com
+keys:
+  - name: equipe-data
+    deliver:
+      - email: { to: equipe@exemple.com }
+      - webhook: { url: ${SLACK_WEBHOOK_URL}, preset: slack }
+```
+
+Si un canal échoue, l'erreur est rapportée et le secret étant irrécupérable, il faut **faire tourner
+la clé** (la retirer avec `prune: true` puis la remettre) pour relivrer. Pour une clé au secret
+**connu**, préférez l'import via `value: ${NOM}` (aucune livraison nécessaire).
 
 ## Le panel d'admin, fonctionnalité par fonctionnalité
 

@@ -62,5 +62,16 @@ services:
       fake-ollama:
         condition: service_healthy
 
+  # Mail catcher OPTIONNEL pour essayer la livraison déclarative par e-mail en dev (profil « mail »,
+  # pas démarré par runDev) :  docker compose -f docker-compose.dev.yml --profile mail up -d inbucket
+  # UI web : http://localhost:9000 · SMTP : localhost:2500. Dans le YAML : smtp.host=inbucket,
+  # smtp.port=2500, smtp.tls=none. (Les tests E2E, eux, utilisent un puits SMTP intégré sans image.)
+  inbucket:
+    image: inbucket/inbucket:3.0.4
+    profiles: ["mail"]
+    ports:
+      - "9000:9000"
+      - "2500:2500"
+
 volumes:
   gw_data:

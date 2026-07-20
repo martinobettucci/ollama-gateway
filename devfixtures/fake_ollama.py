@@ -185,3 +185,21 @@ async def generate(request: Request):
         return StreamingResponse(gen(), media_type="application/x-ndjson")
     return JSONResponse({"model": model, "response": "".join(_CHUNKS), "done": True,
                          "prompt_eval_count": 11, "eval_count": len(_CHUNKS)})
+
+
+# --- Capteur de webhook (tests E2E de la livraison déclarative) --------------------------------
+# Enregistre la DERNIÈRE charge utile POSTée sur /webhook ; /webhook/last la restitue au test.
+LAST_WEBHOOK: dict | None = None
+
+
+@app.post("/webhook")
+async def webhook_sink(request: Request):
+    global LAST_WEBHOOK
+    raw = (await request.body()).decode("utf-8", "replace")
+    LAST_WEBHOOK = {"headers": dict(request.headers), "body": raw}
+    return JSONResponse({"ok": True})
+
+
+@app.get("/webhook/last")
+async def webhook_last() -> JSONResponse:
+    return JSONResponse(LAST_WEBHOOK or {})

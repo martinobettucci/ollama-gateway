@@ -6,6 +6,16 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Mode déclaratif — phase 2 : livraison du secret des clés générées.** Une clé déclarative
+  **générée** (sans `value`) voit son secret **poussé** vers les canaux configurés, une seule fois,
+  dans le même passage de réconciliation : **e-mail** (SMTP configuré en YAML, secrets par `${NOM}`,
+  TLS `none`/`starttls`/`tls`) et/ou **webhook** (`POST` avec **presets** `slack`/`discord`/`generic`
+  ou **template libre** ; jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`). Le message porte les
+  **variables d'environnement valorisées** prêtes à coller. Idempotent (`secret_delivered_at`) :
+  une clé déjà livrée ne l'est pas deux fois ; livraison best-effort (un canal en échec n'interrompt
+  pas les autres, l'échec est rapporté). En dev, mail catcher **Inbucket** optionnel (profil
+  compose `mail`) ; les tests E2E utilisent un puits SMTP intégré (aucun service externe).
+
 - **Mode déclaratif (headless / « GitOps ») — phase 1 : réconciliation.** La passerelle peut
   désormais se déployer **sans WebUI**, configurée par un **fichier YAML** versionnable. Quand la
   variable d'environnement `GATEWAY_CONFIG` pointe vers un fichier (le drapeau vit dans

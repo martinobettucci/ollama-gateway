@@ -31,7 +31,7 @@ from pathlib import Path
 
 import yaml
 
-from . import apis, db, keys, servers, targets
+from . import apis, db, deliver, keys, servers, targets
 
 # ${NOM} → valeur d'environnement. Nom façon shell : lettre/underscore puis alphanumériques.
 _ENV_RE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
@@ -161,6 +161,66 @@ def _validate_targets(raw: object) -> list[dict]:
     return out
 
 
+def _validate_smtp(raw: object) -> dict | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ConfigError("« smtp » : objet attendu")
+    cfg = {
+        "host": _req_str(raw, "host", "smtp"),
+        "port": _opt_int(raw, "port", "smtp") or 587,
+        "from": _req_str(raw, "from", "smtp"),
+        "tls": raw.get("tls", "starttls"),
+        "username": raw.get("username") or "",
+        "password": raw.get("password") or "",
+    }
+    if cfg["tls"] not in ("none", "starttls", "tls"):
+        raise ConfigError("smtp.tls : « none », « starttls » ou « tls » attendu")
+    return cfg
+
+
+def _validate_deliver(raw: object, where: str) -> list[dict]:
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        raise ConfigError(f"{where} : « deliver » : liste attendue")
+    out = []
+    for j, ch in enumerate(raw):
+        w = f"{where}.deliver[{j}]"
+        if not isinstance(ch, dict) or len(ch) != 1 or next(iter(ch)) not in ("email", "webhook"):
+            raise ConfigError(f"{w} : un canal « email » OU « webhook » attendu")
+        kind, spec = next(iter(ch.items()))
+        if not isinstance(spec, dict):
+            raise ConfigError(f"{w} : objet attendu pour « {kind} »")
+        if kind == "email":
+            out.append({"email": {"to": _req_str(spec, "to", w)}})
+        else:
+            url = _req_str(spec, "url", w)
+            if not url.startswith(("http://", "https://")):
+                raise ConfigError(f"{w} : webhook.url doit commencer par http(s)://")
+            preset = spec.get("preset")
+            template = spec.get("template")
+            if preset is not None and preset not in deliver.WEBHOOK_PRESETS:
+                raise ConfigError(f"{w} : preset inconnu « {preset} » "
+                                  f"(attendu : {', '.join(deliver.WEBHOOK_PRESETS)})")
+            if template is not None and not isinstance(template, str):
+                raise ConfigError(f"{w} : webhook.template : chaîne attendue")
+            headers = spec.get("headers")
+            if headers is not None and not isinstance(headers, dict):
+                raise ConfigError(f"{w} : webhook.headers : objet attendu")
+            wh = {"url": url}
+            if preset is not None:
+                wh["preset"] = preset
+            if template is not None:
+                wh["template"] = template
+            if headers:
+                wh["headers"] = {str(k): str(v) for k, v in headers.items()}
+            if spec.get("method"):
+                wh["method"] = str(spec["method"])
+            out.append({"webhook": wh})
+    return out
+
+
 def _validate_keys(raw: object, server_names: set[str], target_names: set[str]) -> list[dict]:
     if not isinstance(raw, list):
         raise ConfigError("« keys » : liste attendue")
@@ -202,6 +262,7 @@ def _validate_keys(raw: object, server_names: set[str], target_names: set[str]) 
             "expires_at": (k.get("expires_at") or None),
             "idle_expiry_days": _opt_int(k, "idle_expiry_days", where),
             "log_retention_days": _opt_int(k, "log_retention_days", where),
+            "deliver": _validate_deliver(k.get("deliver"), where),
         })
     return out
 
@@ -209,9 +270,19 @@ def _validate_keys(raw: object, server_names: set[str], target_names: set[str]) 
 # --- Rapport ----------------------------------------------------------------------------------
 
 @dataclass
+class DeliveryJob:
+    """Livraison en attente du secret d'une clé GÉNÉRÉE : effectuée HORS verrou (I/O réseau)."""
+    key_id: int
+    ref: str
+    label: str
+    secret: str
+    url: str
+    channels: list[dict]
+
+
+@dataclass
 class Report:
-    """Résumé d'une réconciliation (sans aucun secret). `created_secrets` porte les clés générées
-    à livrer (phase de livraison ultérieure) : (external_ref, clé_en_clair, importée?)."""
+    """Résumé d'une réconciliation (sans aucun secret)."""
     servers_created: list[str] = field(default_factory=list)
     servers_updated: list[str] = field(default_factory=list)
     targets_created: list[str] = field(default_factory=list)
@@ -220,14 +291,17 @@ class Report:
     keys_updated: list[str] = field(default_factory=list)
     keys_disabled: list[str] = field(default_factory=list)
     keys_deleted: list[str] = field(default_factory=list)
-    created_secrets: list[tuple[str, str, bool]] = field(default_factory=list)
+    keys_delivered: list[str] = field(default_factory=list)          # secret livré (webhook/e-mail)
+    delivery_errors: list[str] = field(default_factory=list)         # "ref: erreur"
+    generated_without_delivery: list[str] = field(default_factory=list)  # secret irrécupérable
 
     def summary(self) -> str:
         return (
             f"serveurs: +{len(self.servers_created)} ~{len(self.servers_updated)} | "
             f"cibles: +{len(self.targets_created)} ~{len(self.targets_updated)} | "
             f"clés: +{len(self.keys_created)} ~{len(self.keys_updated)} "
-            f"⊘{len(self.keys_disabled)} ✗{len(self.keys_deleted)}")
+            f"⊘{len(self.keys_disabled)} ✗{len(self.keys_deleted)} | "
+            f"livrées: {len(self.keys_delivered)}")
 
 
 # --- Écriture (helpers directs SQLite) --------------------------------------------------------
@@ -340,7 +414,7 @@ def _apply_targets(cfg: list[dict], report: Report) -> dict[str, int]:
 
 
 def _apply_keys(cfg: list[dict], server_ids: dict[str, int], target_ids: dict[str, int],
-                prune: bool, report: Report) -> None:
+                prune: bool, report: Report) -> list[DeliveryJob]:
     conn = db.connect()
     try:
         default_sid = servers.default_id(conn)
@@ -349,6 +423,7 @@ def _apply_keys(cfg: list[dict], server_ids: dict[str, int], target_ids: dict[st
         conn.close()
     managed = keys.managed_refs()
     seen: set[str] = set()
+    jobs: list[DeliveryJob] = []
     for k in cfg:
         ref = k["name"]
         seen.add(ref)
@@ -376,7 +451,13 @@ def _apply_keys(cfg: list[dict], server_ids: dict[str, int], target_ids: dict[st
             if not k["enabled"]:
                 keys.set_enabled(rec.id, False)
             report.keys_created.append(ref)
-            report.created_secrets.append((ref, secret, bool(k["value"])))
+            if not k["value"]:  # clé GÉNÉRÉE → secret à livrer (importée : l'opérateur le connaît)
+                if k["deliver"]:
+                    jobs.append(DeliveryJob(
+                        key_id=rec.id, ref=ref, label=k["label"], secret=secret,
+                        url=rec.target_base_url or "", channels=k["deliver"]))
+                else:
+                    report.generated_without_delivery.append(ref)
     # Élagage : clés gérées absentes du YAML → désactivées (défaut) ou supprimées (prune).
     for ref, kid in managed.items():
         if ref in seen:
@@ -387,6 +468,7 @@ def _apply_keys(cfg: list[dict], server_ids: dict[str, int], target_ids: dict[st
         else:
             keys.set_enabled(kid, False)
             report.keys_disabled.append(ref)
+    return jobs
 
 
 def apply(path: str) -> Report:
@@ -397,16 +479,32 @@ def apply(path: str) -> Report:
     if not isinstance(cfg.get("prune", False), bool):
         raise ConfigError("« prune » : booléen attendu")
     prune = bool(cfg.get("prune", False))
+    smtp_cfg = _validate_smtp(cfg.get("smtp"))
     servers_cfg = _validate_servers(cfg.get("servers") or [])
     targets_cfg = _validate_targets(cfg.get("targets") or [])
     keys_cfg = _validate_keys(cfg.get("keys") or [],
                               {s["name"] for s in servers_cfg},
                               {t["name"] for t in targets_cfg})
+    # Un canal e-mail exige une configuration SMTP.
+    needs_smtp = any("email" in ch for k in keys_cfg for ch in k["deliver"])
+    if needs_smtp and smtp_cfg is None:
+        raise ConfigError("un canal « email » est configuré mais le bloc « smtp » est absent")
     report = Report()
     with db.file_lock("reconcile-config"):
         server_ids = _apply_servers(servers_cfg, report)
         target_ids = _apply_targets(targets_cfg, report)
-        _apply_keys(keys_cfg, server_ids, target_ids, prune, report)
+        jobs = _apply_keys(keys_cfg, server_ids, target_ids, prune, report)
+    # Livraison HORS verrou (I/O réseau SMTP/HTTP) : le secret n'existe qu'en mémoire ici — la
+    # livraison a lieu dans CE passage, juste après la génération. Succès → horodatage posé ;
+    # échec → erreur rapportée (secret irrécupérable : faire tourner la clé pour relivrer).
+    for job in jobs:
+        errs = deliver.deliver_key(job.channels, smtp_cfg, label=job.label,
+                                   secret=job.secret, url=job.url)
+        if errs:
+            report.delivery_errors.extend(f"{job.ref}: {e}" for e in errs)
+        else:
+            keys.mark_delivered(job.key_id)
+            report.keys_delivered.append(job.ref)
     return report
 
 
@@ -435,12 +533,16 @@ def main(argv: list[str]) -> None:
         print(f"configuration invalide : {exc}", file=sys.stderr)
         sys.exit(1)
     print(f"réconciliation appliquée — {report.summary()}")
-    # On n'imprime JAMAIS de secret. On signale seulement les clés GÉNÉRÉES (non importées) dont
-    # le secret n'est pas encore livrable : sans canal de livraison configuré, il est irrécupérable.
-    undelivered = [ref for ref, _s, imported in report.created_secrets if not imported]
-    if undelivered:
-        print(f"ATTENTION : {len(undelivered)} clé(s) générée(s) sans livraison configurée — "
-              f"leur secret est irrécupérable : {', '.join(undelivered)}", file=sys.stderr)
+    # On n'imprime JAMAIS de secret. On signale les clés GÉNÉRÉES sans canal (secret irrécupérable)
+    # et les échecs de livraison (le secret est perdu → faire tourner la clé pour relivrer).
+    if report.generated_without_delivery:
+        refs = ", ".join(report.generated_without_delivery)
+        print(f"ATTENTION : {len(report.generated_without_delivery)} clé(s) générée(s) sans "
+              f"livraison configurée — secret irrécupérable : {refs}", file=sys.stderr)
+    if report.delivery_errors:
+        print(f"ÉCHEC de livraison ({len(report.delivery_errors)}) : "
+              f"{'; '.join(report.delivery_errors)}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

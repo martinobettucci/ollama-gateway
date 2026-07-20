@@ -245,6 +245,17 @@ def set_enabled(key_id: int, enabled: bool) -> None:
         conn.close()
 
 
+def mark_delivered(key_id: int) -> None:
+    """Horodate la livraison du secret d'une clé générée (mode déclaratif, cf. app/deliver.py)."""
+    conn = db.connect()
+    try:
+        with conn:
+            conn.execute(
+                "UPDATE api_keys SET secret_delivered_at = datetime('now') WHERE id = ?", (key_id,))
+    finally:
+        conn.close()
+
+
 def update_key(key_id: int, label: str, origins: list[str],
                monthly_token_cap: int | None, rpm_limit: int | None, note: str,
                server_id: int | None = None, models: list[str] | None = None,

@@ -3,6 +3,29 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-20 — Configuration déclarative, sous-phase 2 : livraison du secret
+
+- **Le problème central du provisioning headless : le secret n'est montré qu'une fois.** Sans UI
+  pour le copier, une clé *générée* serait inutilisable. On **pousse** donc le secret vers un canal
+  choisi par l'opérateur — c'est la vraie valeur du mode déclaratif.
+- **Livraison DANS le passage de génération, best-effort.** Le secret n'existe en clair qu'en
+  mémoire, à la création. On livre donc immédiatement (hors verrou, car I/O réseau). Pas de
+  stockage du secret pour retenter plus tard (contredirait « affiché une seule fois ») : si un canal
+  échoue, on le rapporte, et l'opérateur fait **tourner la clé** (prune + remise) pour relivrer.
+- **Idempotence par `secret_delivered_at`.** La livraison n'a lieu qu'à la **création** de la clé ;
+  aux passages suivants la clé existe déjà (pas de nouveau secret) → aucune relivraison. L'horodatage
+  documente l'état et servira à l'export.
+- **Webhook : template + presets, pas de magie.** « S'adapter à tout webhook » automatiquement est
+  illusoire (Slack ≠ Discord ≠ JSON générique). On fournit des **presets** prêts (`slack`/`discord`/
+  `generic`) et un **template libre** avec jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`. `generic`
+  embarque tout le bloc d'environnement valorisé.
+- **Secrets SMTP hors YAML.** La config SMTP suit la même règle : `${NOM}` interpolés depuis l'env,
+  jamais de mot de passe en clair dans le fichier versionné.
+- **Test self-contained plutôt qu'Inbucket en CI.** Python 3.13 a retiré `smtpd`/`asyncore` ; on
+  écrit un **puits SMTP minimal** (`devfixtures/smtp_sink.py`, ~50 lignes, zéro dépendance) pour
+  l'E2E déterministe, et on garde **Inbucket** comme mail catcher *humain* optionnel en dev (profil
+  compose). Le webhook est capté par un endpoint ajouté au faux Ollama.
+
 ## 2026-07-20 — Configuration déclarative (headless / YAML), sous-phase 1 : réconciliation
 
 - **Besoin : déployer sans WebUI, en décrivant l'infra dans un fichier.** On veut un mode « GitOps »

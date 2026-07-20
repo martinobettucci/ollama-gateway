@@ -19,6 +19,16 @@
 # Les clés créées par l'UI (hors de ce fichier) ne sont JAMAIS touchées.
 prune: false
 
+# Configuration SMTP — requise seulement si une clé a un canal de livraison « email ». Les secrets
+# (identifiants) s'écrivent ${NOM}. En dev : Inbucket (host inbucket, port 2500, tls none).
+smtp:
+  host: ${SMTP_HOST}
+  port: 587
+  tls: starttls              # none | starttls | tls
+  username: ${SMTP_USER}
+  password: ${SMTP_PASSWORD}
+  from: gateway@exemple.com
+
 # Serveurs d'exécution (upstreams Ollama). `models` fixe une liste STATIQUE (aucune sonde requise,
 # utile en environnement fermé). `token` (facultatif) = jeton d'auth d'un amont distant, chiffré
 # au repos ; référencez-le par ${NOM}. Un seul serveur peut porter `default: true`.
@@ -41,10 +51,12 @@ targets:
 
 # Clés API. `name` = identité STABLE (external_ref) : la réconciliation reconnaît une clé déjà
 # créée et met seulement sa config à jour, sans la recréer.
-#   value:  (facultatif) importe une clé au secret CONNU (${NOM} depuis l'env). Absent → une clé
-#           est GÉNÉRÉE ; son secret, affiché une seule fois, sera livré (webhook/email) — cf. la
-#           phase de livraison. Sans canal de livraison, une clé générée a un secret irrécupérable.
+#   value:  (facultatif) importe une clé au secret CONNU (${NOM} depuis l'env), retrouvable côté
+#           client. Absent → une clé est GÉNÉRÉE ; son secret (affiché une seule fois) est LIVRÉ
+#           via les canaux `deliver` — sans canal, il est irrécupérable.
 #   server/target: référencent un `name` défini ci-dessus (absent → défaut).
+#   deliver: canaux de livraison du secret d'une clé GÉNÉRÉE (ignoré si `value` est fourni). Jetons
+#           de template webhook : #OllamaKey (secret), #OllamaUrl (URL publique), #OllamaLabel.
 keys:
   - name: client-acme
     value: ${ACME_KEY}                # clé connue importée (retrouvable côté client)
@@ -62,3 +74,8 @@ keys:
     rpm_limit: 20
     total_token_cap: 5000000          # budget de VIE (essai à coût plafonné)
     expires_at: "2027-01-01 00:00:00"
+    deliver:                          # clé générée → secret poussé vers ces canaux, une seule fois
+      - email: { to: equipe@exemple.com }
+      - webhook:                      # preset : slack | discord | generic (ou `template:` libre)
+          url: ${SLACK_WEBHOOK_URL}
+          preset: slack

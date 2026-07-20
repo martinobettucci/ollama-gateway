@@ -77,6 +77,13 @@ car Ollama est en loopback natif (hors Docker).
   (défaut) ou **supprimée** si `prune: true` ; les clés UI (`external_ref` NULL) sont intouchées.
   En mode déclaratif, `servers.ensure_default`/`targets.ensure_default` **n'auto-créent pas** de
   défaut (le reconciler s'en charge depuis le YAML). CLI : `apply` / `validate`.
+- `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
+  (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
+  `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).
+  Le corps porte les **variables d'environnement valorisées** (`client_env`). Appelé par
+  `reconcile` **hors verrou**, juste après la génération (le secret n'existe qu'en mémoire) ;
+  succès → `api_keys.secret_delivered_at`. Best-effort (un canal en échec n'interrompt pas les
+  autres). Puits SMTP de test sans dépendance : `devfixtures/smtp_sink.py`.
 
 ## 3. Données (SQLite)
 
@@ -85,6 +92,9 @@ car Ollama est en loopback natif (hors Docker).
 - **Configuration déclarative (migration 0010).** `api_keys.external_ref` (index unique partiel,
   NULL non contraint) — identité stable d'une clé gérée par le YAML headless (`app/reconcile.py`) ;
   NULL = clé créée par l'UI, jamais touchée par la réconciliation ni son élagage.
+- **Livraison du secret (migration 0011).** `api_keys.secret_delivered_at` — horodatage de la
+  livraison (webhook/e-mail) du secret d'une clé générée en mode déclaratif ; NULL = jamais livré
+  (clé importée ou sans canal). Garantit l'idempotence (pas de relivraison).
 - `key_origins(key_id, cidr)` — allowlist d'origine par clé ; aucune ligne ⇒ aucune restriction.
 - `key_quotas(key_id, monthly_token_cap, rpm_limit)` — plafonds optionnels (NULL = illimité).
 - `servers(id, name, base_url, auth_token_enc, is_default, enabled, last_checked_at, last_online,

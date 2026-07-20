@@ -237,6 +237,95 @@ keys:
 
 # --- Garde-fou du mode déclaratif -------------------------------------------------------------
 
+def _delivered_at(ref: str):
+    from app import db
+    conn = db.connect()
+    try:
+        r = conn.execute(
+            "SELECT secret_delivered_at FROM api_keys WHERE external_ref = ?", (ref,)).fetchone()
+        return r["secret_delivered_at"] if r else None
+    finally:
+        conn.close()
+
+
+# --- Livraison du secret (phase 2) ------------------------------------------------------------
+
+_DELIVER_YAML = """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+targets:
+  - name: pub
+    base_url: https://gw.example:8443
+    default: true
+keys:
+  - name: gen1
+    target: pub
+    deliver:
+      - webhook: { url: http://hook.local/x, preset: slack }
+"""
+
+
+def test_generated_key_delivered_and_marked_then_idempotent(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(reconcile.deliver, "deliver_key",
+                        lambda channels, smtp, **kw: (calls.append(kw), [])[1])
+    path = _write(tmp_path, _DELIVER_YAML)
+    report = reconcile.apply(path)
+    assert report.keys_delivered == ["gen1"] and report.delivery_errors == []
+    assert len(calls) == 1
+    assert calls[0]["url"] == "https://gw.example:8443"     # URL publique de la cible = #OllamaUrl
+    assert calls[0]["secret"].startswith("sk-")            # secret généré transmis
+    assert _delivered_at("gen1") is not None               # horodatage de livraison posé
+
+    calls.clear()
+    report2 = reconcile.apply(path)                         # 2e passage : clé déjà là
+    assert calls == [] and report2.keys_delivered == []    # aucune relivraison (idempotent)
+
+
+def test_delivery_failure_reported_and_not_marked(tmp_path, monkeypatch):
+    monkeypatch.setattr(reconcile.deliver, "deliver_key", lambda *a, **k: ["boom"])
+    report = reconcile.apply(_write(tmp_path, _DELIVER_YAML))
+    assert report.keys_delivered == [] and report.delivery_errors
+    assert _delivered_at("gen1") is None                   # échec → pas d'horodatage
+
+
+def test_imported_key_is_not_delivered(tmp_path, monkeypatch):
+    monkeypatch.setenv("K", "sk-ollama-importedvalue000000000000000000000000000000000000000000")
+    calls = []
+    monkeypatch.setattr(reconcile.deliver, "deliver_key",
+                        lambda *a, **k: calls.append(k) or [])
+    path = _write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+keys:
+  - name: imp1
+    value: ${K}
+    deliver:
+      - webhook: { url: http://hook.local/x, preset: slack }
+""")
+    reconcile.apply(path)
+    assert calls == []                                     # clé importée : secret connu, pas de livraison
+
+
+def test_email_channel_requires_smtp(tmp_path):
+    path = _write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+keys:
+  - name: k1
+    deliver:
+      - email: { to: ops@acme.example }
+""")
+    with pytest.raises(reconcile.ConfigError):
+        reconcile.apply(path)
+
+
 def test_declarative_mode_skips_auto_default_server(monkeypatch):
     # En mode déclaratif, ensure_default n'auto-crée PAS « Ollama local » (le reconciler le fera).
     monkeypatch.setattr(config, "DECLARATIVE", True)
