@@ -6,6 +6,18 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+_Rien à publier pour le moment…_
+
+## [Publié]
+
+### Déployé en production — 2026-07-20 (migrations ≤ 0011)
+
+Bascule effectuée et vérifiée en prod (WebUI conservée, mode UI classique — `GATEWAY_CONFIG` non
+activé) : `git pull` sur le clone puis rebuild `docker-compose.prod.yml` (proxy + admin + Caddy),
+données préservées (clés/serveurs/cibles intactes, `P2E_MASTER_KEY` inchangée), migrations 0010/0011
+appliquées sur la base existante (colonnes additives). Preuves live : proxy `ok`, admin `200`, TLS
+public `200`.
+
 - **Mode déclaratif — phase 3 : export de la configuration.** Le panel gagne un bouton
   **« Exporter »** (et une commande `python -m app.reconcile export`) qui produit l'état courant
   (serveurs/cibles/clés) au **format YAML déclaratif** — l'inverse du mode headless : on configure à
@@ -255,8 +267,6 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   dans l'application ; règle de repo : manuel + captures mis à jour à chaque évolution.
 - **`runDev` affiche désormais clairement le mot de passe admin de dev** dans son récapitulatif
   de fin de lancement.
-
-## [Publié]
 
 ### Déployé en production — 2026-07-06 (migrations ≤ 0001)
 
