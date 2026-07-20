@@ -14,6 +14,14 @@ GATEWAY_ROLE = os.environ.get("GATEWAY_ROLE", "proxy")
 # Fichier SQLite partagé par les deux rôles (montage volume en conteneur). WAL activé (cf. db.py).
 DB_PATH = os.environ.get("GATEWAY_DB_PATH", "/data/gateway.db")
 
+# Fichier de configuration DÉCLARATIVE (YAML). Sa PRÉSENCE (chemin non vide) bascule la passerelle
+# en mode « headless / déclaratif » : au démarrage, l'état (serveurs, cibles, clés) est réconcilié
+# depuis ce fichier (cf. app/reconcile.py, appelé par l'entrypoint). Le drapeau vit dans
+# l'ENVIRONNEMENT, jamais dans le YAML lui-même (sinon couplage circulaire : il faudrait lire le
+# fichier pour savoir s'il faut le lire). Vide (défaut) = mode UI classique, le YAML est ignoré.
+GATEWAY_CONFIG = os.environ.get("GATEWAY_CONFIG", "").strip()
+DECLARATIVE = bool(GATEWAY_CONFIG)
+
 # Upstream Ollama réel (prod : http://127.0.0.1:11434 ; dev : le faux upstream seedé).
 OLLAMA_UPSTREAM = os.environ.get("OLLAMA_UPSTREAM", "http://127.0.0.1:11434").rstrip("/")
 

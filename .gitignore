@@ -8,6 +8,8 @@ __pycache__/
 .env
 .env.prod
 .env.staging
+# Configuration déclarative propre à un déploiement (le dépôt ne fournit que gateway.example.yaml).
+gateway.yaml
 e2e/node_modules/
 e2e/output/
 e2e/e2e-data/

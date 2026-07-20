@@ -6,6 +6,21 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Mode déclaratif (headless / « GitOps ») — phase 1 : réconciliation.** La passerelle peut
+  désormais se déployer **sans WebUI**, configurée par un **fichier YAML** versionnable. Quand la
+  variable d'environnement `GATEWAY_CONFIG` pointe vers un fichier (le drapeau vit dans
+  l'**environnement**, jamais dans le YAML — sinon couplage circulaire), l'entrypoint **réconcilie**
+  au démarrage l'état (serveurs d'exécution, cibles publiques, clés API) sur ce fichier, à la
+  manière des migrations. Points clés : **aucun secret en clair** — les valeurs sensibles s'écrivent
+  `${NOM}` et sont **interpolées depuis l'environnement** ; **identité stable** des clés via
+  `external_ref` (le champ `name`) pour reconnaître une clé déjà créée ; **élagage conservateur** —
+  une clé retirée du fichier est **désactivée** par défaut, et seulement **supprimée** si
+  `prune: true` (les clés créées par l'UI ne sont jamais touchées) ; **liste de modèles statique**
+  par serveur (sans sonde). Nouveau lanceur `runProdHeadless` + `docker-compose.headless.yml` (proxy
+  + Caddy, **sans service admin**) et modèle `gateway.example.yaml`. La **livraison** du secret
+  d'une clé générée (webhook/email) arrive en phase 2 ; en phase 1, on importe des clés au secret
+  connu via `value: ${NOM}`.
+
 - **En-têtes d'état de quota (style OpenAI/Groq).** Les réponses du proxy portent désormais, quand
   la clé a un rate-limit ou un plafond mensuel, `x-ratelimit-limit/remaining/reset-requests` et
   `…-tokens` ; le 429 ajoute `Retry-After`. Les clients bien élevés — surtout les **boucles

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# PROD HEADLESS (déclaratif) : build + up SANS panel d'admin. L'état (serveurs/cibles/clés) est
+# réconcilié au démarrage depuis un fichier YAML (cf. app/reconcile.py), monté en lecture seule.
+# Le fichier par défaut est ./gateway.yaml ; surcharge : GATEWAY_CONFIG_FILE=/chemin ./runProdHeadless
+# Requiert .env.prod (secrets & variables interpolées par ${NOM} dans le YAML).
+set -euo pipefail
+cd "$(dirname "$0")"
+if [ ! -f .env.prod ]; then
+  echo "ERREUR : .env.prod manquant. Copier .env.prod.example et le renseigner." >&2
+  exit 1
+fi
+CONFIG_FILE="${GATEWAY_CONFIG_FILE:-./gateway.yaml}"
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "ERREUR : fichier de configuration « $CONFIG_FILE » introuvable." >&2
+  echo "         Copier gateway.example.yaml → gateway.yaml et l'adapter." >&2
+  exit 1
+fi
+
+# ── Gate de sécurité pré-déploiement (règle dure, cf. CLAUDE.md) ──────────────────────────────
+# Valide AUSSI le fichier de configuration déclarative (structure + interpolation d'env) : un YAML
+# invalide doit stopper AVANT le déploiement, pas au boot du conteneur.
+if [ "${ALLOW_INSECURE_DEPLOY:-0}" = "1" ]; then
+  echo "⚠️  ALLOW_INSECURE_DEPLOY=1 : balayage de sécurité CONTOURNÉ (déploiement forcé)." >&2
+else
+  if ! ./scripts/security-sweep.sh; then
+    echo >&2
+    echo "⛔ Déploiement STOPPÉ par le balayage de sécurité (voir le résumé ci-dessus)." >&2
+    echo "   Corriger les découvertes, ou forcer : ALLOW_INSECURE_DEPLOY=1 ./runProdHeadless" >&2
+    exit 2
+  fi
+fi
+# Validation de la configuration déclarative avec les secrets de .env.prod (interpolation ${NOM}).
+set -a; . ./.env.prod; set +a
+if ! .venv/bin/python -m app.reconcile validate "$CONFIG_FILE" 2>/dev/null; then
+  # .venv absent (hôte de prod) : compose validera au boot ; on n'échoue pas le lancement pour ça.
+  echo "ℹ️  Validation locale du YAML ignorée (.venv absent) — vérifiée au démarrage du conteneur." >&2
+fi
+
+C="docker compose --env-file .env.prod -f docker-compose.headless.yml"
+GATEWAY_CONFIG_FILE="$CONFIG_FILE" $C up -d --build
+$C ps
+echo
+echo "  Mode HEADLESS (déclaratif) — configuration : $CONFIG_FILE"
+echo "  Proxy (loopback)  : http://127.0.0.1:8787/_proxy_health"
+echo "  Public via Caddy  : https://<GATEWAY_DOMAIN>:<port-public>/_proxy_health"
+echo "  Panel d'admin     : DÉSACTIVÉ (aucun service admin en mode headless)"

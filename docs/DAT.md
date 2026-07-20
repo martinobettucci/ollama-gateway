@@ -68,11 +68,23 @@ car Ollama est en loopback natif (hors Docker).
   utilisés en JavaScript (sondes de modèles, essais, WHOIS) sont exposés en JSON/`data-*` puis
   traduits côté client. Aucune dépendance hors **PyYAML**. Les 24 langues officielles de l'UE sont
   fournies et **complètes clé-à-clé** (test dédié `tests/test_i18n.py`).
+- `reconcile.py` — **configuration déclarative (mode headless)**. Quand `GATEWAY_CONFIG` pointe vers
+  un YAML (drapeau d'**environnement**, jamais dans le fichier → pas de couplage circulaire),
+  l'entrypoint appelle `reconcile apply <fichier>` **avant uvicorn** : parse YAML → **interpolation
+  `${NOM}`** depuis l'environnement (fail-closed sur variable absente) → validation → **upsert**
+  serveurs/cibles/clés. Sérialisé par `db.file_lock`, **idempotent**. Identité stable des clés via
+  `api_keys.external_ref` (le `name` du YAML). **Élagage** : clé gérée retirée → **désactivée**
+  (défaut) ou **supprimée** si `prune: true` ; les clés UI (`external_ref` NULL) sont intouchées.
+  En mode déclaratif, `servers.ensure_default`/`targets.ensure_default` **n'auto-créent pas** de
+  défaut (le reconciler s'en charge depuis le YAML). CLI : `apply` / `validate`.
 
 ## 3. Données (SQLite)
 
 - `api_keys(id, label, key_prefix, key_hash UNIQUE, enabled, note, created_at, last_used_at)` —
   la clé n'est jamais stockée en clair (uniquement son sha-256) ; `key_prefix` = début lisible.
+- **Configuration déclarative (migration 0010).** `api_keys.external_ref` (index unique partiel,
+  NULL non contraint) — identité stable d'une clé gérée par le YAML headless (`app/reconcile.py`) ;
+  NULL = clé créée par l'UI, jamais touchée par la réconciliation ni son élagage.
 - `key_origins(key_id, cidr)` — allowlist d'origine par clé ; aucune ligne ⇒ aucune restriction.
 - `key_quotas(key_id, monthly_token_cap, rpm_limit)` — plafonds optionnels (NULL = illimité).
 - `servers(id, name, base_url, auth_token_enc, is_default, enabled, last_checked_at, last_online,
@@ -149,7 +161,13 @@ périodique appelant `docker compose exec admin python -m app.reqlog compact`.
 ./runDev        # dev self-contained (faux Ollama + proxy 8787 + admin 8788), base re-seedée
 ./runStaging    # chaîne TLS complète en local (Caddy tls internal, https://localhost:8443)
 ./runProd       # hôte self-hosted : Caddy DNS-01 + proxy + admin (host network). Requiert .env.prod
+./runProdHeadless  # variante DÉCLARATIVE : Caddy + proxy, SANS admin ; état réconcilié depuis un YAML
 ```
+
+Mode **headless** : `runProdHeadless` utilise `docker-compose.headless.yml` (proxy + Caddy, pas de
+service admin), pose `GATEWAY_CONFIG=/config/gateway.yaml` et monte le fichier en lecture seule (par
+défaut `./gateway.yaml`, surchargé par `GATEWAY_CONFIG_FILE`). Les secrets référencés par `${NOM}`
+dans le YAML viennent de `.env.prod`. Copier `gateway.example.yaml` → `gateway.yaml` pour démarrer.
 
 Tests : `python -m pytest` ; `cd e2e && npm test` (E2E + captures `e2e/output/`).
 

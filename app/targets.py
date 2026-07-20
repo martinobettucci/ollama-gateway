@@ -51,6 +51,9 @@ def ensure_default() -> int:
                     if any_row:
                         did = any_row["id"]
                         conn.execute("UPDATE targets SET is_default = 1 WHERE id = ?", (did,))
+                    elif config.DECLARATIVE:
+                        # Mode déclaratif (headless) : le reconciler crée les cibles depuis le YAML.
+                        return 0
                     else:
                         cur = conn.execute(
                             "INSERT INTO targets(name, base_url, is_default) VALUES (?,?,1)",

@@ -242,6 +242,41 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   test_proxy (403 sur pull/delete/push/create/copy/blobs avec clé valide, catalogue amont intact,
   refus journalisés) ; E2E servers.spec (refus proxy `/api/pull` + `/api/delete` avec la clé démo).*
 
+## Phase 13 — Configuration déclarative (headless / YAML) & livraison des clés (2026-07-20)
+
+Objectif : déployer la passerelle **sans WebUI**, pilotée par un **fichier YAML** versionné
+(serveurs à compatibilité/modèles statiques, cibles, clés), réconcilié au démarrage ; livrer le
+secret des clés générées par **webhook** (template + presets) ou **e-mail** (SMTP, Inbucket en
+dev) ; et **exporter** la configuration courante en YAML depuis l'UI. Décisions : le drapeau
+headless vit dans l'**environnement** (`GATEWAY_CONFIG`), pas dans le YAML ; secrets par
+**interpolation `${NOM}`** ; **prune = désactivation** par défaut (suppression si `prune: true`) ;
+livraison **idempotente** (une clé livrée une seule fois). Réalisée en **3 sous-phases testées
+l'une après l'autre** (E2E vert à chaque étape avant la suivante).
+
+- [x] **Sous-phase 1 — Réconciliation.** `app/reconcile.py` : chargement YAML + **interpolation
+  `${NOM}`** (fail-closed), validation (structure, références serveur/cible, familles d'API,
+  base_url), **upsert** serveurs/cibles/clés, **liste de modèles statique** par serveur, **identité
+  stable** `external_ref` (migration 0010, index unique partiel), **prune = disable / delete**,
+  clés UI intouchées. Garde-fou : en mode déclaratif, `ensure_default` n'auto-crée pas de défaut.
+  Hook entrypoint `GATEWAY_CONFIG` (avant uvicorn) ; `docker-compose.headless.yml` + `runProdHeadless`
+  (proxy + Caddy, **sans admin**) + `gateway.example.yaml` ; `gateway.yaml` gitignoré. Import de clé
+  au secret connu via `value: ${NOM}`. — *tests : `tests/test_reconcile.py` (14 : interpolation +
+  variable manquante, rejets de validation, upsert serveurs/cibles/clés + jeton chiffré + modèles
+  statiques + défaut, idempotence, mise à jour sans régénérer le secret, prune disable/delete, clés
+  UI intouchées, réactivation au retour dans le YAML, saut de l'auto-défaut en mode déclaratif) ;
+  E2E `e2e/tests/reconcile.spec.ts` (CLI base neuve : serveurs/cibles/clés + idempotence + prune
+  disable/delete sans « Ollama local » parasite ; base partagée : clé importée acceptée par le
+  proxy + en-tête `x-ratelimit` + visible au dashboard + désactivée au retrait) ; **vision faite**
+  (capture 28-reconcile).*
+- [ ] **Sous-phase 2 — Livraison du secret des clés générées.** Canal **e-mail** (SMTP configuré en
+  YAML via `${NOM}`, **Inbucket** en dev pour l'assertion E2E) et **webhook** (template libre +
+  presets `slack`/`discord`/`generic`, jetons `#OllamaKey`/`#OllamaUrl` + variables d'environnement
+  valorisées). Idempotence : `delivered_at` par clé/canal, une seule livraison. — *tests à venir
+  (unit + E2E Inbucket + webhook mock).*
+- [ ] **Sous-phase 3 — Export de la configuration en YAML.** Depuis l'UI (et CLI) : dump des
+  serveurs/cibles/clés courants au format `gateway.yaml` (sans secret : clés sans valeur, SMTP en
+  `${NOM}`). — *tests à venir (unit + E2E).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

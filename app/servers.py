@@ -105,6 +105,11 @@ def ensure_default() -> int:
                     if any_row:  # legacy : promeut le premier serveur en défaut
                         did = any_row["id"]
                         conn.execute("UPDATE servers SET is_default = 1 WHERE id = ?", (did,))
+                    elif config.DECLARATIVE:
+                        # Mode déclaratif (headless) : ne PAS auto-créer « Ollama local ». Le
+                        # reconciler (app/reconcile.py) crée les serveurs depuis le YAML et pose
+                        # le défaut. Rien à réassigner (aucune clé encore) → sortie anticipée.
+                        return 0
                     else:
                         cur = conn.execute(
                             "INSERT INTO servers(name, base_url, is_default, enabled) "

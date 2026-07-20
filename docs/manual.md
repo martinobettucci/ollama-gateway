@@ -208,6 +208,60 @@ Points de comportement :
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
 
+## Mode déclaratif (headless / sans WebUI)
+
+En plus du panel, la passerelle peut se piloter par un **fichier de configuration YAML** versionné
+— utile pour un déploiement reproductible « GitOps », sans interface. Le basculement se fait par
+une **variable d'environnement** `GATEWAY_CONFIG` qui pointe vers le fichier (le drapeau ne vit
+**jamais** dans le YAML lui-même). Quand elle est posée, la passerelle **réconcilie** au démarrage
+son état — serveurs d'exécution, cibles publiques, clés API — pour qu'il corresponde au fichier,
+exactement comme les migrations alignent le schéma de la base.
+
+```mermaid
+flowchart LR
+    Y["gateway.yaml<br/>(versionné, sans secret)"] -->|GATEWAY_CONFIG| R[Réconciliation au démarrage]
+    E[".env (secrets)"] -.->|"interpolation ${NOM}"| R
+    R --> DB[(État : serveurs / cibles / clés)]
+    R --> P[Proxy]
+```
+
+Règles importantes :
+
+- **Aucun secret en clair dans le YAML.** Une valeur sensible (jeton d'un amont distant, plus tard
+  la configuration d'envoi) s'écrit `${NOM_DE_VARIABLE}` et est **remplacée par la variable
+  d'environnement** au chargement. Le fichier reste donc partageable sans fuite.
+- **Identité stable des clés.** Chaque clé porte un `name` : la réconciliation reconnaît une clé
+  déjà créée et met seulement sa configuration à jour, **sans la recréer**.
+- **Retrait conservateur.** Une clé retirée du fichier est **désactivée** (accès révoqué mais
+  conservée) ; elle n'est **supprimée** que si `prune: true` est indiqué en tête de fichier. Les
+  clés créées depuis le panel ne sont **jamais** touchées par la réconciliation.
+- **Modèles statiques.** Un serveur peut déclarer sa **liste de modèles** directement, sans sonde
+  (pratique en environnement fermé).
+
+Un serveur peut définir sa liste de modèles et une clé son secret **connu** via `value: ${NOM}`
+(import d'une clé existante). Extrait :
+
+```yaml
+prune: false
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+    models: [llama3:8b, qwen3:4b]
+keys:
+  - name: client-acme
+    value: ${ACME_KEY}        # secret fourni par l'environnement, jamais écrit ici
+    rpm_limit: 60
+    models: [llama3:8b]
+```
+
+En mode headless, on lance `./runProdHeadless` (proxy + TLS, **sans service d'administration**). Le
+modèle complet est fourni dans `gateway.example.yaml`.
+
+> La **livraison** automatique du secret d'une clé **générée** (par webhook ou e-mail) est une
+> évolution en cours ; aujourd'hui, pour obtenir une clé exploitable côté client en headless, on
+> **importe** une clé au secret connu via `value: ${NOM}`.
+
 ## Le panel d'admin, fonctionnalité par fonctionnalité
 
 L'interface applique la charte graphique P2Enjoy (voir `docs/DESIGN_SYSTEM.md`).

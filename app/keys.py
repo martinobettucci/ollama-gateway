@@ -38,6 +38,7 @@ class KeyRecord:
     total_request_cap: int | None = None
     expires_at: str | None = None
     idle_expiry_days: int | None = None
+    external_ref: str | None = None  # identité stable si clé gérée par la config déclarative (YAML)
 
 
 # --- Lookup / validation (chemin proxy) -------------------------------------------------------
@@ -115,12 +116,14 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                fallback_server_id: int | None = None, image_models: list[str] | None = None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
-               log_retention_days: int | None = None) -> tuple[KeyRecord, str]:
+               log_retention_days: int | None = None,
+               external_ref: str | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
     `key_value` permet d'injecter une clé existante (migration) au lieu d'en générer une neuve.
     `server_id` = serveur d'exécution rattaché (None → serveur par défaut). `models` = allowlist
-    de modèles (None/vide → tous les modèles du serveur autorisés).
+    de modèles (None/vide → tous les modèles du serveur autorisés). `external_ref` = identité
+    stable si la clé est gérée par la configuration déclarative (YAML, cf. app/reconcile.py).
     """
     key = key_value or auth.generate_key()
     conn = db.connect()
@@ -131,10 +134,11 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
             cur = conn.execute(
                 "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id, target_id, "
                 "fallback_server_id, total_token_cap, total_request_cap, expires_at, "
-                "idle_expiry_days, log_retention_days) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "idle_expiry_days, log_retention_days, external_ref) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (label, auth.key_prefix(key), auth.hash_key(key), note, sid, tid,
                  fallback_server_id, total_token_cap, total_request_cap, expires_at,
-                 idle_expiry_days, log_retention_days),
+                 idle_expiry_days, log_retention_days, external_ref),
             )
             kid = cur.lastrowid
             for c in origins:
@@ -201,7 +205,23 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
             expires_at=row["expires_at"] if "expires_at" in row.keys() else None,
             idle_expiry_days=(row["idle_expiry_days"]
                               if "idle_expiry_days" in row.keys() else None),
+            external_ref=(row["external_ref"]
+                          if "external_ref" in row.keys() else None),
         )
+    finally:
+        if own:
+            conn.close()
+
+
+def managed_refs(conn: sqlite3.Connection | None = None) -> dict[str, int]:
+    """Map `external_ref` → `key_id` des clés gérées par la config déclarative (external_ref non
+    NULL). Les clés UI (external_ref NULL) en sont absentes : la réconciliation ne les touche
+    jamais (ni mise à jour ni élagage)."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        return {r["external_ref"]: r["id"] for r in conn.execute(
+            "SELECT id, external_ref FROM api_keys WHERE external_ref IS NOT NULL")}
     finally:
         if own:
             conn.close()

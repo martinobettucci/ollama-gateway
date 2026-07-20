@@ -1,0 +1,48 @@
+# PROD HEADLESS (déclaratif / GitOps) — Caddy (TLS DNS-01) + proxy en network_mode host, SANS
+# panel d'admin. L'état (serveurs/cibles/clés) est décrit dans un fichier YAML monté en lecture
+# seule et réconcilié au démarrage (cf. app/reconcile.py). Aucune UI : « pas de WebUI » est LITTÉRAL
+# ici, le service admin n'existe pas. Le basculement headless tient à `GATEWAY_CONFIG` (drapeau
+# d'ENVIRONNEMENT), jamais à un champ du YAML. Variables & secrets dans .env.prod ; le YAML référence
+# ces secrets par ${NOM} (interpolés au chargement) et reste donc versionnable sans fuite.
+name: ollama-gateway
+
+services:
+  proxy:
+    build: .
+    image: ollama-gateway:prod
+    network_mode: host
+    environment:
+      APP_ENV: prod
+      GATEWAY_ROLE: proxy
+      OLLAMA_UPSTREAM: http://127.0.0.1:11434
+      PROXY_HOST: 127.0.0.1
+      PROXY_PORT: "8787"
+      TRUSTED_PROXY_IPS: 127.0.0.1,::1
+      GATEWAY_DB_PATH: /data/gateway.db
+      GATEWAY_CONFIG: /config/gateway.yaml   # ← présence = mode déclaratif (réconciliation au boot)
+    env_file: [.env.prod]
+    volumes:
+      - gw_data:/data
+      - ${GATEWAY_CONFIG_FILE:-./gateway.yaml}:/config/gateway.yaml:ro
+    restart: unless-stopped
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    image: ollama-gateway-caddy:prod
+    network_mode: host
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    env_file: [.env.prod]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - proxy
+
+volumes:
+  gw_data:
+  caddy_data:
+  caddy_config:

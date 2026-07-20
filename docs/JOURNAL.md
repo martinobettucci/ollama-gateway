@@ -3,6 +3,34 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-20 — Configuration déclarative (headless / YAML), sous-phase 1 : réconciliation
+
+- **Besoin : déployer sans WebUI, en décrivant l'infra dans un fichier.** On veut un mode « GitOps »
+  où serveurs/cibles/clés sont déclarés dans un YAML versionné et réconciliés au démarrage, comme
+  les migrations alignent le schéma. Livré **en 3 sous-phases testées l'une après l'autre** (E2E
+  vert à chaque étape) : (1) réconciliation, (2) livraison du secret (webhook/e-mail), (3) export.
+- **Le drapeau headless vit dans l'ENVIRONNEMENT, pas dans le YAML.** Mettre `webui: false` *dans*
+  le fichier serait circulaire : il faudrait lire le fichier pour savoir s'il faut le lire. On
+  bascule donc sur la **présence de `GATEWAY_CONFIG`** (variable d'env). Sa présence = mode
+  déclaratif ; absente = mode UI classique, YAML ignoré. Résout aussi le « qui gagne ? » (pas de
+  dérive UI ↔ fichier).
+- **Aucun secret en clair dans le YAML.** Les valeurs sensibles s'écrivent `${NOM}` et sont
+  **interpolées depuis l'environnement** au chargement (fail-closed si la variable manque). Le
+  fichier reste ainsi commitable ; les secrets restent en `.env`. La règle dure « zéro secret dans
+  le dépôt » est préservée.
+- **Identité stable via `external_ref`.** Une clé YAML est reconnue par son `name` (colonne
+  `external_ref`, index unique partiel) : la réconciliation met à jour la config sans régénérer le
+  secret. Les clés créées par l'UI (`external_ref` NULL) sont **hors périmètre** — jamais touchées.
+- **Élagage conservateur.** Retirer une clé du fichier la **désactive** (révocation réversible) ;
+  suppression seulement si `prune: true`. Un `DELETE` déclaratif silencieux serait un piège.
+- **Le reconciler possède le défaut en mode déclaratif.** `servers/targets.ensure_default`
+  n'auto-créent plus « Ollama local »/« Passerelle publique » quand `DECLARATIVE` est vrai : sinon
+  un défaut parasite entrerait en concurrence avec les serveurs du YAML. Le reconciler pose le
+  défaut depuis le fichier (`default: true`, sinon le premier).
+- **Livraison différée, mais phase 1 déjà utile.** Sans canal de livraison, une clé *générée* a un
+  secret irrécupérable (le CLI le signale). Pour rendre la phase 1 exploitable dès maintenant, on
+  supporte l'**import** d'une clé au secret **connu** via `value: ${NOM}` (retrouvable côté client).
+
 ## 2026-07-20 — Gestion des modèles par serveur + usage par modèle
 
 - **Deux besoins symétriques : tracer ce qui tourne, et piloter le catalogue — sans jamais ouvrir
