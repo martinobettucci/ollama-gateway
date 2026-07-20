@@ -138,7 +138,7 @@ dash:
     submit: Opret nøglen
 tgt:
   title: Offentlige mål
-  intro: Et <strong>mål</strong> er gatewayens offentlige URL, som en klient ser den (f.eks. <span class="mono">https://llm.example:21434</span>). Det bruges til at generere miljøvariablerne for den tilknyttede nøgle — <strong>det ændrer ikke routingen</strong> (upstream vælges stadig af udførelsesserveren). Hver nøgle peger på et mål; standardmålet kan ikke slettes.
+  intro: Et <strong>mål</strong> er gatewayens offentlige URL, som en klient ser den (f.eks. <span class="mono">https://llm.example:8443</span>). Det bruges til at generere miljøvariablerne for den tilknyttede nøgle — <strong>det ændrer ikke routingen</strong> (upstream vælges stadig af udførelsesserveren). Hver nøgle peger på et mål; standardmålet kan ikke slettes.
   keys_count: '{count} nøgle(r)'
   edit:
     name: Navn

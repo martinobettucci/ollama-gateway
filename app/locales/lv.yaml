@@ -138,7 +138,7 @@ dash:
     submit: Izveidot atslēgu
 tgt:
   title: Publiskie mērķi
-  intro: <strong>Mērķis</strong> ir vārtejas publiskais URL tā, kā to redz klients (piem., <span class="mono">https://llm.example:21434</span>). To izmanto saistītās atslēgas vides mainīgo ģenerēšanai — <strong>tas nemaina maršrutēšanu</strong> (upstream joprojām izvēlas izpildes serveris). Katra atslēga norāda uz mērķi; noklusējuma mērķi nevar dzēst.
+  intro: <strong>Mērķis</strong> ir vārtejas publiskais URL tā, kā to redz klients (piem., <span class="mono">https://llm.example:8443</span>). To izmanto saistītās atslēgas vides mainīgo ģenerēšanai — <strong>tas nemaina maršrutēšanu</strong> (upstream joprojām izvēlas izpildes serveris). Katra atslēga norāda uz mērķi; noklusējuma mērķi nevar dzēst.
   keys_count: '{count} atslēga(-as)'
   edit:
     name: Nosaukums

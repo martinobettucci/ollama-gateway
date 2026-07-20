@@ -30,7 +30,7 @@ test('phase8: cibles publiques — création + rattachement', async ({ page }) =
   await page.goto('/admin/targets');
   await expect(page.locator('h1')).toContainText('Cibles publiques');
   await page.fill('#new-tname', 'prod-eu');
-  await page.fill('#new-turl', 'https://llm.example:21434');
+  await page.fill('#new-turl', 'https://llm.example:8443');
   await page.locator('[data-testid=target-create-form] button[type=submit]').click();
   await expect(page.locator('[data-testid=target-card]').filter({ hasText: 'prod-eu' }))
     .toBeVisible();

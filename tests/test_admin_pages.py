@@ -33,12 +33,12 @@ async def test_targets_crud_flow(admin_client):
         page = await c.get("/admin/targets")
         assert page.status_code == 200 and "Cibles publiques" in page.text
         # création
-        await c.post("/admin/targets", data={"name": "prod", "base_url": "https://llm.example:21434"})
+        await c.post("/admin/targets", data={"name": "prod", "base_url": "https://llm.example:8443"})
         t = [x for x in targets.list_targets() if x.name == "prod"][0]
-        assert t.base_url == "https://llm.example:21434"
+        assert t.base_url == "https://llm.example:8443"
         # mise à jour
         await c.post(f"/admin/targets/{t.id}",
-                     data={"name": "prod2", "base_url": "https://llm2.example:21434"})
+                     data={"name": "prod2", "base_url": "https://llm2.example:8443"})
         assert targets.get_target(t.id).name == "prod2"
         # suppression (aucune clé rattachée)
         await c.post(f"/admin/targets/{t.id}/delete")

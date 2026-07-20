@@ -138,7 +138,7 @@ dash:
     submit: Stvori ključ
 tgt:
   title: Javna odredišta
-  intro: <strong>Odredište</strong> je javni URL pristupnika kako ga vidi klijent (npr. <span class="mono">https://llm.example:21434</span>). Služi za generiranje varijabli okruženja povezanog ključa — <strong>ne mijenja usmjeravanje</strong> (upstream i dalje odabire izvršni poslužitelj). Svaki ključ pokazuje na odredište; zadano odredište nije moguće izbrisati.
+  intro: <strong>Odredište</strong> je javni URL pristupnika kako ga vidi klijent (npr. <span class="mono">https://llm.example:8443</span>). Služi za generiranje varijabli okruženja povezanog ključa — <strong>ne mijenja usmjeravanje</strong> (upstream i dalje odabire izvršni poslužitelj). Svaki ključ pokazuje na odredište; zadano odredište nije moguće izbrisati.
   keys_count: '{count} ključ(eva)'
   edit:
     name: Naziv

@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS targets (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT    NOT NULL,
-    base_url    TEXT    NOT NULL,                    -- URL publique, ex. https://llm.example:21434
+    base_url    TEXT    NOT NULL,                    -- URL publique, ex. https://llm.example:8443
     is_default  INTEGER NOT NULL DEFAULT 0,          -- cible par défaut (rattachement des clés sans cible)
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );

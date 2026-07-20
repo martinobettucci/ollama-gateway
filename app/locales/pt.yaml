@@ -138,7 +138,7 @@ dash:
     submit: Criar a chave
 tgt:
   title: Destinos públicos
-  intro: Um <strong>destino</strong> é o URL público do gateway tal como um cliente o vê (ex. <span class="mono">https://llm.example:21434</span>). Serve para gerar as variáveis de ambiente da chave associada — <strong>não altera o encaminhamento</strong> (o upstream continua a ser escolhido pelo servidor de execução). Cada chave aponta para um destino; o destino predefinido não pode ser eliminado.
+  intro: Um <strong>destino</strong> é o URL público do gateway tal como um cliente o vê (ex. <span class="mono">https://llm.example:8443</span>). Serve para gerar as variáveis de ambiente da chave associada — <strong>não altera o encaminhamento</strong> (o upstream continua a ser escolhido pelo servidor de execução). Cada chave aponta para um destino; o destino predefinido não pode ser eliminado.
   keys_count: '{count} chave(s)'
   edit:
     name: Nome

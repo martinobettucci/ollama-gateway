@@ -1,7 +1,7 @@
 """Cibles publiques (« ingress ») : URL publiques de la passerelle vues par les CLIENTS.
 
 Une cible = l'URL que le client met dans `OLLAMA_HOST` / `OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL`
-(ex. `https://llm.example:21434`). **Distinct des serveurs d'exécution** (`servers.py`, l'amont
+(ex. `https://llm.example:8443`). **Distinct des serveurs d'exécution** (`servers.py`, l'amont
 Ollama) : une cible **ne change pas le routage** du proxy — elle ne sert qu'à **générer les
 variables d'environnement** de la clé rattachée. Chaque clé pointe vers au plus une cible ; la
 **cible par défaut** (indélébile) est seedée depuis `config.PUBLIC_BASE_URL`.

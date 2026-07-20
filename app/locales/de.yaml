@@ -138,7 +138,7 @@ dash:
     submit: Schlüssel erstellen
 tgt:
   title: Öffentliche Ziele
-  intro: Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways, wie ein Client sie sieht (z. B. <span class="mono">https://llm.example:21434</span>). Es dient zum Erzeugen der Umgebungsvariablen des zugeordneten Schlüssels — <strong>es ändert nicht das Routing</strong> (das Upstream wird weiterhin vom Ausführungsserver gewählt). Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist unlöschbar.
+  intro: Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways, wie ein Client sie sieht (z. B. <span class="mono">https://llm.example:8443</span>). Es dient zum Erzeugen der Umgebungsvariablen des zugeordneten Schlüssels — <strong>es ändert nicht das Routing</strong> (das Upstream wird weiterhin vom Ausführungsserver gewählt). Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist unlöschbar.
   keys_count: '{count} Schlüssel'
   edit:
     name: Name

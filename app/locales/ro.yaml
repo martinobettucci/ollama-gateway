@@ -138,7 +138,7 @@ dash:
     submit: Creează cheia
 tgt:
   title: Ținte publice
-  intro: O <strong>țintă</strong> este URL-ul public al gateway-ului așa cum îl vede un client (ex. <span class="mono">https://llm.example:21434</span>). Servește la generarea variabilelor de mediu ale cheii asociate — <strong>nu modifică rutarea</strong> (upstream-ul este ales în continuare de serverul de execuție). Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.
+  intro: O <strong>țintă</strong> este URL-ul public al gateway-ului așa cum îl vede un client (ex. <span class="mono">https://llm.example:8443</span>). Servește la generarea variabilelor de mediu ale cheii asociate — <strong>nu modifică rutarea</strong> (upstream-ul este ales în continuare de serverul de execuție). Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.
   keys_count: '{count} cheie/chei'
   edit:
     name: Nume

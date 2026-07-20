@@ -138,7 +138,7 @@ dash:
     submit: Kulcs létrehozása
 tgt:
   title: Nyilvános célok
-  intro: A <strong>cél</strong> az átjáró nyilvános URL-je úgy, ahogy a kliens látja (pl. <span class="mono">https://llm.example:21434</span>). A csatolt kulcs környezeti változóinak generálására szolgál — <strong>nem változtatja meg az útválasztást</strong> (az upstreamet továbbra is a végrehajtó kiszolgáló választja). Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.
+  intro: A <strong>cél</strong> az átjáró nyilvános URL-je úgy, ahogy a kliens látja (pl. <span class="mono">https://llm.example:8443</span>). A csatolt kulcs környezeti változóinak generálására szolgál — <strong>nem változtatja meg az útválasztást</strong> (az upstreamet továbbra is a végrehajtó kiszolgáló választja). Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.
   keys_count: '{count} kulcs'
   edit:
     name: Név

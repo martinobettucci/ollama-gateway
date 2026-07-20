@@ -138,7 +138,7 @@ dash:
     submit: Sukurti raktą
 tgt:
   title: Viešieji tikslai
-  intro: <strong>Tikslas</strong> yra viešasis sietuvo URL, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:21434</span>). Jis naudojamas susieto rakto aplinkos kintamiesiems generuoti — <strong>jis nekeičia maršruto</strong> (upstream vis tiek pasirenka vykdymo serveris). Kiekvienas raktas nurodo tikslą; numatytojo tikslo negalima ištrinti.
+  intro: <strong>Tikslas</strong> yra viešasis sietuvo URL, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:8443</span>). Jis naudojamas susieto rakto aplinkos kintamiesiems generuoti — <strong>jis nekeičia maršruto</strong> (upstream vis tiek pasirenka vykdymo serveris). Kiekvienas raktas nurodo tikslą; numatytojo tikslo negalima ištrinti.
   keys_count: '{count} raktas(-ai)'
   edit:
     name: Pavadinimas

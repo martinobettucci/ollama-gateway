@@ -138,7 +138,7 @@ dash:
     submit: Oħloq iċ-ċavetta
 tgt:
   title: Miri pubbliċi
-  intro: <strong>Mira</strong> hija l-URL pubbliku tal-gateway kif jarah klijent (eż. <span class="mono">https://llm.example:21434</span>). Isservi biex jiġġenera l-varjabbli tal-ambjent taċ-ċavetta assoċjata — <strong>ma jbiddilx ir-rotting</strong> (l-upstream għadu jintgħażel mis-server tal-eżekuzzjoni). Kull ċavetta tindika mira; il-mira difolt ma tistax titħassar.
+  intro: <strong>Mira</strong> hija l-URL pubbliku tal-gateway kif jarah klijent (eż. <span class="mono">https://llm.example:8443</span>). Isservi biex jiġġenera l-varjabbli tal-ambjent taċ-ċavetta assoċjata — <strong>ma jbiddilx ir-rotting</strong> (l-upstream għadu jintgħażel mis-server tal-eżekuzzjoni). Kull ċavetta tindika mira; il-mira difolt ma tistax titħassar.
   keys_count: '{count} ċavetta/ċwievet'
   edit:
     name: Isem

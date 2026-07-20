@@ -138,7 +138,7 @@ dash:
     submit: Crear la clave
 tgt:
   title: Destinos públicos
-  intro: Un <strong>destino</strong> es la URL pública de la puerta de enlace tal como la ve un cliente (p. ej. <span class="mono">https://llm.example:21434</span>). Sirve para generar las variables de entorno de la clave asociada — <strong>no cambia el enrutamiento</strong> (el upstream lo sigue eligiendo el servidor de ejecución). Cada clave apunta a un destino; el destino predeterminado no se puede eliminar.
+  intro: Un <strong>destino</strong> es la URL pública de la puerta de enlace tal como la ve un cliente (p. ej. <span class="mono">https://llm.example:8443</span>). Sirve para generar las variables de entorno de la clave asociada — <strong>no cambia el enrutamiento</strong> (el upstream lo sigue eligiendo el servidor de ejecución). Cada clave apunta a un destino; el destino predeterminado no se puede eliminar.
   keys_count: '{count} clave(s)'
   edit:
     name: Nombre

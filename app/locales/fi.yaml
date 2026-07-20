@@ -138,7 +138,7 @@ dash:
     submit: Luo avain
 tgt:
   title: Julkiset kohteet
-  intro: <strong>Kohde</strong> on yhdyskäytävän julkinen URL sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:21434</span>). Sitä käytetään liitetyn avaimen ympäristömuuttujien luomiseen — <strong>se ei muuta reititystä</strong> (upstreamin valitsee edelleen suorituspalvelin). Jokainen avain osoittaa kohteeseen; oletuskohdetta ei voi poistaa.
+  intro: <strong>Kohde</strong> on yhdyskäytävän julkinen URL sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:8443</span>). Sitä käytetään liitetyn avaimen ympäristömuuttujien luomiseen — <strong>se ei muuta reititystä</strong> (upstreamin valitsee edelleen suorituspalvelin). Jokainen avain osoittaa kohteeseen; oletuskohdetta ei voi poistaa.
   keys_count: '{count} avain(ta)'
   edit:
     name: Nimi

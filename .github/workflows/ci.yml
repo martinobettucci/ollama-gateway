@@ -1,0 +1,48 @@
+name: CI
+
+# Rejoue, sur chaque push/PR, l'équivalent de la gate de pré-déploiement locale
+# (scripts/security-sweep.sh) : tests + CVE des dépendances + SAST + secrets.
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    name: Tests (unit + intégration)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: pytest
+        run: python -m pytest -q
+
+  security:
+    name: Sécurité (deps + SAST + secrets)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks scanne tout l'historique
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install scanners
+        run: pip install --upgrade pip bandit pip-audit semgrep
+      - name: CVE des dépendances (pip-audit)
+        run: pip-audit -r requirements.txt
+      - name: SAST Python (bandit, seuil HIGH)
+        run: bandit -r app -x app/__pycache__,app/.mypy_cache --severity-level high
+      - name: SAST multi-règles (semgrep, sévérité ERROR)
+        run: semgrep scan --config p/security-audit --severity ERROR --error --metrics off app db
+      - name: Secrets (gitleaks — arbre + historique)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

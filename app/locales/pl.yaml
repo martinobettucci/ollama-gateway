@@ -138,7 +138,7 @@ dash:
     submit: Utwórz klucz
 tgt:
   title: Cele publiczne
-  intro: <strong>Cel</strong> to publiczny adres URL bramy widziany przez klienta (np. <span class="mono">https://llm.example:21434</span>). Służy do generowania zmiennych środowiskowych powiązanego klucza — <strong>nie zmienia routingu</strong> (upstream nadal wybiera serwer wykonawczy). Każdy klucz wskazuje na cel; celu domyślnego nie można usunąć.
+  intro: <strong>Cel</strong> to publiczny adres URL bramy widziany przez klienta (np. <span class="mono">https://llm.example:8443</span>). Służy do generowania zmiennych środowiskowych powiązanego klucza — <strong>nie zmienia routingu</strong> (upstream nadal wybiera serwer wykonawczy). Każdy klucz wskazuje na cel; celu domyślnego nie można usunąć.
   keys_count: '{count} klucz(y)'
   edit:
     name: Nazwa

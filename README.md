@@ -6,8 +6,10 @@ d'origine** (IP/CIDR), **quotas** (plafond mensuel de tokens + rate-limit), **se
 **journalisation d'usage**, et **panel d'admin web LAN-only**. Le TLS du domaine public est terminé
 par **Caddy** (challenge ACME DNS-01 Scaleway — aucun port entrant requis hormis celui déjà forwardé).
 
-Elle remplace l'ancien reverse-proxy nginx mono-clé et proxifie **tous** les endpoints Ollama
-(`/api/*`, `/v1/*`), en streaming (NDJSON/SSE), avec strip de la clé cliente avant l'amont.
+Elle remplace l'ancien reverse-proxy nginx mono-clé et proxifie les endpoints **d'inférence et de
+lecture** (`/api/*`, `/v1/*`), en streaming (NDJSON/SSE), avec strip de la clé cliente avant
+l'amont. Les endpoints de **gestion du catalogue** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`)
+ne sont **jamais** proxifiés (403) — la gestion des modèles se fait depuis la console d'admin.
 
 ## Architecture
 
@@ -46,7 +48,7 @@ curl -s http://localhost:8787/api/chat \
 ```bash
 # Unitaires + intégration (Python)
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
-python -m pytest                       # 31 tests
+python -m pytest                       # suite unitaire + intégration
 
 # E2E (Playwright : admin UI + proxy), captures .jpg + vidéo .webm dans e2e/output/
 cd e2e && npm install && npm test
@@ -67,3 +69,27 @@ cd e2e && npm install && npm test
   bind sur l'IP LAN uniquement.
 - Aucun secret dans le repo : `SCW_SECRET_KEY`, mot de passe admin, clés — tout vit en `.env` /
   base, hors git (cf. `.gitignore`).
+- **Fail-closed en prod** : refus de démarrer si un secret critique est absent/par défaut, ou si le
+  rôle admin se lierait à « toutes interfaces ». Clés hautement aléatoires, jetons distants chiffrés
+  au repos (Fernet), CSRF same-origin + anti-brute-force du login, en-têtes de sécurité (HSTS/CSP),
+  conteneur non-root, image de base épinglée par digest.
+- **Gate de sécurité avant tout déploiement** : `./runProd` lance `scripts/security-sweep.sh`
+  (secrets, CVE des dépendances, SAST, suite de tests) et **refuse de déployer** en cas de découverte.
+
+## Licence
+
+**Ollama Gateway est _source-available_, pas OSI-open-source** : le code est ouvert et libre
+d'usage, mais l'usage à très grande échelle est encadré. Termes exacts : [LICENSE](LICENSE).
+
+- ✅ **Gratuit** — utilisez, modifiez, distribuez et auto-hébergez, y compris en entreprise, **tant
+  que l'ensemble de vos instances (agrégées par entité) sert ≤ 1 milliard de tokens par mois**.
+- 💼 **Au-delà du seuil** — licence commerciale requise : **somme libératoire unique de 29 € HT par
+  installation**, usage ensuite **illimité** (ex. 3 instances → 87 € HT). Écrivez à
+  **contact@p2enjoy.studio**, objet « Licence Ollama Gateway ».
+- 🔒 **Paternité** — conservez le fichier `LICENSE` et l'attribution à l'auteur : cloner le dépôt
+  pour retirer la licence n'est pas autorisé.
+- 🤝 **Sur l'honneur** — **le logiciel ne vous surveille pas** : aucun comptage à distance, aucune
+  télémétrie, aucun bridage. Le respect du seuil repose entièrement sur votre bonne foi. Si vous le
+  dépassez, jouez le jeu — c'est ce qui garde le projet ouvert pour tout le monde.
+
+© 2026 Martino Bettucci — P2Enjoy SAS.

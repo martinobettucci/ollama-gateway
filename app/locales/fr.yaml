@@ -140,7 +140,7 @@ dash:
     submit: Créer la clé
 tgt:
   title: Cibles publiques
-  intro: Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:21434</span>). Elle sert à générer les variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong> (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible par défaut est indélébile.
+  intro: Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:8443</span>). Elle sert à générer les variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong> (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible par défaut est indélébile.
   keys_count: '{count} clé(s)'
   edit:
     name: Nom

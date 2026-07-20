@@ -138,7 +138,7 @@ dash:
     submit: Crea la chiave
 tgt:
   title: Destinazioni pubbliche
-  intro: Una <strong>destinazione</strong> è l'URL pubblico del gateway così come lo vede un client (es. <span class="mono">https://llm.example:21434</span>). Serve a generare le variabili d'ambiente della chiave associata — <strong>non modifica il routing</strong> (l'upstream resta scelto dal server di esecuzione). Ogni chiave punta a una destinazione; la destinazione predefinita non è eliminabile.
+  intro: Una <strong>destinazione</strong> è l'URL pubblico del gateway così come lo vede un client (es. <span class="mono">https://llm.example:8443</span>). Serve a generare le variabili d'ambiente della chiave associata — <strong>non modifica il routing</strong> (l'upstream resta scelto dal server di esecuzione). Ogni chiave punta a una destinazione; la destinazione predefinita non è eliminabile.
   keys_count: '{count} chiave/i'
   edit:
     name: Nome

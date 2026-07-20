@@ -31,11 +31,11 @@ def test_new_key_attaches_default_target():
 
 def test_key_target_roundtrip_and_env_url():
     targets.ensure_default()
-    t = targets.create_target("prod", "https://llm.example:21434/")  # slash final normalisé
-    assert t.base_url == "https://llm.example:21434"
+    t = targets.create_target("prod", "https://llm.example:8443/")  # slash final normalisé
+    assert t.base_url == "https://llm.example:8443"
     rec, _ = keys.create_key("k", [], None, None, target_id=t.id)
     got = keys.get_key(rec.id)
-    assert got.target_id == t.id and got.target_base_url == "https://llm.example:21434"
+    assert got.target_id == t.id and got.target_base_url == "https://llm.example:8443"
     # None = inchangé
     keys.update_key(rec.id, "k", [], None, None, "", target_id=None)
     assert keys.get_key(rec.id).target_id == t.id

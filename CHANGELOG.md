@@ -6,6 +6,16 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Préparation open-source (source-available).** Ajout d'une **LICENSE** : usage libre et gratuit
+  (y compris en entreprise) tant que l'ensemble des instances d'une entité sert **≤ 1 milliard de
+  tokens/mois** ; au-delà, **licence commerciale** (somme libératoire unique de **29 € HT par
+  installation**, usage illimité — contact@p2enjoy.studio). **Aucun contrôle ni télémétrie dans le
+  code** : le respect du seuil est **sur l'honneur** (fair-use). Attribution/licence à conserver.
+  Résumé dans le README. Ajout d'une **CI GitHub Actions** (tests + CVE + SAST + secrets, en écho à
+  la gate locale). **Nettoyage** des ports/topologie réels des exemples, locales et commentaires
+  (valeurs génériques). Revue de sécurité des dernières features (graphes/horizons, gestion des
+  modèles par serveur) : aucune découverte.
+
 - **Gestion des modèles par serveur + traçage de l'usage par modèle.** Le panel **Serveurs** gagne
   un bloc **« Modèles du serveur »** permettant de **télécharger** (`pull`) ou **supprimer**
   (`delete`) un modèle sur un serveur d'exécution donné, en **commande d'administration LAN-only**

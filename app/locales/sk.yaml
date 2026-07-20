@@ -138,7 +138,7 @@ dash:
     submit: Vytvoriť kľúč
 tgt:
   title: Verejné ciele
-  intro: <strong>Cieľ</strong> je verejná URL brány, ako ju vidí klient (napr. <span class="mono">https://llm.example:21434</span>). Slúži na generovanie premenných prostredia pripojeného kľúča — <strong>nemení smerovanie</strong> (upstream stále vyberá vykonávací server). Každý kľúč ukazuje na cieľ; predvolený cieľ nie je možné odstrániť.
+  intro: <strong>Cieľ</strong> je verejná URL brány, ako ju vidí klient (napr. <span class="mono">https://llm.example:8443</span>). Slúži na generovanie premenných prostredia pripojeného kľúča — <strong>nemení smerovanie</strong> (upstream stále vyberá vykonávací server). Každý kľúč ukazuje na cieľ; predvolený cieľ nie je možné odstrániť.
   keys_count: '{count} kľúč(ov)'
   edit:
     name: Názov
