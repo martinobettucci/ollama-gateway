@@ -7,8 +7,8 @@
 ## Showcase
 
 <p align="center">
-  <a href="docs/showcase/showcase.webm"><img src="docs/showcase/showcase.gif" alt="Guided tour of the gateway" width="760"></a>
-  <br><em>Guided tour — <a href="docs/showcase/showcase.webm">video (webm)</a> · <a href="docs/showcase/showcase.mp4">mp4</a></em>
+  <a href="docs/showcase/showcase.mp4"><img src="docs/showcase/showcase.gif" alt="ollama-gateway demo" width="480"></a>
+  <br><em><a href="docs/showcase/showcase.mp4">Watch the HD demo with sound (mp4)</a></em>
 </p>
 
 An authentication gateway in front of one or more Ollama servers: **per-client API keys**, **origin

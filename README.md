@@ -7,8 +7,8 @@
 ## Showcase
 
 <p align="center">
-  <a href="docs/showcase/showcase.webm"><img src="docs/showcase/showcase.gif" alt="Tour guidé de la passerelle" width="760"></a>
-  <br><em>Tour guidé — <a href="docs/showcase/showcase.webm">vidéo (webm)</a> · <a href="docs/showcase/showcase.mp4">mp4</a></em>
+  <a href="docs/showcase/showcase.mp4"><img src="docs/showcase/showcase.gif" alt="Démonstration d'ollama-gateway" width="480"></a>
+  <br><em><a href="docs/showcase/showcase.mp4">Regarder la démo en HD, avec le son (mp4)</a></em>
 </p>
 
 Passerelle d'authentification devant un ou plusieurs Ollama : **clés API par client**, **restriction
