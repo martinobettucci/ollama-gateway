@@ -168,6 +168,14 @@ mon:
     errors: Kļūdas
     last_used: Pēdējā lietošana
   empty: Šim serverim vēl nav piešķirts neviens pieprasījums.
+  models:
+    title: 'Lietojums pēc modeļa'
+    intro: 'Katra šajā serverī faktiski izsauktā modeļa pēdējais lietojums (reāla attiecināšana, ieskaitot rezervi).'
+    empty: 'Šajā serverī vēl nav izsaukts neviens modelis.'
+    th:
+      model: 'Modelis'
+      first_used: 'Pirmais lietojums'
+      last_used: 'Pēdējais lietojums'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Bāzes URL *
     token_hint: Šifrēts miera stāvoklī; vairs nekad netiek parādīts. Izmanto, ja attālinātais serveris pieprasa Bearer.
     submit: Pievienot serveri
+  models:
+    title: 'Servera modeļi'
+    hint: 'Administrēšanas komandas (tikai LAN), kas nosūtītas šim serverim. Publiskais starpniekserveris noraida šīs pārvaldības komandas jebkurai klienta atslēgai — katalogu var pārvaldīt tikai konsole.'
+    pull_label: 'Lejupielādēt modeli'
+    pull_btn: 'Lejupielādēt'
+    pulled: 'Modelis «{model}» lejupielādēts serverī.'
+    pull_error: 'Lejupielāde neizdevās: {error}'
+    deleted: 'Modelis «{model}» izdzēsts no servera.'
+    delete_error: 'Dzēšana neizdevās: {error}'
+    delete_confirm: 'Dzēst modeli «{model}» no šī servera?'
+    delete_title: 'Dzēst {model} no servera'
+    none: 'Nav atrasts neviens modelis — pārbaudiet serveri, lai atsvaidzinātu sarakstu.'
 api:
   fam:
     ollama: Vietējais Ollama (/api/*)

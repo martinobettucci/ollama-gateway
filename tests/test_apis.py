@@ -15,6 +15,18 @@ def test_family_for_path():
     assert apis.family_for_path("/nope") is None
 
 
+def test_is_management_path_flags_all_catalog_mutations():
+    """Tous les endpoints de gestion (pull/push/delete/create/copy/blobs) sont reconnus, avec ou
+    sans slash final, et /api/blobs/<digest> ; les endpoints d'inférence/listing ne le sont pas."""
+    for p in ("/api/pull", "/api/push", "/api/delete", "/api/create", "/api/copy", "/api/blobs"):
+        assert apis.is_management_path(p) is True
+        assert apis.is_management_path(p + "/") is True
+    assert apis.is_management_path("/api/blobs/sha256:abc123") is True
+    for p in ("/api/chat", "/api/generate", "/api/tags", "/v1/models", "/v1/chat/completions",
+              "/api/embed", "/v1/messages"):
+        assert apis.is_management_path(p) is False
+
+
 def test_catalog_covers_three_families():
     assert set(apis.CATALOG) == set(apis.FAMILIES)
     for eps in apis.CATALOG.values():

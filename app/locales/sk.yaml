@@ -168,6 +168,14 @@ mon:
     errors: Chyby
     last_used: Posledné použitie
   empty: Tomuto serveru zatiaľ nebola priradená žiadna požiadavka.
+  models:
+    title: 'Využitie podľa modelu'
+    intro: 'Posledné použitie každého modelu skutočne vyvolaného na tomto serveri (skutočné priradenie vrátane zálohy).'
+    empty: 'Na tomto serveri zatiaľ nebol vyvolaný žiadny model.'
+    th:
+      model: 'Model'
+      first_used: 'Prvé použitie'
+      last_used: 'Posledné použitie'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Základná URL *
     token_hint: Šifrované v pokoji; nikdy znova nezobrazené. Použije sa, ak vzdialený server vyžaduje Bearer.
     submit: Pridať server
+  models:
+    title: 'Modely servera'
+    hint: 'Administratívne príkazy (iba LAN) odoslané na tento server. Verejná proxy odmieta tieto príkazy na správu každému klientskemu kľúču — katalóg môže spravovať iba konzola.'
+    pull_label: 'Stiahnuť model'
+    pull_btn: 'Stiahnuť'
+    pulled: 'Model «{model}» stiahnutý na server.'
+    pull_error: 'Sťahovanie zlyhalo: {error}'
+    deleted: 'Model «{model}» odstránený zo servera.'
+    delete_error: 'Odstránenie zlyhalo: {error}'
+    delete_confirm: 'Odstrániť model «{model}» z tohto servera?'
+    delete_title: 'Odstrániť {model} zo servera'
+    none: 'Nezistil sa žiadny model — otestujte server na obnovenie zoznamu.'
 api:
   fam:
     ollama: Natívne Ollama (/api/*)

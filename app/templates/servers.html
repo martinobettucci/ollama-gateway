@@ -53,6 +53,33 @@
   </details>
   {% endif %}
 
+  <details class="edit models-manage" data-testid="models-manage-{{ s.id }}">
+    <summary>{{ icon('package', 14) }} {{ t('srv.models.title') }}</summary>
+    <p class="hint">{{ t('srv.models.hint') }}</p>
+    <form method="post" action="/admin/servers/{{ s.id }}/models/pull"
+          data-testid="pull-form-{{ s.id }}">
+      <label for="pull-{{ s.id }}">{{ t('srv.models.pull_label') }}</label>
+      <div class="row-inline">
+        <input id="pull-{{ s.id }}" name="model" placeholder="llama3:latest" required>
+        <button class="btn-sm" type="submit">{{ icon('download', 14) }} {{ t('srv.models.pull_btn') }}</button>
+      </div>
+    </form>
+    {% if s.last_models %}
+    <div class="models-del" data-testid="models-del-{{ s.id }}">
+      {% for m in s.last_models %}
+      <form class="inline" method="post" action="/admin/servers/{{ s.id }}/models/delete"
+            onsubmit="return confirm('{{ t('srv.models.delete_confirm', model=m) }}');">
+        <input type="hidden" name="model" value="{{ m }}">
+        <button class="badge neutral mono badge-del" type="submit"
+                title="{{ t('srv.models.delete_title', model=m) }}">{{ m }} {{ icon('trash', 11) }}</button>
+      </form>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">{{ t('srv.models.none') }}</p>
+    {% endif %}
+  </details>
+
   <div class="server-actions">
     <a class="btn-secondary btn-sm" href="/admin/servers/{{ s.id }}/monitor"
        data-testid="monitor-link-{{ s.id }}">{{ icon('bar-chart', 14) }} {{ t('srv.actions.monitor') }}</a>

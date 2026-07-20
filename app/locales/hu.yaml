@@ -168,6 +168,14 @@ mon:
     errors: Hibák
     last_used: Utolsó használat
   empty: Ehhez a kiszolgálóhoz még nincs hozzárendelve kérés.
+  models:
+    title: 'Használat modellenként'
+    intro: 'Az ezen a kiszolgálón ténylegesen meghívott minden modell legutóbbi használata (valós hozzárendelés, tartalékkal együtt).'
+    empty: 'Ezen a kiszolgálón még nem hívtak meg modellt.'
+    th:
+      model: 'Modell'
+      first_used: 'Első használat'
+      last_used: 'Utolsó használat'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Alap-URL *
     token_hint: Nyugalomban titkosítva; soha többé nem jelenik meg. Akkor használatos, ha a távoli kiszolgáló Bearer-t igényel.
     submit: Kiszolgáló hozzáadása
+  models:
+    title: 'Kiszolgáló modelljei'
+    hint: 'A kiszolgálónak küldött adminisztrációs parancsok (csak LAN). A nyilvános proxy minden ügyfélkulcs esetén elutasítja ezeket a kezelési parancsokat — a katalógust csak a konzol kezelheti.'
+    pull_label: 'Modell letöltése'
+    pull_btn: 'Letöltés'
+    pulled: 'A(z) «{model}» modell letöltve a kiszolgálóra.'
+    pull_error: 'A letöltés sikertelen: {error}'
+    deleted: 'A(z) «{model}» modell törölve a kiszolgálóról.'
+    delete_error: 'A törlés sikertelen: {error}'
+    delete_confirm: 'Törli a(z) «{model}» modellt erről a kiszolgálóról?'
+    delete_title: 'A(z) {model} törlése a kiszolgálóról'
+    none: 'Nem található modell — tesztelje a kiszolgálót a lista frissítéséhez.'
 api:
   fam:
     ollama: Natív Ollama (/api/*)

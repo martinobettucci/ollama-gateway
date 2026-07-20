@@ -168,6 +168,14 @@ mon:
     errors: Żbalji
     last_used: L-aħħar użu
   empty: L-ebda talba għadha attribwita lil dan is-server.
+  models:
+    title: 'Użu skont il-mudell'
+    intro: 'L-aħħar użu ta'' kull mudell li fil-fatt ġie msejjaħ fuq dan is-server (attribuzzjoni reali, inkluż il-fallback).'
+    empty: 'L-ebda mudell għadu ma ġie msejjaħ fuq dan is-server.'
+    th:
+      model: 'Mudell'
+      first_used: 'L-ewwel użu'
+      last_used: 'L-aħħar użu'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: URL bażi *
     token_hint: Kriptat waqt il-mistrieħ; qatt aktar mhu jintwera. Jintuża jekk is-server remot jeħtieġ Bearer.
     submit: Żid is-server
+  models:
+    title: 'Mudelli tas-server'
+    hint: 'Kmandi ta'' amministrazzjoni (LAN biss) mibgħuta lil dan is-server. Il-proxy pubbliku jirrifjuta dawn il-kmandi ta'' ġestjoni għal kull ċavetta tal-klijent — il-konsol biss tista'' tmexxi l-katalgu.'
+    pull_label: 'Niżżel mudell'
+    pull_btn: 'Niżżel'
+    pulled: 'Il-mudell «{model}» tniżżel fis-server.'
+    pull_error: 'It-tniżżil falla: {error}'
+    deleted: 'Il-mudell «{model}» tħassar mis-server.'
+    delete_error: 'It-tħassir falla: {error}'
+    delete_confirm: 'Tħassar il-mudell «{model}» minn dan is-server?'
+    delete_title: 'Ħassar {model} mis-server'
+    none: 'L-ebda mudell ma nstab — ittestja s-server biex taġġorna l-lista.'
 api:
   fam:
     ollama: Ollama nattiv (/api/*)

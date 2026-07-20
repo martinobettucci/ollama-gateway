@@ -3,6 +3,32 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-20 — Gestion des modèles par serveur + usage par modèle
+
+- **Deux besoins symétriques : tracer ce qui tourne, et piloter le catalogue — sans jamais ouvrir
+  la gestion aux clients.** On veut (1) voir le **dernier usage de chaque modèle par serveur** et
+  (2) **télécharger/supprimer** un modèle sur un serveur donné, tout en garantissant qu'un **client
+  ne puisse envoyer aucune commande de gestion** à l'amont.
+- **Séparation nette des chemins privilégiés.** La gestion (`pull`/`delete`) est une **opération
+  d'administration** : elle part de la **console LAN-only** (`app/admin.py` → `servers.pull_model`/
+  `delete_model`) et frappe l'amont **en direct** avec le jeton distant déchiffré côté serveur —
+  **jamais** via le proxy public. Le **proxy** reste un pur relais d'**inférence** : `apis.
+  is_management_path` (déjà en place) refuse **403** `pull`/`push`/`delete`/`create`/`copy`/`blobs`
+  pour toute clé, **avant** d'atteindre l'amont. Ce garde-fou existait mais n'était pas testé : on
+  ajoute des tests unitaires (`is_management_path` + blocage proxy avec faux Ollama qui *implémente*
+  pull/delete → un 403 prouve la garde, pas un 404) et E2E.
+- **Pull bloquant (`stream:false`), assumé.** Le panel suit le motif POST→redirect→flash du reste
+  de la console ; un gros téléchargement peut tenir la requête ouverte plusieurs minutes (timeout
+  amont long). Choix pragmatique cohérent avec « Tester »/« Compat » ; pas de suivi de job asynchrone
+  (surdimensionné pour un outil LAN mono-opérateur).
+- **Traçage par modèle = attribution réelle.** `usage.server_per_model` réutilise `usage_events.
+  server_id` (rempli par le proxy, **repli inclus**) et exclut `model=''` (refus d'auth/quota avant
+  lecture du corps). Tri par `last_seen` DESC → « qu'est-ce qui a servi en dernier » se lit d'un
+  coup d'œil.
+- **Testabilité déterministe.** Le faux Ollama gagne un **catalogue mutable** (`/api/pull` ajoute,
+  `/api/delete` retire, réinitialisé entre tests) → le cycle pull→voir→delete est prouvable en E2E
+  sans vrai Ollama ni GPU.
+
 ## 2026-07-17 — Visionneuse du contenu des requêtes (grep dans le panel)
 
 - **Le contenu était consultable seulement au shell → on l'ouvre dans le panel.** Le journal de

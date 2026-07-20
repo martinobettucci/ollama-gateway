@@ -168,6 +168,14 @@ mon:
     errors: Fejl
     last_used: Sidst brugt
   empty: Ingen anmodning tilskrevet denne server endnu.
+  models:
+    title: 'Forbrug pr. model'
+    intro: 'Seneste brug af hver model, der faktisk er kaldt på denne server (reel tilskrivning, inkl. failover).'
+    empty: 'Ingen model kaldt på denne server endnu.'
+    th:
+      model: 'Model'
+      first_used: 'Første brug'
+      last_used: 'Seneste brug'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Basis-URL *
     token_hint: Krypteret i hvile; vises aldrig igen. Bruges, hvis fjernserveren kræver en Bearer.
     submit: Tilføj serveren
+  models:
+    title: 'Servermodeller'
+    hint: 'Administrationskommandoer (kun LAN) sendt til denne server. Den offentlige proxy afviser disse administrationskommandoer for enhver klientnøgle — kun konsollen kan styre kataloget.'
+    pull_label: 'Hent en model'
+    pull_btn: 'Hent'
+    pulled: 'Modellen «{model}» hentet til serveren.'
+    pull_error: 'Hentning mislykkedes: {error}'
+    deleted: 'Modellen «{model}» slettet fra serveren.'
+    delete_error: 'Sletning mislykkedes: {error}'
+    delete_confirm: 'Slet modellen «{model}» fra denne server?'
+    delete_title: 'Slet {model} fra serveren'
+    none: 'Ingen model registreret — test serveren for at opdatere listen.'
 api:
   fam:
     ollama: Native Ollama (/api/*)

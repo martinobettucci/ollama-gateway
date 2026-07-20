@@ -168,6 +168,14 @@ mon:
     errors: Klaidos
     last_used: Paskutinį kartą naudota
   empty: Šiam serveriui dar nepriskirta jokia užklausa.
+  models:
+    title: 'Naudojimas pagal modelį'
+    intro: 'Paskutinis kiekvieno šiame serveryje faktiškai iškviesto modelio naudojimas (tikras priskyrimas, įskaitant atsarginį).'
+    empty: 'Šiame serveryje dar nebuvo iškviestas nė vienas modelis.'
+    th:
+      model: 'Modelis'
+      first_used: 'Pirmas naudojimas'
+      last_used: 'Paskutinis naudojimas'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Bazinis URL *
     token_hint: Šifruota ramybės būsenoje; daugiau niekada nerodoma. Naudojama, jei nuotolinis serveris reikalauja Bearer.
     submit: Pridėti serverį
+  models:
+    title: 'Serverio modeliai'
+    hint: 'Administravimo komandos (tik LAN), siunčiamos į šį serverį. Viešasis tarpinis serveris atmeta šias valdymo komandas kiekvienam kliento raktui — katalogą gali valdyti tik konsolė.'
+    pull_label: 'Atsisiųsti modelį'
+    pull_btn: 'Atsisiųsti'
+    pulled: 'Modelis «{model}» atsisiųstas į serverį.'
+    pull_error: 'Atsisiuntimas nepavyko: {error}'
+    deleted: 'Modelis «{model}» ištrintas iš serverio.'
+    delete_error: 'Ištrynimas nepavyko: {error}'
+    delete_confirm: 'Ištrinti modelį «{model}» iš šio serverio?'
+    delete_title: 'Ištrinti {model} iš serverio'
+    none: 'Neaptikta jokio modelio — išbandykite serverį, kad atnaujintumėte sąrašą.'
 api:
   fam:
     ollama: Vietinis Ollama (/api/*)

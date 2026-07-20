@@ -667,6 +667,7 @@ async def server_monitor(request: Request, server_id: int):
     try:
         summary = usage.server_summary(server_id, conn)
         per_key = usage.server_per_key(server_id, conn)
+        per_model = usage.server_per_model(server_id, conn)
         status = usage.server_status_breakdown(server_id, conn)
         daily = usage.server_daily(server_id, 30, conn)
     finally:
@@ -684,7 +685,7 @@ async def server_monitor(request: Request, server_id: int):
     }
     return render(request, "monitor.html", {
         "server": srv, "summary": summary, "per_key": per_key,
-        "status": status, "svg": svg,
+        "per_model": per_model, "status": status, "svg": svg,
     })
 
 
@@ -705,6 +706,49 @@ async def server_delete(request: Request, server_id: int):
     err = servers.delete_server(server_id)
     if err:
         request.session["server_flash"] = {"ok": False, "text": err}
+    return RedirectResponse("/admin/servers", status_code=303)
+
+
+@app.post("/admin/servers/{server_id}/models/pull")
+async def server_model_pull(request: Request, server_id: int):
+    """Télécharge un modèle sur le serveur (commande d'administration LAN-only vers l'amont).
+
+    C'est le PENDANT admin de la garde du proxy : le proxy refuse `/api/pull` à TOUTE clé cliente
+    (`apis.is_management_path`), seule la console — jamais routée par Caddy — peut piloter le
+    catalogue amont. La sonde est rejouée ensuite pour rafraîchir la liste des modèles affichée."""
+    if (r := _guard(request)):
+        return r
+    form = await request.form()
+    model = (form.get("model") or "").strip()
+    ok, msg = await servers.pull_model(server_id, model)
+    if ok:
+        await servers.test_server(server_id)  # rafraîchit last_models (le modèle apparaît)
+        request.session["server_flash"] = {
+            "ok": True, "text": _t(request, "srv.models.pulled", model=msg)}
+    else:
+        request.session["server_flash"] = {
+            "ok": False, "text": _t(request, "srv.models.pull_error", error=msg)}
+    return RedirectResponse("/admin/servers", status_code=303)
+
+
+@app.post("/admin/servers/{server_id}/models/delete")
+async def server_model_delete(request: Request, server_id: int):
+    """Supprime un modèle du serveur (commande d'administration LAN-only vers l'amont).
+
+    Même statut privilégié que `server_model_pull` : refusé à toute clé cliente par le proxy, permis
+    uniquement depuis la console. La sonde est rejouée pour retirer le modèle de la liste affichée."""
+    if (r := _guard(request)):
+        return r
+    form = await request.form()
+    model = (form.get("model") or "").strip()
+    ok, msg = await servers.delete_model(server_id, model)
+    if ok:
+        await servers.test_server(server_id)  # rafraîchit last_models (le modèle disparaît)
+        request.session["server_flash"] = {
+            "ok": True, "text": _t(request, "srv.models.deleted", model=msg)}
+    else:
+        request.session["server_flash"] = {
+            "ok": False, "text": _t(request, "srv.models.delete_error", error=msg)}
     return RedirectResponse("/admin/servers", status_code=303)
 
 

@@ -86,6 +86,65 @@ test('restriction de modèle: cases sondées au rattachement → 403 hors allowl
   await page.screenshot({ path: `${OUT}/07-key-restricted.jpg`, type: 'jpeg', fullPage: true });
 });
 
+const DEMO = 'sk-ollama-devdemokey000000000000000000000000000000000000000000000000';
+
+test('gestion des modèles: pull → visible → delete ; le proxy refuse /api/pull au client', async ({ page, request }) => {
+  await login(page);
+  await page.getByRole('link', { name: 'Serveurs' }).click();
+
+  const local = page.locator('.card', { hasText: 'Ollama local' });
+  // Ouvre le bloc « Modèles du serveur » et télécharge un modèle (commande d'admin LAN-only).
+  await local.getByText('Modèles du serveur').click();
+  const pullForm = local.locator('[data-testid^=pull-form-]');
+  await pullForm.locator('input[name=model]').fill('llama3:8b');
+  // Capture manuel : bloc « Modèles du serveur » déplié (pull + suppression par modèle).
+  await page.screenshot({ path: `${OUT}/26-model-manage.jpg`, type: 'jpeg', fullPage: true });
+  await pullForm.locator('button[type=submit]').click();
+
+  // Flash de succès + le modèle apparaît (sonde rejouée → last_models rafraîchi).
+  const localAfter = page.locator('.card', { hasText: 'Ollama local' });
+  await expect(page.locator('.flash')).toContainText('téléchargé');
+  await expect(localAfter).toContainText('llama3:8b');
+  await page.screenshot({ path: `${OUT}/09-model-pull.jpg`, type: 'jpeg', fullPage: true });
+
+  // Suppression : accepte la confirmation, le modèle disparaît de la liste.
+  await localAfter.getByText('Modèles du serveur').click();
+  page.on('dialog', d => d.accept());
+  await localAfter.locator('[data-testid^=models-del-] button', { hasText: 'llama3:8b' }).click();
+  const localFinal = page.locator('.card', { hasText: 'Ollama local' });
+  await expect(page.locator('.flash')).toContainText('supprimé');
+  await expect(localFinal.locator('[data-testid^=models-del-]')).not.toContainText('llama3:8b');
+  await page.screenshot({ path: `${OUT}/10-model-delete.jpg`, type: 'jpeg', fullPage: true });
+
+  // GARDE DE SÉCURITÉ : le proxy public refuse toute commande de gestion, clé valide comprise.
+  const pull = await request.post(`${PROXY}/api/pull`, {
+    headers: { Authorization: `Bearer ${DEMO}` }, data: { model: 'demo:latest' },
+  });
+  expect(pull.status()).toBe(403);
+  expect(await pull.text()).toContain('gestion');
+  const del = await request.delete(`${PROXY}/api/delete`, {
+    headers: { Authorization: `Bearer ${DEMO}` }, data: { model: 'demo:latest' },
+  });
+  expect(del.status()).toBe(403);
+});
+
+test('monitoring: traçage du dernier usage par modèle sur le serveur', async ({ page, request }) => {
+  await login(page);
+  // Génère de l'usage attribué au serveur par défaut via le proxy (modèle demo:latest).
+  await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${DEMO}` }, data: { model: 'demo:latest', stream: false },
+  });
+  await page.getByRole('link', { name: 'Serveurs' }).click();
+  const local = page.locator('.card', { hasText: 'Ollama local' });
+  await local.getByRole('link', { name: 'Monitor' }).click();
+  await expect(page.locator('h1')).toContainText('Monitor');
+  // La table « Usage par modèle » trace demo:latest avec son dernier usage.
+  const perModel = page.locator('[data-testid=monitor-permodel]');
+  await expect(perModel).toBeVisible();
+  await expect(perModel).toContainText('demo:latest');
+  await page.screenshot({ path: `${OUT}/11-per-model.jpg`, type: 'jpeg', fullPage: true });
+});
+
 test('picker de modèles: serveur hors ligne → repli en saisie libre', async ({ page }) => {
   await login(page);
 

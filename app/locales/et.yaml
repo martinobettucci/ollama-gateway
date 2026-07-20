@@ -168,6 +168,14 @@ mon:
     errors: Vead
     last_used: Viimati kasutatud
   empty: Sellele serverile pole veel ühtegi päringut omistatud.
+  models:
+    title: 'Kasutus mudeli kaupa'
+    intro: 'Iga sellel serveril tegelikult käivitatud mudeli viimane kasutus (tegelik omistamine, sh varundus).'
+    empty: 'Sellel serveril pole veel ühtegi mudelit käivitatud.'
+    th:
+      model: 'Mudel'
+      first_used: 'Esimene kasutus'
+      last_used: 'Viimane kasutus'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Baas-URL *
     token_hint: Krüpteeritud puhkeolekus; ei kuvata enam kunagi. Kasutatakse, kui kaugserver nõuab Bearerit.
     submit: Lisa server
+  models:
+    title: 'Serveri mudelid'
+    hint: 'Sellele serverile saadetavad halduskäsud (ainult LAN). Avalik puhverserver keeldub neist halduskäskudest iga kliendivõtme puhul — kataloogi saab hallata ainult konsool.'
+    pull_label: 'Laadi mudel alla'
+    pull_btn: 'Laadi alla'
+    pulled: 'Mudel «{model}» laaditi serverisse.'
+    pull_error: 'Allalaadimine ebaõnnestus: {error}'
+    deleted: 'Mudel «{model}» kustutati serverist.'
+    delete_error: 'Kustutamine ebaõnnestus: {error}'
+    delete_confirm: 'Kas kustutada mudel «{model}» sellest serverist?'
+    delete_title: 'Kustuta {model} serverist'
+    none: 'Ühtegi mudelit ei tuvastatud — testige serverit loendi värskendamiseks.'
 api:
   fam:
     ollama: Native Ollama (/api/*)

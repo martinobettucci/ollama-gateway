@@ -168,6 +168,14 @@ mon:
     errors: Fouten
     last_used: Laatst gebruikt
   empty: Nog geen aanvraag aan deze server toegewezen.
+  models:
+    title: 'Gebruik per model'
+    intro: 'Laatste gebruik van elk model dat daadwerkelijk op deze server is aangeroepen (echte toewijzing, inclusief fallback).'
+    empty: 'Nog geen model aangeroepen op deze server.'
+    th:
+      model: 'Model'
+      first_used: 'Eerste gebruik'
+      last_used: 'Laatste gebruik'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Basis-URL *
     token_hint: Versleuteld opgeslagen; nooit meer getoond. Gebruikt als de externe server een Bearer vereist.
     submit: Server toevoegen
+  models:
+    title: 'Servermodellen'
+    hint: 'Beheeropdrachten (alleen LAN) verzonden naar deze server. De openbare proxy weigert deze beheeropdrachten voor elke clientsleutel — alleen de console kan de catalogus beheren.'
+    pull_label: 'Een model downloaden'
+    pull_btn: 'Downloaden'
+    pulled: 'Model «{model}» naar de server gedownload.'
+    pull_error: 'Downloaden mislukt: {error}'
+    deleted: 'Model «{model}» van de server verwijderd.'
+    delete_error: 'Verwijderen mislukt: {error}'
+    delete_confirm: 'Model «{model}» van deze server verwijderen?'
+    delete_title: '{model} van de server verwijderen'
+    none: 'Geen model gedetecteerd — test de server om de lijst te vernieuwen.'
 api:
   fam:
     ollama: Native Ollama (/api/*)

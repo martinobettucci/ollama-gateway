@@ -214,6 +214,34 @@ Règle DoD : pas de `[x]` sans ses tests propres.
   resolve anti-traversal), test_admin (login requis, rendu + secret masqué + grep 0-match + brut),
   E2E admin.spec « contenu des requêtes : visionneuse + grep » ; vision : capture 25-logs-content.*
 
+## Phase 12 — Gestion des modèles par serveur & traçage de l'usage par modèle (2026-07-20)
+
+- [x] **Traçage du dernier usage par modèle et par serveur.** `usage.server_per_model(server_id)`
+  agrège, pour chaque modèle réellement invoqué sur un serveur, requêtes/tokens/erreurs + **premier
+  et dernier usage** (tri par `last_seen` DESC, événements `model=''` exclus) ; table « Usage par
+  modèle » ajoutée au monitoring du serveur (`monitor.html`, `data-testid=monitor-permodel`).
+  Attribution réelle (`usage_events.server_id`, repli inclus). — *tests : test_monitor
+  (`server_per_model` : agrégats + tri par dernier usage + exclusion `model=''`, page monitor rend
+  la table) ; E2E servers.spec « monitoring : traçage du dernier usage par modèle » ; **vision faite**
+  (capture 11-per-model + 17-monitor régénérée).*
+- [x] **Commandes d'admin LAN-only : télécharger / supprimer un modèle sur un serveur.**
+  `servers.pull_model` / `servers.delete_model` appellent directement l'amont (`/api/pull`,
+  `DELETE /api/delete`) avec le jeton distant déchiffré côté serveur (jamais côté navigateur) ;
+  routes `POST /admin/servers/{id}/models/pull` + `.../delete` (garde login, re-sonde après action,
+  flash i18n) ; bloc « Modèles du serveur » dans `servers.html` (formulaire de pull + suppression
+  par modèle avec confirmation). Faux Ollama doté d'un catalogue mutable (`/api/pull`, `/api/delete`)
+  → testable de bout en bout. Traductions ajoutées aux **24 locales**. — *tests : test_servers
+  (pull ajoute au catalogue, delete retire, 404 modèle absent, gardes nom/serveur/désactivé avant
+  tout appel amont) ; test_monitor (routes admin pull+delete de bout en bout, login requis) ; E2E
+  servers.spec « gestion des modèles : pull → visible → delete » ; **vision faite** (captures
+  26-model-manage, 09-model-pull, 10-model-delete).*
+- [x] **Garde-fou : le proxy refuse toute commande de gestion à un client (déjà en place, désormais
+  testée).** `apis.is_management_path` couvre `pull`/`push`/`delete`/`create`/`copy`/`blobs`
+  (± slash, `/api/blobs/<digest>`) ; le proxy renvoie **403** avant tout amont pour n'importe quelle
+  clé. — *tests : test_apis (`is_management_path` : tous les chemins de gestion vs inférence/listing) ;
+  test_proxy (403 sur pull/delete/push/create/copy/blobs avec clé valide, catalogue amont intact,
+  refus journalisés) ; E2E servers.spec (refus proxy `/api/pull` + `/api/delete` avec la clé démo).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

@@ -168,6 +168,14 @@ mon:
     errors: Errors
     last_used: Last used
   empty: No request attributed to this server yet.
+  models:
+    title: Usage per model
+    intro: Latest usage of every model actually invoked on this server (real attribution, fallback included).
+    empty: No model invoked on this server yet.
+    th:
+      model: Model
+      first_used: First used
+      last_used: Last used
 logs:
   content:
     link: Request content
@@ -242,6 +250,18 @@ srv:
     url: Base URL *
     token_hint: Encrypted at rest; never shown again. Used if the remote server requires a Bearer.
     submit: Add the server
+  models:
+    title: Server models
+    hint: Administration commands (LAN only) sent to this server. The public proxy refuses these management commands to every client key — only the console can drive the catalog.
+    pull_label: Pull a model
+    pull_btn: Pull
+    pulled: Model “{model}” pulled onto the server.
+    pull_error: 'Pull failed: {error}'
+    deleted: Model “{model}” deleted from the server.
+    delete_error: 'Delete failed: {error}'
+    delete_confirm: Delete model “{model}” from this server?
+    delete_title: Delete {model} from the server
+    none: No model detected — test the server to refresh the list.
 api:
   fam:
     ollama: Native Ollama (/api/*)

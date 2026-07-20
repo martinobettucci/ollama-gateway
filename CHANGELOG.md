@@ -6,6 +6,19 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Gestion des modèles par serveur + traçage de l'usage par modèle.** Le panel **Serveurs** gagne
+  un bloc **« Modèles du serveur »** permettant de **télécharger** (`pull`) ou **supprimer**
+  (`delete`) un modèle sur un serveur d'exécution donné, en **commande d'administration LAN-only**
+  envoyée directement à l'amont (jeton distant déchiffré côté serveur, jamais côté navigateur) ;
+  la liste des modèles est re-sondée après l'action. Le **monitoring d'un serveur** trace en plus,
+  pour **chaque modèle réellement invoqué**, ses requêtes/tokens/erreurs et son **premier & dernier
+  usage** (table « Usage par modèle », triée du plus récemment utilisé au plus ancien).
+  **Garde-fou (règle dure, déjà en place et désormais couvert par des tests dédiés)** : le **proxy
+  public refuse (403) toute commande de gestion** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`)
+  pour **n'importe quelle clé cliente** — seule la console peut piloter le catalogue amont. Couvert
+  par tests unitaires (blocage proxy, `pull`/`delete` amont, agrégats par modèle) et E2E Playwright
+  (télécharger → voir → supprimer un modèle ; refus proxy vérifié). Traductions ajoutées aux
+  **24 locales**.
 - **Durcissement de sécurité (audit pré-open-source).** Série de correctifs issus d'un audit complet
   (SAST + revue manuelle), chacun couvert par ses tests dédiés (`tests/test_security_fixes.py`) :
   - **Dépendances à jour** : purge des CVE connues des dépendances épinglées (`pip-audit` propre).

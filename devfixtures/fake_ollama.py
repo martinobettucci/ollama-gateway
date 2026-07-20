@@ -27,14 +27,44 @@ _TINY_PNG = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk"
              "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
 
 
+# Catalogue MUTABLE : /api/pull y ajoute un modèle, /api/delete l'en retire → la gestion de
+# modèles du panel (LAN-only) est testable de bout en bout de façon déterministe.
+_DEFAULT_MODELS = ["demo:latest", "autre:latest", "x/fakeflux:1b"]
+MODELS: list[str] = list(_DEFAULT_MODELS)
+
+
+def reset_models() -> None:
+    """Réinitialise le catalogue (isolation inter-tests)."""
+    MODELS[:] = list(_DEFAULT_MODELS)
+
+
 @app.get("/api/tags")
 async def tags() -> JSONResponse:
     # Modèles texte + un modèle d'IMAGE (préfixe x/) → teste le filtrage et la séparation image.
-    return JSONResponse({"models": [
-        {"name": "demo:latest", "model": "demo:latest"},
-        {"name": "autre:latest", "model": "autre:latest"},
-        {"name": "x/fakeflux:1b", "model": "x/fakeflux:1b"},
-    ]})
+    return JSONResponse({"models": [{"name": m, "model": m} for m in MODELS]})
+
+
+@app.post("/api/pull")
+async def pull(request: Request) -> JSONResponse:
+    # Ajoute le modèle au catalogue (idempotent) et répond comme Ollama (stream=false).
+    body = await request.json()
+    model = (body.get("model") or body.get("name") or "").strip()
+    if not model:
+        return JSONResponse({"error": "model is required"}, status_code=400)
+    if model not in MODELS:
+        MODELS.append(model)
+    return JSONResponse({"status": "success"})
+
+
+@app.delete("/api/delete")
+async def delete(request: Request) -> JSONResponse:
+    # Retire le modèle ; 404 s'il est déjà absent (comportement Ollama).
+    body = await request.json()
+    model = (body.get("model") or body.get("name") or "").strip()
+    if model not in MODELS:
+        return JSONResponse({"error": "model not found"}, status_code=404)
+    MODELS.remove(model)
+    return JSONResponse({"status": "success"})
 
 
 @app.get("/v1/models")

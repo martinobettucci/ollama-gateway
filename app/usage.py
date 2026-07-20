@@ -240,6 +240,30 @@ def server_per_key(server_id: int, conn: sqlite3.Connection | None = None) -> li
             conn.close()
 
 
+def server_per_model(server_id: int, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Traçage de l'usage PAR MODÈLE sur un serveur : pour CHAQUE modèle réellement invoqué,
+    requêtes, tokens, erreurs, premier et **dernier** usage. Le plus récemment utilisé d'abord.
+
+    Alimente la table « Usage par modèle » du monitoring : quels modèles tournent réellement sur ce
+    serveur et quand chacun a servi pour la dernière fois. Les requêtes sans modèle résolu
+    (`model = ''` : erreurs d'auth/quota avant lecture du corps) sont exclues du traçage par modèle.
+    """
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT model, COUNT(*) AS reqs, "
+            "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens, "
+            "SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) AS errors, "
+            "MIN(ts) AS first_seen, MAX(ts) AS last_seen "
+            "FROM usage_events WHERE server_id = ? AND model <> '' "
+            "GROUP BY model ORDER BY last_seen DESC, tokens DESC", (server_id,)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
 def server_status_breakdown(server_id: int, conn: sqlite3.Connection | None = None) -> dict:
     """Répartition des statuts d'un serveur par classe : 2xx / 3xx / 4xx / 5xx (camembert)."""
     own = conn is None

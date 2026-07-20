@@ -88,4 +88,32 @@
     <span>{{ t('mon.empty') }}</span></div>
   {% endif %}
 </div>
+
+<div class="card cat-accent">
+  <div class="card-head"><span class="chip-ic accent">{{ icon('package', 18) }}</span>
+    <h2>{{ t('mon.models.title') }}</h2></div>
+  <p class="page-meta">{{ t('mon.models.intro') }}</p>
+  {% if per_model %}
+  <div class="table-wrap">
+  <table data-testid="monitor-permodel">
+    <thead><tr><th>{{ t('mon.models.th.model') }}</th><th>{{ t('mon.th.reqs') }}</th><th>{{ t('mon.th.tokens') }}</th><th>{{ t('mon.th.errors') }}</th><th>{{ t('mon.models.th.first_used') }}</th><th>{{ t('mon.models.th.last_used') }}</th></tr></thead>
+    <tbody>
+    {% for r in per_model %}
+      <tr>
+        <td><span class="badge neutral mono">{{ r.model }}</span></td>
+        <td class="mono">{{ r.reqs }}</td>
+        <td class="mono">{{ r.tokens }}</td>
+        <td class="mono">{% if r.errors %}<span class="badge off">{{ r.errors }}</span>{% else %}0{% endif %}</td>
+        <td class="mono muted">{{ r.first_seen }}</td>
+        <td class="mono">{{ r.last_seen }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty">{{ icon('package', 22) }}
+    <span>{{ t('mon.models.empty') }}</span></div>
+  {% endif %}
+</div>
 {% endblock %}

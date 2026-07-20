@@ -27,6 +27,7 @@ def fake_upstream():
     """Client httpx branché sur le faux Ollama (ASGI in-process)."""
     from devfixtures import fake_ollama
     fake_ollama.LAST_AUTH = "unset"
+    fake_ollama.reset_models()
     transport = httpx.ASGITransport(app=fake_ollama.app)
     return httpx.AsyncClient(transport=transport, base_url="http://fake")
 

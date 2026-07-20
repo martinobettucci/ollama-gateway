@@ -168,6 +168,14 @@ mon:
     errors: Errores
     last_used: Último uso
   empty: Aún no hay ninguna solicitud atribuida a este servidor.
+  models:
+    title: 'Uso por modelo'
+    intro: 'Último uso de cada modelo realmente invocado en este servidor (atribución real, incluida la reserva).'
+    empty: 'Aún no se ha invocado ningún modelo en este servidor.'
+    th:
+      model: 'Modelo'
+      first_used: 'Primer uso'
+      last_used: 'Último uso'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: URL base *
     token_hint: Cifrado en reposo; nunca se vuelve a mostrar. Se usa si el servidor remoto exige un Bearer.
     submit: Añadir el servidor
+  models:
+    title: 'Modelos del servidor'
+    hint: 'Comandos de administración (solo LAN) enviados a este servidor. El proxy público rechaza estos comandos de gestión a cualquier clave de cliente: solo la consola puede gestionar el catálogo.'
+    pull_label: 'Descargar un modelo'
+    pull_btn: 'Descargar'
+    pulled: 'Modelo «{model}» descargado en el servidor.'
+    pull_error: 'Error al descargar: {error}'
+    deleted: 'Modelo «{model}» eliminado del servidor.'
+    delete_error: 'Error al eliminar: {error}'
+    delete_confirm: '¿Eliminar el modelo «{model}» de este servidor?'
+    delete_title: 'Eliminar {model} del servidor'
+    none: 'Ningún modelo detectado: pruebe el servidor para actualizar la lista.'
 api:
   fam:
     ollama: Ollama nativo (/api/*)

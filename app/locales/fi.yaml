@@ -168,6 +168,14 @@ mon:
     errors: Virheet
     last_used: Viimeksi käytetty
   empty: Tälle palvelimelle ei ole vielä kohdistettu yhtään pyyntöä.
+  models:
+    title: 'Käyttö mallia kohden'
+    intro: 'Kunkin tällä palvelimella todella kutsutun mallin viimeisin käyttö (todellinen kohdistus, varajärjestelmä mukaan lukien).'
+    empty: 'Tällä palvelimella ei ole vielä kutsuttu yhtään mallia.'
+    th:
+      model: 'Malli'
+      first_used: 'Ensimmäinen käyttö'
+      last_used: 'Viimeisin käyttö'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Perus-URL *
     token_hint: Salattu levossa; ei näytetä enää koskaan. Käytetään, jos etäpalvelin vaatii Bearerin.
     submit: Lisää palvelin
+  models:
+    title: 'Palvelimen mallit'
+    hint: 'Hallintakomennot (vain LAN) tälle palvelimelle. Julkinen välityspalvelin estää nämä hallintakomennot kaikilta asiakasavaimilta — vain konsoli voi hallita luetteloa.'
+    pull_label: 'Lataa malli'
+    pull_btn: 'Lataa'
+    pulled: 'Malli «{model}» ladattu palvelimelle.'
+    pull_error: 'Lataus epäonnistui: {error}'
+    deleted: 'Malli «{model}» poistettu palvelimelta.'
+    delete_error: 'Poisto epäonnistui: {error}'
+    delete_confirm: 'Poistetaanko malli «{model}» tältä palvelimelta?'
+    delete_title: 'Poista {model} palvelimelta'
+    none: 'Mallia ei havaittu — testaa palvelin päivittääksesi luettelon.'
 api:
   fam:
     ollama: Natiivi Ollama (/api/*)

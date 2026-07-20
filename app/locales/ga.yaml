@@ -168,6 +168,14 @@ mon:
     errors: Earráidí
     last_used: Úsáid dheireanach
   empty: Níl aon iarratas curtha i leith an fhreastalaí seo go fóill.
+  models:
+    title: 'Úsáid de réir múnla'
+    intro: 'Úsáid is déanaí gach múnla a rabhthas ag glaoch air ar an bhfreastalaí seo (sannadh fíor, cúltaca san áireamh).'
+    empty: 'Níor glaodh aon mhúnla ar an bhfreastalaí seo go fóill.'
+    th:
+      model: 'Múnla'
+      first_used: 'Céadúsáid'
+      last_used: 'Úsáid is déanaí'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Bun-URL *
     token_hint: Criptithe agus é ina stad; ní thaispeántar arís go deo é. Úsáidtear é má éilíonn an cianfhreastalaí Bearer.
     submit: Cuir an freastalaí leis
+  models:
+    title: 'Múnlaí an fhreastalaí'
+    hint: 'Orduithe riaracháin (LAN amháin) a sheoltar chuig an bhfreastalaí seo. Diúltaíonn an seachfhreastalaí poiblí na horduithe bainistíochta seo d''aon eochair chliaint — ní féidir ach leis an gconsól an chatalóg a bhainistiú.'
+    pull_label: 'Íoslódáil múnla'
+    pull_btn: 'Íoslódáil'
+    pulled: 'Íoslódáladh an múnla «{model}» chuig an bhfreastalaí.'
+    pull_error: 'Theip ar an íoslódáil: {error}'
+    deleted: 'Scriosadh an múnla «{model}» ón bhfreastalaí.'
+    delete_error: 'Theip ar an scriosadh: {error}'
+    delete_confirm: 'An múnla «{model}» a scriosadh ón bhfreastalaí seo?'
+    delete_title: 'Scrios {model} ón bhfreastalaí'
+    none: 'Níor braitheadh aon mhúnla — tástáil an freastalaí chun an liosta a athnuachan.'
 api:
   fam:
     ollama: Ollama dúchasach (/api/*)

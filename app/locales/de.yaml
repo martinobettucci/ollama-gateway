@@ -168,6 +168,14 @@ mon:
     errors: Fehler
     last_used: Zuletzt verwendet
   empty: Diesem Server ist noch keine Anfrage zugeordnet.
+  models:
+    title: 'Nutzung pro Modell'
+    intro: 'Letzte Nutzung jedes tatsächlich auf diesem Server aufgerufenen Modells (echte Zuordnung, Fallback inbegriffen).'
+    empty: 'Auf diesem Server wurde noch kein Modell aufgerufen.'
+    th:
+      model: 'Modell'
+      first_used: 'Erste Nutzung'
+      last_used: 'Letzte Nutzung'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Basis-URL *
     token_hint: Verschlüsselt gespeichert; nie wieder angezeigt. Wird verwendet, wenn der Remote-Server einen Bearer verlangt.
     submit: Server hinzufügen
+  models:
+    title: 'Servermodelle'
+    hint: 'Administrationsbefehle (nur LAN) an diesen Server. Der öffentliche Proxy verweigert diese Verwaltungsbefehle jedem Client-Schlüssel – nur die Konsole kann den Katalog steuern.'
+    pull_label: 'Modell herunterladen'
+    pull_btn: 'Herunterladen'
+    pulled: 'Modell „{model}“ auf den Server geladen.'
+    pull_error: 'Download fehlgeschlagen: {error}'
+    deleted: 'Modell „{model}“ vom Server gelöscht.'
+    delete_error: 'Löschen fehlgeschlagen: {error}'
+    delete_confirm: 'Modell „{model}“ von diesem Server löschen?'
+    delete_title: '{model} vom Server löschen'
+    none: 'Kein Modell erkannt – testen Sie den Server, um die Liste zu aktualisieren.'
 api:
   fam:
     ollama: Natives Ollama (/api/*)

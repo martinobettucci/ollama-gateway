@@ -168,6 +168,14 @@ mon:
     errors: Pogreške
     last_used: Zadnja upotreba
   empty: Ovom poslužitelju još nije pripisan nijedan zahtjev.
+  models:
+    title: 'Upotreba po modelu'
+    intro: 'Posljednja upotreba svakog modela stvarno pozvanog na ovom poslužitelju (stvarna dodjela, uključujući pričuvu).'
+    empty: 'Na ovom poslužitelju još nije pozvan nijedan model.'
+    th:
+      model: 'Model'
+      first_used: 'Prva upotreba'
+      last_used: 'Posljednja upotreba'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Osnovni URL *
     token_hint: Šifrirano u mirovanju; više se nikada ne prikazuje. Koristi se ako udaljeni poslužitelj zahtijeva Bearer.
     submit: Dodaj poslužitelj
+  models:
+    title: 'Modeli poslužitelja'
+    hint: 'Administrativne naredbe (samo LAN) poslane ovom poslužitelju. Javni proxy odbija ove upravljačke naredbe svakom klijentskom ključu — samo konzola može upravljati katalogom.'
+    pull_label: 'Preuzmi model'
+    pull_btn: 'Preuzmi'
+    pulled: 'Model «{model}» preuzet na poslužitelj.'
+    pull_error: 'Preuzimanje nije uspjelo: {error}'
+    deleted: 'Model «{model}» izbrisan s poslužitelja.'
+    delete_error: 'Brisanje nije uspjelo: {error}'
+    delete_confirm: 'Izbrisati model «{model}» s ovog poslužitelja?'
+    delete_title: 'Izbriši {model} s poslužitelja'
+    none: 'Nije otkriven nijedan model — testirajte poslužitelj za osvježavanje popisa.'
 api:
   fam:
     ollama: Izvorni Ollama (/api/*)

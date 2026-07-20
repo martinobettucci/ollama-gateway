@@ -168,6 +168,14 @@ mon:
     errors: Napake
     last_used: Zadnja uporaba
   empty: Temu strežniku še ni bila pripisana nobena zahteva.
+  models:
+    title: 'Uporaba po modelu'
+    intro: 'Zadnja uporaba vsakega modela, dejansko priklicanega na tem strežniku (dejansko pripisovanje, vključno z rezervo).'
+    empty: 'Na tem strežniku še ni bil priklican noben model.'
+    th:
+      model: 'Model'
+      first_used: 'Prva uporaba'
+      last_used: 'Zadnja uporaba'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Osnovni URL *
     token_hint: Šifriran v mirovanju; nikoli več prikazan. Uporabljen, če oddaljeni strežnik zahteva Bearer.
     submit: Dodaj strežnik
+  models:
+    title: 'Modeli strežnika'
+    hint: 'Skrbniški ukazi (samo LAN), poslani temu strežniku. Javni posrednik zavrne te upravljalne ukaze za vsak odjemalski ključ — katalog lahko upravlja samo konzola.'
+    pull_label: 'Prenesi model'
+    pull_btn: 'Prenesi'
+    pulled: 'Model «{model}» prenesen na strežnik.'
+    pull_error: 'Prenos ni uspel: {error}'
+    deleted: 'Model «{model}» izbrisan s strežnika.'
+    delete_error: 'Brisanje ni uspelo: {error}'
+    delete_confirm: 'Izbrišem model «{model}» s tega strežnika?'
+    delete_title: 'Izbriši {model} s strežnika'
+    none: 'Noben model ni bil zaznan — preizkusite strežnik za osvežitev seznama.'
 api:
   fam:
     ollama: Izvorni Ollama (/api/*)

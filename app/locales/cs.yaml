@@ -168,6 +168,14 @@ mon:
     errors: Chyby
     last_used: Poslední použití
   empty: Tomuto serveru zatím nebyl přiřazen žádný požadavek.
+  models:
+    title: 'Využití podle modelu'
+    intro: 'Poslední použití každého modelu skutečně volaného na tomto serveru (skutečné přiřazení, včetně zálohy).'
+    empty: 'Na tomto serveru zatím nebyl volán žádný model.'
+    th:
+      model: 'Model'
+      first_used: 'První použití'
+      last_used: 'Poslední použití'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Základní URL *
     token_hint: Šifrováno v klidu; nikdy znovu nezobrazeno. Použije se, pokud vzdálený server vyžaduje Bearer.
     submit: Přidat server
+  models:
+    title: 'Modely serveru'
+    hint: 'Administrační příkazy (pouze LAN) odeslané na tento server. Veřejná proxy odmítá tyto správní příkazy každému klientskému klíči — katalog může spravovat pouze konzole.'
+    pull_label: 'Stáhnout model'
+    pull_btn: 'Stáhnout'
+    pulled: 'Model «{model}» stažen na server.'
+    pull_error: 'Stažení se nezdařilo: {error}'
+    deleted: 'Model «{model}» smazán ze serveru.'
+    delete_error: 'Smazání se nezdařilo: {error}'
+    delete_confirm: 'Smazat model «{model}» z tohoto serveru?'
+    delete_title: 'Smazat {model} ze serveru'
+    none: 'Nebyl zjištěn žádný model — otestujte server pro obnovení seznamu.'
 api:
   fam:
     ollama: Nativní Ollama (/api/*)

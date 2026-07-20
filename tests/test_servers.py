@@ -135,3 +135,42 @@ async def test_test_server_persists_result(probe_via_fake):
     stored = servers.get_server(srv.id)
     assert stored.last_online is True and "demo:latest" in stored.last_models
     assert stored.last_checked_at is not None
+
+
+# --- Gestion du catalogue (pull / delete) — commandes d'admin LAN-only vers l'amont -------------
+
+async def test_pull_model_adds_to_upstream_catalog(probe_via_fake):
+    from devfixtures import fake_ollama
+    fake_ollama.reset_models()
+    srv = servers.create_server("s", "http://fake")
+    ok, msg = await servers.pull_model(srv.id, "  newmodel:1b  ")  # trim du nom
+    assert ok is True and msg == "newmodel:1b"
+    assert "newmodel:1b" in fake_ollama.MODELS
+
+
+async def test_delete_model_removes_from_upstream_catalog(probe_via_fake):
+    from devfixtures import fake_ollama
+    fake_ollama.reset_models()
+    srv = servers.create_server("s", "http://fake")
+    ok, msg = await servers.delete_model(srv.id, "demo:latest")
+    assert ok is True and msg == "demo:latest"
+    assert "demo:latest" not in fake_ollama.MODELS
+
+
+async def test_delete_model_absent_reports_not_found(probe_via_fake):
+    from devfixtures import fake_ollama
+    fake_ollama.reset_models()
+    srv = servers.create_server("s", "http://fake")
+    ok, msg = await servers.delete_model(srv.id, "jamais-installé:9b")
+    assert ok is False and "introuvable" in msg
+
+
+async def test_pull_and_delete_guards_before_any_upstream_call():
+    # Nom manquant, serveur inconnu, serveur désactivé → refus SANS toucher l'amont (pas de fixture).
+    assert await servers.pull_model(1, "") == (False, "nom de modèle manquant")
+    assert await servers.delete_model(1, "  ") == (False, "nom de modèle manquant")
+    assert await servers.pull_model(999999, "m:1b") == (False, "serveur introuvable")
+    srv = servers.create_server("off", "http://fake")
+    servers.set_enabled(srv.id, False)
+    assert await servers.pull_model(srv.id, "m:1b") == (False, "serveur désactivé")
+    assert await servers.delete_model(srv.id, "m:1b") == (False, "serveur désactivé")

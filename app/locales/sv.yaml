@@ -168,6 +168,14 @@ mon:
     errors: Fel
     last_used: Senast använd
   empty: Ingen begäran tillskriven denna server ännu.
+  models:
+    title: 'Användning per modell'
+    intro: 'Senaste användningen av varje modell som faktiskt anropats på den här servern (verklig tillskrivning, inklusive reserv).'
+    empty: 'Ingen modell har anropats på den här servern ännu.'
+    th:
+      model: 'Modell'
+      first_used: 'Första användning'
+      last_used: 'Senaste användning'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: Bas-URL *
     token_hint: Krypterad i vila; visas aldrig igen. Används om fjärrservern kräver en Bearer.
     submit: Lägg till servern
+  models:
+    title: 'Servermodeller'
+    hint: 'Administrationskommandon (endast LAN) som skickas till den här servern. Den offentliga proxyn nekar dessa hanteringskommandon för alla klientnycklar — endast konsolen kan styra katalogen.'
+    pull_label: 'Ladda ner en modell'
+    pull_btn: 'Ladda ner'
+    pulled: 'Modellen «{model}» nedladdad till servern.'
+    pull_error: 'Nedladdningen misslyckades: {error}'
+    deleted: 'Modellen «{model}» borttagen från servern.'
+    delete_error: 'Borttagningen misslyckades: {error}'
+    delete_confirm: 'Ta bort modellen «{model}» från den här servern?'
+    delete_title: 'Ta bort {model} från servern'
+    none: 'Ingen modell upptäckt — testa servern för att uppdatera listan.'
 api:
   fam:
     ollama: Nativt Ollama (/api/*)

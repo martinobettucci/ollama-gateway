@@ -308,3 +308,28 @@ async def test_forwards_server_auth_token_to_upstream(fake_upstream):
         r = await c.post("/api/chat", headers=_auth(key), json={"model": "demo:latest"})
     assert r.status_code == 200
     assert fake_ollama.LAST_AUTH == "Bearer up-secret"
+
+
+# --- Endpoints de GESTION du catalogue : refusés à TOUTE clé cliente (proxy = inférence seule) ---
+
+async def test_management_paths_forbidden_for_every_key(fake_upstream):
+    """Le proxy refuse (403) les commandes de gestion d'Ollama pour une clé pourtant valide et sans
+    restriction. Le faux upstream IMPLÉMENTE /api/pull et /api/delete : un 403 prouve donc la garde
+    du proxy (blocage AVANT l'amont), pas un simple 404 d'endpoint absent."""
+    _, key = keys.create_key("x", [], None, None)  # clé valide, aucune restriction
+    async with proxy_client(fake_upstream) as c:
+        pull = await c.post("/api/pull", headers=_auth(key), json={"model": "demo:latest"})
+        delete = await c.request("DELETE", "/api/delete", headers=_auth(key),
+                                 json={"model": "demo:latest"})
+        push = await c.post("/api/push", headers=_auth(key), json={"model": "x:1b"})
+        create = await c.post("/api/create", headers=_auth(key), json={"model": "x:1b"})
+        copy = await c.post("/api/copy", headers=_auth(key), json={})
+        blob = await c.post("/api/blobs/sha256:deadbeef", headers=_auth(key), content=b"")
+    for r in (pull, delete, push, create, copy, blob):
+        assert r.status_code == 403, r.request.url
+        assert "gestion" in r.text
+    # Le catalogue du faux upstream n'a pas bougé : la commande n'a jamais atteint l'amont.
+    assert set(fake_ollama.MODELS) == {"demo:latest", "autre:latest", "x/fakeflux:1b"}
+    # Chaque refus est journalisé en 403.
+    rows = _usage_rows()
+    assert rows and all(r["status"] == 403 for r in rows)

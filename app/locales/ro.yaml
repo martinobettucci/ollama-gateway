@@ -168,6 +168,14 @@ mon:
     errors: Erori
     last_used: Ultima utilizare
   empty: Nicio cerere atribuită acestui server încă.
+  models:
+    title: 'Utilizare per model'
+    intro: 'Ultima utilizare a fiecărui model efectiv invocat pe acest server (atribuire reală, inclusiv rezerva).'
+    empty: 'Niciun model invocat încă pe acest server.'
+    th:
+      model: 'Model'
+      first_used: 'Prima utilizare'
+      last_used: 'Ultima utilizare'
 logs:
   content:
     link: Contenu des requêtes
@@ -242,6 +250,18 @@ srv:
     url: URL de bază *
     token_hint: Criptat în repaus; niciodată reafișat. Utilizat dacă serverul la distanță necesită un Bearer.
     submit: Adaugă serverul
+  models:
+    title: 'Modelele serverului'
+    hint: 'Comenzi de administrare (doar LAN) trimise către acest server. Proxy-ul public refuză aceste comenzi de gestionare pentru orice cheie de client — doar consola poate gestiona catalogul.'
+    pull_label: 'Descarcă un model'
+    pull_btn: 'Descarcă'
+    pulled: 'Modelul «{model}» a fost descărcat pe server.'
+    pull_error: 'Descărcarea a eșuat: {error}'
+    deleted: 'Modelul «{model}» a fost șters de pe server.'
+    delete_error: 'Ștergerea a eșuat: {error}'
+    delete_confirm: 'Ștergeți modelul «{model}» de pe acest server?'
+    delete_title: 'Șterge {model} de pe server'
+    none: 'Niciun model detectat — testați serverul pentru a reîmprospăta lista.'
 api:
   fam:
     ollama: Ollama nativ (/api/*)

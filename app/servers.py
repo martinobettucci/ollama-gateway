@@ -357,6 +357,90 @@ def record_compat(server_id: int, matrix: dict) -> None:
         conn.close()
 
 
+# --- Gestion du catalogue de modèles (pull / delete) — LAN-only, jamais via le proxy public -----
+
+def _upstream_info(server_id: int) -> tuple[str, dict, bool] | None:
+    """(base_url, en-têtes d'auth déchiffrées, enabled) d'un serveur, ou None s'il est introuvable."""
+    conn = db.connect()
+    try:
+        row = conn.execute(
+            "SELECT base_url, auth_token_enc, enabled FROM servers WHERE id = ?",
+            (server_id,)).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return None
+    headers = {}
+    if row["auth_token_enc"]:
+        token = crypto.decrypt(row["auth_token_enc"])
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+    return row["base_url"], headers, bool(row["enabled"])
+
+
+async def pull_model(server_id: int, model: str) -> tuple[bool, str]:
+    """Télécharge un modèle sur un serveur d'exécution via `POST {base}/api/pull` (LAN-only).
+
+    Opération d'**administration** déclenchée depuis le panel (jamais exposée publiquement) : elle
+    mute le catalogue du serveur amont. Le jeton distant est déchiffré côté serveur et injecté vers
+    l'amont, jamais côté navigateur. Bloquant (`stream: false`) : un gros téléchargement peut donc
+    tenir la requête ouverte plusieurs minutes (timeout amont long). Renvoie (succès, message)."""
+    model = (model or "").strip()
+    if not model:
+        return False, "nom de modèle manquant"
+    info = _upstream_info(server_id)
+    if info is None:
+        return False, "serveur introuvable"
+    base, headers, enabled = info
+    if not enabled:
+        return False, "serveur désactivé"
+    url = base.rstrip("/") + "/api/pull"
+    timeout = httpx.Timeout(config.UPSTREAM_TIMEOUT_S, connect=15.0)
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as c:
+            r = await c.post(url, json={"model": model, "stream": False}, headers=headers)
+    except httpx.HTTPError as exc:
+        return False, exc.__class__.__name__
+    if r.status_code != 200:
+        return False, f"HTTP {r.status_code}"
+    try:
+        status = (r.json() or {}).get("status", "")
+    except ValueError:
+        status = ""
+    if status and status != "success":
+        return False, str(status)
+    return True, model
+
+
+async def delete_model(server_id: int, model: str) -> tuple[bool, str]:
+    """Supprime un modèle d'un serveur d'exécution via `DELETE {base}/api/delete` (LAN-only).
+
+    Même statut d'administration que `pull_model` : mute le catalogue amont, LAN-only, jeton distant
+    déchiffré côté serveur. Renvoie (succès, message). 404 amont = modèle déjà absent."""
+    model = (model or "").strip()
+    if not model:
+        return False, "nom de modèle manquant"
+    info = _upstream_info(server_id)
+    if info is None:
+        return False, "serveur introuvable"
+    base, headers, enabled = info
+    if not enabled:
+        return False, "serveur désactivé"
+    url = base.rstrip("/") + "/api/delete"
+    timeout = httpx.Timeout(config.SERVER_PROBE_TIMEOUT_S, connect=15.0)
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as c:
+            # DELETE avec corps JSON : httpx.delete() n'accepte pas `json`, on passe par request().
+            r = await c.request("DELETE", url, json={"model": model}, headers=headers)
+    except httpx.HTTPError as exc:
+        return False, exc.__class__.__name__
+    if r.status_code == 404:
+        return False, "modèle introuvable sur le serveur"
+    if r.status_code not in (200, 204):
+        return False, f"HTTP {r.status_code}"
+    return True, model
+
+
 # --- Chat de test (« Essayer maintenant » du panel) -------------------------------------------
 
 # APIs proposées par le bouton « Essayer maintenant » : chemin amont, fabrique du corps, et

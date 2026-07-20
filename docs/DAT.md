@@ -42,6 +42,9 @@ car Ollama est en loopback natif (hors Docker).
   orphelines). Chaque clé pointe un serveur (`api_keys.server_id`) ; allowlist de modèles par
   clé (`key_models`). Le proxy route vers `server.base_url`, applique la restriction de modèle
   (agnostique de l'API : `model` à la racine du corps) et filtre `/api/tags` + `/v1/models`.
+  **Gestion du catalogue LAN-only** : `pull_model` / `delete_model` frappent l'amont en direct
+  (`/api/pull`, `DELETE /api/delete`) avec le jeton distant déchiffré côté serveur — piloté depuis
+  la console (`POST /admin/servers/{id}/models/{pull,delete}`), **jamais** via le proxy public.
 - `crypto.py` — **chiffrement réversible au repos** (Fernet, clé dérivée de `$P2E_MASTER_KEY`)
   du jeton Bearer d'un serveur distant. Réversible (à réémettre vers l'amont), contrairement aux
   hachages one-way de `auth.py`.
@@ -204,7 +207,9 @@ illisibles (il faut les ressaisir).
   (jamais exposé hors LAN par mégarde). **Conteneur non-root**, **image de base épinglée par
   digest**. Borne de taille de requête (`MAX_REQUEST_BYTES`, 413 au-delà) + `request_body` côté edge.
 - **Endpoints de gestion du catalogue** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`) **non
-  proxifiés** (403) : la passerelle sert l'inférence, pas l'administration d'Ollama.
+  proxifiés** (403 pour toute clé, avant l'amont) : la passerelle sert l'inférence, pas
+  l'administration d'Ollama. La gestion (télécharger/supprimer un modèle) n'existe que côté
+  **console LAN-only** (`servers.pull_model`/`delete_model`), jamais routée par Caddy.
 - **Rate-limit résistant à la concurrence** : les requêtes en vol (streaming) comptent dans le
   débit par clé (pas seulement les requêtes déjà journalisées).
 - **URL amont validée** (schéma `http(s)`, plage link-local/métadonnées refusée) ; défense en

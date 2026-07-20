@@ -74,7 +74,26 @@ de réponse. Vert = réponse 2xx, gris = chemin servi mais en erreur, rouge = ch
 
 ![Matrice de compatibilité d'API par serveur](../app/static/manual/13-compat.jpg)
 
-### Monitoring d'un serveur (consommation & erreurs par clé)
+### Gérer les modèles d'un serveur (télécharger / supprimer)
+
+Le bloc **« Modèles du serveur »** (sous chaque serveur) permet de **piloter le catalogue** de
+l'amont depuis la console :
+
+- **Télécharger un modèle** : saisir un nom (par exemple `llama3:8b`) et lancer le téléchargement.
+  Un gros modèle peut prendre plusieurs minutes ; la liste des modèles est **rafraîchie**
+  automatiquement à la fin.
+- **Supprimer un modèle** : chaque modèle détecté est affiché avec un bouton de suppression
+  (confirmation demandée).
+
+> **Garde-fou de sécurité (règle dure).** Ces commandes de gestion (`pull`/`delete`, et plus
+> largement `push`/`create`/`copy`/`blobs`) sont réservées à la **console d'administration**,
+> jamais exposée à Internet. Le **proxy public les refuse systématiquement (403) pour toute clé
+> cliente** : la passerelle est un proxy **d'inférence**, pas d'administration d'Ollama. Un client
+> ne peut donc **jamais** télécharger ni supprimer un modèle sur un serveur.
+
+![Gérer les modèles d'un serveur — téléchargement et suppression par modèle](../app/static/manual/26-model-manage.jpg)
+
+### Monitoring d'un serveur (consommation & erreurs par clé, usage par modèle)
 
 Le bouton **« Monitor »** d'un serveur ouvre un tableau de bord dédié : totaux (requêtes, tokens,
 erreurs, clés), **répartition des statuts** (camembert), **séries journalières** (requêtes et
@@ -82,7 +101,12 @@ tokens par jour), **top des clés** (barres) et un **tableau de consommation par
 L'attribution est **réelle** : chaque requête est comptée sur le serveur qui l'a effectivement
 traitée (y compris en cas de **repli**).
 
-![Monitoring d'un serveur — graphiques et consommation par clé](../app/static/manual/17-monitor.jpg)
+Une table **« Usage par modèle »** trace, pour **chaque modèle réellement invoqué** sur le
+serveur, ses requêtes, ses tokens, ses erreurs, et surtout son **premier** et son **dernier**
+usage — on voit d'un coup d'œil quels modèles tournent et quand chacun a servi pour la dernière
+fois (les modèles triés du plus récemment utilisé au plus ancien).
+
+![Monitoring d'un serveur — graphiques, consommation par clé et usage par modèle](../app/static/manual/17-monitor.jpg)
 
 ## Cibles publiques (URL vues par les clients)
 

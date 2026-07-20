@@ -170,6 +170,14 @@ mon:
     errors: Erreurs
     last_used: Dernier usage
   empty: Aucune requête attribuée à ce serveur pour le moment.
+  models:
+    title: Usage par modèle
+    intro: Dernier usage de chaque modèle réellement invoqué sur ce serveur (attribution réelle, repli inclus).
+    empty: Aucun modèle invoqué sur ce serveur pour le moment.
+    th:
+      model: Modèle
+      first_used: Premier usage
+      last_used: Dernier usage
 logs:
   content:
     link: Contenu des requêtes
@@ -244,6 +252,18 @@ srv:
     url: URL de base *
     token_hint: Chiffré au repos ; jamais réaffiché. Utilisé si le serveur distant exige un Bearer.
     submit: Ajouter le serveur
+  models:
+    title: Modèles du serveur
+    hint: Commandes d'administration (LAN uniquement) envoyées à ce serveur. Le proxy public refuse ces commandes de gestion à toute clé cliente — seule la console peut piloter le catalogue.
+    pull_label: Télécharger un modèle
+    pull_btn: Télécharger
+    pulled: Modèle « {model} » téléchargé sur le serveur.
+    pull_error: 'Échec du téléchargement : {error}'
+    deleted: Modèle « {model} » supprimé du serveur.
+    delete_error: 'Échec de la suppression : {error}'
+    delete_confirm: Supprimer le modèle « {model} » de ce serveur ?
+    delete_title: Supprimer {model} du serveur
+    none: Aucun modèle détecté — testez le serveur pour rafraîchir la liste.
 api:
   fam:
     ollama: Ollama natif (/api/*)
