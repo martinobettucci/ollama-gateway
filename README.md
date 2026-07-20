@@ -11,6 +11,38 @@ lecture** (`/api/*`, `/v1/*`), en streaming (NDJSON/SSE), avec strip de la clé 
 l'amont. Les endpoints de **gestion du catalogue** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`)
 ne sont **jamais** proxifiés (403) — la gestion des modèles se fait depuis la console d'admin.
 
+## Aperçu
+
+| | |
+|---|---|
+| ![Tableau de bord](app/static/manual/01-dashboard.jpg) | ![Graphes d'usage d'une clé](app/static/manual/27-key-charts.jpg) |
+| **Tableau de bord** — clés, quotas, création | **Détail d'une clé** — graphes (horizons, valeurs), usage par modèle |
+| ![Serveurs & compatibilité](app/static/manual/06-servers.jpg) | ![Monitoring d'un serveur](app/static/manual/17-monitor.jpg) |
+| **Serveurs d'exécution** + matrice de compatibilité d'API | **Monitoring** — consommation, statuts, par clé et par modèle |
+
+## Fonctionnalités
+
+- **Clés API par client** — hachées (sha-256), secret affiché **une seule fois**, révocables.
+- **Restriction d'origine** par clé (IP/CIDR, résistante à l'usurpation de `X-Forwarded-For`).
+- **Quotas** — plafond mensuel de tokens + rate-limit (req/min), et plafonds/expiration « de vie »
+  (essai à coût plafonné).
+- **Serveurs d'exécution multiples** — local + distants (jeton chiffré au repos), une clé ↦ un
+  serveur, **serveur de repli** automatique sur panne 5xx/connexion.
+- **Restriction de modèles et d'API par clé** — agnostique du schéma (Ollama natif, OpenAI,
+  Anthropic), filtrage des listings ; **génération d'images** en capacité séparée.
+- **Gestion du catalogue** (télécharger / supprimer des modèles) depuis la console — **jamais**
+  exposée au client (le proxy refuse `pull`/`delete`/… en 403).
+- **Journalisation & monitoring** — usage par requête, **graphes temporels** (horizons
+  24 h → 3 mois, échelles d'axes, valeurs par point), **usage par modèle**, visionneuse du contenu
+  complet des requêtes (grep), bannissement d'origines.
+- **Panel d'admin LAN-only** rendu serveur, **24 langues de l'UE**, charte P2Enjoy.
+- **Edge TLS Caddy** (ACME DNS-01, aucun port entrant requis), tout **dockerisé** (dev self-seeded,
+  prod `network_mode: host`) avec **gate de sécurité avant déploiement**.
+
+💡 **Manuel en ligne intégré** — pour faciliter la prise en main, le panel embarque un **manuel
+illustré** (bouton **« Manuel »** de la navigation) qui explique chaque écran avec une capture
+réelle de l'application. Source publique : [docs/manual.md](docs/manual.md).
+
 ## Architecture
 
 ```

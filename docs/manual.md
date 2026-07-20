@@ -99,7 +99,9 @@ Le bouton **« Monitor »** d'un serveur ouvre un tableau de bord dédié : tota
 erreurs, clés), **répartition des statuts** (camembert), **séries journalières** (requêtes et
 tokens par jour), **top des clés** (barres) et un **tableau de consommation par clé**.
 L'attribution est **réelle** : chaque requête est comptée sur le serveur qui l'a effectivement
-traitée (y compris en cas de **repli**).
+traitée (y compris en cas de **repli**). Un **sélecteur d'horizon** (24 h · 1 semaine · 2 semaines ·
+1 mois · 3 mois) recadre les séries journalières, et la case **« Afficher les valeurs »** révèle la
+valeur de chaque point.
 
 Une table **« Usage par modèle »** trace, pour **chaque modèle réellement invoqué** sur le
 serveur, ses requêtes, ses tokens, ses erreurs, et surtout son **premier** et son **dernier**
@@ -411,6 +413,8 @@ dernier usage, par modèle réellement invoqué par la clé). Un **sélecteur d'
 24 h passe en **buckets horaires**. Une case **« Afficher les valeurs »** (décochée par défaut,
 non mémorisée) révèle la valeur de chaque point directement sur les courbes. Le **monitoring d'un
 serveur** dispose du même sélecteur d'horizon.
+
+![Graphes d'usage d'une clé — horizons, échelles d'axes et table « usage par modèle »](../app/static/manual/27-key-charts.jpg)
 
 ### Manuel intégré
 

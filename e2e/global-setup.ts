@@ -17,4 +17,9 @@ export default async function globalSetup() {
            OLLAMA_UPSTREAM: 'http://127.0.0.1:11533', P2E_MASTER_KEY: 'e2e-master' },
     stdio: 'inherit',
   });
+  // Historique d'usage rétro-daté (15 j, 2 modèles) : les graphes des captures du manuel montrent
+  // de vraies courbes (page clé + monitoring) plutôt que « Aucune donnée » sur données du jour.
+  execSync(`${PY} ${path.join(__dirname, 'seed-usage.py')}`, {
+    cwd: ROOT, env: { ...process.env, GATEWAY_DB_PATH: DB }, stdio: 'inherit',
+  });
 }

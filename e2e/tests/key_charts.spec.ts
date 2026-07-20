@@ -32,13 +32,15 @@ test('clé : horizons + case valeurs + usage par modèle', async ({ page, reques
   await expect(perModel).toContainText('demo:latest');
   await expect(perModel).toContainText('autre:latest');
 
+  // Capture (manuel + vision) : état par défaut — valeurs masquées, horizon 1 mois, vraies courbes
+  // (grâce au seed rétro-daté) + table par modèle.
+  await page.screenshot({ path: `${OUT}/27-key-charts.jpg`, type: 'jpeg', fullPage: true });
+
   // Case « afficher les valeurs » : décochée par défaut → coche révèle .show-values (non persistée).
   const cb = page.getByTestId('values-toggle');
   await expect(cb).not.toBeChecked();
   await cb.check();
   await expect(page.locator('body')).toHaveClass(/show-values/);
-
-  await page.screenshot({ path: `${OUT}/27-key-charts.jpg`, type: 'jpeg', fullPage: true });
 
   // Changer d'horizon recharge la page avec ?horizon=.
   await page.getByTestId('horizon-24h').click();
