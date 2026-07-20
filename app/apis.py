@@ -7,7 +7,9 @@ Source de vérité **partagée** :
 
 Specs de référence (2026-07) : Ollama `docs/api.md` + `docs/openai.md` (compat OpenAI),
 Anthropic Messages `/v1/messages` (+ `count_tokens`). La sonde ne teste que l'**accessibilité du
-chemin** (servi vs 404) via un corps minimal `{}` — l'amont répond 400 *avant* toute génération.
+chemin** via un corps minimal `{}` : l'amont répond 400 (champ manquant) ou un 404 applicatif JSON
+(« model not found ») *avant* toute génération ; seul un 404 de ROUTEUR (texte brut) = chemin
+absent (cf. `servers._is_served`).
 Les endpoints **destructifs/mutants** (`pull`/`push`/`delete`/`create`/`copy`/`blobs`) sont
 volontairement **exclus** : la matrice couvre la surface d'inférence/lecture réellement proxifiée.
 """

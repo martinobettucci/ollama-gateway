@@ -174,3 +174,16 @@ async def test_pull_and_delete_guards_before_any_upstream_call():
     servers.set_enabled(srv.id, False)
     assert await servers.pull_model(srv.id, "m:1b") == (False, "serveur désactivé")
     assert await servers.delete_model(srv.id, "m:1b") == (False, "serveur désactivé")
+
+
+def test_is_served_distinguishes_router_404_from_app_404():
+    """Sonde compat : un 404 APPLICATIF « model not found » (Ollama/OpenAI, quand la sonde
+    n'envoie pas de modèle) = chemin SERVI ; un 404 de ROUTEUR (Gin « 404 page not found »,
+    Starlette « {"detail":"Not Found"} ») = chemin absent."""
+    assert servers._is_served(200, '{"version":"0.30.11"}')
+    assert servers._is_served(400, '{"error":"model is required"}')
+    assert servers._is_served(404, '{"error":"model \'\' not found"}')             # Ollama app 404
+    assert servers._is_served(404, '{"error":{"message":"model \'\' not found"}}')  # OpenAI app 404
+    assert not servers._is_served(404, "404 page not found")                        # Gin routeur
+    assert not servers._is_served(404, '{"detail":"Not Found"}')                    # Starlette routeur
+    assert not servers._is_served(404, "")

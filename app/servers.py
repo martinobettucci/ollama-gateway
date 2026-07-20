@@ -293,11 +293,26 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
 
 # --- Test de compatibilité d'API (matrice stockée) --------------------------------------------
 
+def _is_served(status_code: int, body: str) -> bool:
+    """Un chemin est « servi » sauf s'il renvoie un 404 de ROUTEUR (chemin réellement absent).
+
+    Nuance essentielle : certains amonts renvoient un **404 applicatif** quand la sonde envoie un
+    corps vide sans modèle — Ollama « model '' not found » sur /api/generate·/api/embed·
+    /v1/completions (ces handlers résolvent le modèle AVANT de valider le corps), OpenAI/Anthropic
+    idem. Le handler EXISTE → chemin servi. On le reconnaît au mot **« model »** dans le corps.
+    Un 404 de routeur (Gin « 404 page not found », Starlette « {"detail":"Not Found"} ») ne
+    mentionne aucun modèle → chemin absent."""
+    if status_code != 404:
+        return True
+    return "model" in (body or "").lower()
+
+
 async def _probe_endpoint(client: httpx.AsyncClient, base: str, method: str, path: str,
                           headers: dict) -> dict:
-    """Sonde UN endpoint : accessibilité du chemin uniquement (servi vs 404), sans valider le
-    schéma. Corps `{}` pour les POST → l'amont répond 400 avant toute génération. `served` = le
-    chemin est routé (tout sauf 404) ; 404 = absent ; erreur réseau = non concluant."""
+    """Sonde UN endpoint : accessibilité du chemin uniquement (servi vs absent), sans valider le
+    schéma. Corps `{}` pour les POST. `served` distingue un 404 de routeur (chemin absent) d'un
+    404 applicatif JSON (chemin servi, ex. « model not found ») — cf. `_is_served`. Erreur réseau
+    = non concluant."""
     url = base.rstrip("/") + path
     try:
         if method == "GET":
@@ -308,7 +323,7 @@ async def _probe_endpoint(client: httpx.AsyncClient, base: str, method: str, pat
         return {"path": path, "method": method, "status": None,
                 "served": False, "error": exc.__class__.__name__}
     return {"path": path, "method": method, "status": r.status_code,
-            "served": r.status_code != 404, "error": ""}
+            "served": _is_served(r.status_code, r.text), "error": ""}
 
 
 async def run_compat(server_id: int) -> dict:
