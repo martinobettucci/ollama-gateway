@@ -1,0 +1,84 @@
+<p align="right"><img src="docs/flags/fr.svg" width="20" alt=""> <strong>Français</strong> · <a href="LICENSE.en.md"><img src="docs/flags/en.svg" width="20" alt=""> English</a></p>
+
+# Licence Ollama Gateway
+
+Source-available — Fair-Use gratuit jusqu'à 1 milliard de tokens/mois, licence commerciale au-delà.
+
+Copyright (c) 2026 Martino Bettucci — P2Enjoy SAS. Tous droits réservés.
+
+---
+
+**RÉSUMÉ** (informatif — seuls les articles numérotés ci-dessous font foi)
+
+- Libre d'utiliser, modifier, distribuer et auto-héberger, y compris en entreprise et à des fins
+  commerciales.
+- Vous **devez** conserver ce fichier de licence, l'avis de copyright et l'attribution à l'auteur
+  dans toute copie ou œuvre dérivée. Retirer la licence ou l'attribution n'est pas autorisé.
+- Tant que l'ensemble de vos instances (agrégées par entité juridique) sert au plus
+  **1 000 000 000 (un milliard) de tokens par mois calendaire**, l'usage est **gratuit**.
+- Au-delà de ce seuil, une **licence commerciale** est requise : une somme libératoire **unique de
+  29 € HT par installation** donne un droit d'usage **illimité**. Exemple : 3 instances → 87 € HT.
+  Contact : **contact@p2enjoy.studio**, objet « Licence Ollama Gateway ».
+- Le logiciel **ne mesure pas** et **ne remonte pas** votre usage : aucun contrôle, aucune
+  télémétrie. Le respect du seuil repose sur votre **bonne foi**.
+
+---
+
+**1. DÉFINITIONS**
+« Logiciel » : le code source, la documentation et les binaires de Ollama Gateway, ainsi que toute
+œuvre dérivée. « Tokens » : les unités de traitement (prompt + complétion) transitant par le
+Logiciel, telles que rapportées par les serveurs d'inférence en amont. « Entité » : une personne
+physique ou morale, et l'ensemble des entités qu'elle contrôle, contrôlant, ou sous contrôle commun.
+« Installation » : une instance distincte du Logiciel déployée et exploitée par une Entité.
+« Seuil » : un milliard (1 000 000 000) de Tokens servis, agrégés sur toutes les Installations d'une
+même Entité, par mois calendaire.
+
+**2. CONCESSION**
+Sous réserve du respect intégral de la présente licence, l'auteur concède un droit mondial, non
+exclusif et gratuit d'utiliser, copier, modifier, fusionner, publier, distribuer et auto-héberger le
+Logiciel, à des fins personnelles comme commerciales, tant que l'usage agrégé de l'Entité reste
+inférieur ou égal au Seuil.
+
+**3. ATTRIBUTION ET INTÉGRITÉ DE LA LICENCE**
+Toute copie ou œuvre dérivée, sous forme source ou binaire, doit conserver de façon visible :
+(a) l'avis de copyright ci-dessus ; (b) le présent fichier de licence dans son intégralité ;
+(c) l'attribution à l'auteur. Il est interdit de supprimer, masquer ou altérer ces éléments, ou de
+redistribuer / sous-licencier le Logiciel sous des termes qui les retireraient. Le simple clonage du
+dépôt suivi du retrait de la présente licence constitue une violation.
+
+**4. SEUIL ET LICENCE COMMERCIALE**
+Dès que l'usage agrégé d'une Entité dépasse le Seuil sur un mois calendaire, l'Entité doit, pour
+continuer à utiliser le Logiciel, obtenir une licence commerciale. Celle-ci s'acquiert par une somme
+libératoire **unique de vingt-neuf euros (29 €) hors taxes par Installation**, conférant à cette
+Installation un droit d'usage **illimité** (sans plafond de Tokens). Le nombre de sommes dues égale
+le nombre d'Installations exploitées par l'Entité (ex. : 2 milliards de Tokens répartis sur
+3 Installations → 3 × 29 € = 87 € HT). Acquisition et facturation : contact@p2enjoy.studio, objet
+« Licence Ollama Gateway ».
+
+**5. ABSENCE DE MESURE — BONNE FOI**
+Le Logiciel ne comporte aucun mécanisme de mesure du Seuil, de comptage à distance, de télémétrie,
+d'activation ni de bridage. Le respect de la présente licence relève exclusivement de la bonne foi
+et de l'honnêteté de l'utilisateur (fair-use). Cette absence volontaire de contrôle technique ne
+vaut en aucun cas renonciation de l'auteur à ses droits ni à la rémunération prévue à l'article 4.
+
+**6. RÉSILIATION**
+Tout manquement — notamment le retrait de l'attribution ou du présent fichier, ou le dépassement du
+Seuil sans licence commerciale valide — met fin automatiquement et de plein droit aux droits
+concédés à l'article 2, sans préjudice des autres recours de l'auteur. Les droits sont rétablis dès
+régularisation complète du manquement.
+
+**7. GARANTIE ET RESPONSABILITÉ**
+LE LOGICIEL EST FOURNI « EN L'ÉTAT », SANS GARANTIE D'AUCUNE SORTE, EXPRESSE OU IMPLICITE. DANS TOUTE
+LA MESURE PERMISE PAR LA LOI APPLICABLE, L'AUTEUR NE SAURAIT ÊTRE TENU RESPONSABLE D'UN QUELCONQUE
+DOMMAGE, DIRECT OU INDIRECT, DÉCOULANT DE L'UTILISATION OU DE L'IMPOSSIBILITÉ D'UTILISER LE LOGICIEL.
+
+**8. DROIT APPLICABLE**
+La présente licence est régie par le droit français. Tout litige relatif à sa validité, son
+interprétation ou son exécution relève de la compétence exclusive des tribunaux du ressort du siège
+social de P2Enjoy SAS.
+
+---
+
+*Note : ceci n'est pas une licence « open source » au sens de l'Open Source Initiative — elle
+restreint le champ d'usage au-delà d'un seuil. C'est une licence **source-available** (code source
+ouvert, usage encadré). En cas de doute sur votre situation, écrivez à contact@p2enjoy.studio.*

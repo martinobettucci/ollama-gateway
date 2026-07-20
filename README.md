@@ -1,4 +1,15 @@
+<p align="right"><img src="docs/flags/fr.svg" width="20" alt=""> <strong>Français</strong> · <a href="README.en.md"><img src="docs/flags/en.svg" width="20" alt=""> English</a></p>
+
 # ollama-gateway — passerelle de gestion de clés Ollama
+
+> **Interface entièrement traduite dans les 24 langues officielles de l'Union européenne.**
+
+## Showcase
+
+<p align="center">
+  <a href="docs/showcase/showcase.webm"><img src="docs/showcase/showcase.gif" alt="Tour guidé de la passerelle" width="760"></a>
+  <br><em>Tour guidé — <a href="docs/showcase/showcase.webm">vidéo (webm)</a> · <a href="docs/showcase/showcase.mp4">mp4</a></em>
+</p>
 
 Passerelle d'authentification devant un ou plusieurs Ollama : **clés API par client**, **restriction
 d'origine** (IP/CIDR), **quotas** (plafond mensuel de tokens + rate-limit), **serveurs d'exécution**
@@ -111,7 +122,7 @@ cd e2e && npm install && npm test
 ## Licence
 
 **Ollama Gateway est _source-available_, pas OSI-open-source** : le code est ouvert et libre
-d'usage, mais l'usage à très grande échelle est encadré. Termes exacts : [LICENSE](LICENSE).
+d'usage, mais l'usage à très grande échelle est encadré. Termes exacts : [LICENSE.md](LICENSE.md).
 
 - ✅ **Gratuit** — utilisez, modifiez, distribuez et auto-hébergez, y compris en entreprise, **tant
   que l'ensemble de vos instances (agrégées par entité) sert ≤ 1 milliard de tokens par mois**.
