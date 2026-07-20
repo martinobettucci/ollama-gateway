@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: szeretet
+
+hz:
+  "24h": "24 ó"
+  "1w": "1 hét"
+  "2w": "2 hét"
+  "1m": "1 hónap"
+  "3m": "3 hónap"
+chart:
+  horizon: "Időszak"
+  values: "Értékek megjelenítése"

@@ -197,6 +197,96 @@ def global_summary(conn: sqlite3.Connection | None = None) -> dict:
             conn.close()
 
 
+# --- Horizons temporels (sélecteur de graphe : clé & monitoring serveur) ----------------------
+# Fenêtre glissante + granularité de bucket par horizon. 24h → buckets HORAIRES ; au-delà → JOUR.
+DEFAULT_HORIZON = "1m"
+HORIZONS = ("24h", "1w", "2w", "1m", "3m")
+_HORIZON: dict[str, tuple[str, str]] = {
+    "24h": ("-24 hours", "hour"),
+    "1w": ("-7 days", "day"),
+    "2w": ("-14 days", "day"),
+    "1m": ("-30 days", "day"),
+    "3m": ("-90 days", "day"),
+}
+
+
+def horizon_or_default(h: str | None) -> str:
+    """Normalise un horizon fourni (query param) → l'un de HORIZONS, défaut DEFAULT_HORIZON."""
+    return h if h in HORIZONS else DEFAULT_HORIZON
+
+
+def key_series(key_id: int, horizon: str,
+               conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Série (bucket, reqs, tokens) d'une clé selon l'horizon (buckets horaires pour 24h)."""
+    since, bucket = _HORIZON[horizon_or_default(horizon)]
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        if bucket == "hour":
+            rows = conn.execute(
+                "SELECT strftime('%Y-%m-%d %H:00', ts) AS bucket, COUNT(*) AS reqs, "
+                "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens "
+                "FROM usage_events WHERE key_id = ? AND ts >= datetime('now', ?) "
+                "GROUP BY bucket ORDER BY bucket", (key_id, since)).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT substr(ts,1,10) AS bucket, COUNT(*) AS reqs, "
+                "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens "
+                "FROM usage_events WHERE key_id = ? AND ts >= datetime('now', ?) "
+                "GROUP BY bucket ORDER BY bucket", (key_id, since)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
+def key_per_model(key_id: int, horizon: str,
+                  conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Consommation PAR MODÈLE d'une clé sur l'horizon : requêtes, tokens (prompt+complétion),
+    erreurs, dernier usage — les modèles les plus consommateurs d'abord."""
+    since, _ = _HORIZON[horizon_or_default(horizon)]
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT model, COUNT(*) AS reqs, "
+            "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens, "
+            "COALESCE(SUM(tokens_prompt),0) AS tokens_prompt, "
+            "COALESCE(SUM(tokens_completion),0) AS tokens_completion, "
+            "SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) AS errors, MAX(ts) AS last_seen "
+            "FROM usage_events WHERE key_id = ? AND ts >= datetime('now', ?) AND model <> '' "
+            "GROUP BY model ORDER BY tokens DESC, reqs DESC", (key_id, since)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
+def server_series(server_id: int, horizon: str,
+                  conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Série (bucket, reqs, tokens) d'un serveur selon l'horizon (buckets horaires pour 24h)."""
+    since, bucket = _HORIZON[horizon_or_default(horizon)]
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        if bucket == "hour":
+            rows = conn.execute(
+                "SELECT strftime('%Y-%m-%d %H:00', ts) AS bucket, COUNT(*) AS reqs, "
+                "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens "
+                "FROM usage_events WHERE server_id = ? AND ts >= datetime('now', ?) "
+                "GROUP BY bucket ORDER BY bucket", (server_id, since)).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT substr(ts,1,10) AS bucket, COUNT(*) AS reqs, "
+                "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens "
+                "FROM usage_events WHERE server_id = ? AND ts >= datetime('now', ?) "
+                "GROUP BY bucket ORDER BY bucket", (server_id, since)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
 # --- Monitoring par serveur d'exécution (attribution réelle, repli inclus) --------------------
 
 def server_summary(server_id: int, conn: sqlite3.Connection | None = None) -> dict:

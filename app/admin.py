@@ -341,6 +341,11 @@ async def create_key(request: Request):
     return RedirectResponse("/admin", status_code=303)
 
 
+def _series_label(bucket: str) -> str:
+    """Libellé d'axe X court : 'YYYY-MM-DD' → 'MM-DD' ; 'YYYY-MM-DD HH:00' → 'HH:00'."""
+    return bucket[11:] if len(bucket) > 10 else bucket[5:]
+
+
 @app.get("/admin/keys/{key_id}", response_class=HTMLResponse)
 async def key_detail(request: Request, key_id: int):
     if (r := _guard(request)):
@@ -348,12 +353,27 @@ async def key_detail(request: Request, key_id: int):
     rec = keys.get_key(key_id)
     if rec is None:
         return RedirectResponse("/admin", status_code=303)
+    horizon = usage.horizon_or_default(request.query_params.get("horizon"))
+    conn = db.connect()
+    try:
+        series = usage.key_series(key_id, horizon, conn)
+        per_model = usage.key_per_model(key_id, horizon, conn)
+    finally:
+        conn.close()
+    svg = {
+        "reqs": charts.line([(_series_label(d["bucket"]), d["reqs"]) for d in series],
+                            _t(request, "kd.usage.th_reqs"), charts.BRAND),
+        "tokens": charts.line([(_series_label(d["bucket"]), d["tokens"]) for d in series],
+                              _t(request, "kd.usage.th_tokens"), charts.ACCENT),
+    }
     return render(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
         "servers": servers.list_servers(),
         "targets": targets.list_targets(),
         "origins_seen": usage.origins_seen(key_id),
         "retention_default": config.REQUEST_LOG_RETENTION_DAYS,
+        "svg": svg, "per_model": per_model,
+        "horizon": horizon, "horizons": usage.HORIZONS,
     })
 
 
@@ -663,13 +683,14 @@ async def server_monitor(request: Request, server_id: int):
     srv = servers.get_server(server_id)
     if srv is None:
         return RedirectResponse("/admin/servers", status_code=303)
+    horizon = usage.horizon_or_default(request.query_params.get("horizon"))
     conn = db.connect()
     try:
         summary = usage.server_summary(server_id, conn)
         per_key = usage.server_per_key(server_id, conn)
         per_model = usage.server_per_model(server_id, conn)
         status = usage.server_status_breakdown(server_id, conn)
-        daily = usage.server_daily(server_id, 30, conn)
+        series = usage.server_series(server_id, horizon, conn)
     finally:
         conn.close()
     svg = {
@@ -679,13 +700,15 @@ async def server_monitor(request: Request, server_id: int):
                                 "Requêtes par clé", color=charts.SUCCESS),
         "status_donut": charts.donut(
             [(k, v, charts.STATUS_COLORS[k]) for k, v in status.items()], "Statuts"),
-        "reqs_line": charts.line([(d["day"][5:], d["reqs"]) for d in daily], "Requêtes / jour"),
-        "tokens_line": charts.line([(d["day"][5:], d["tokens"]) for d in daily],
-                                   "Tokens / jour", color=charts.ACCENT),
+        "reqs_line": charts.line([(_series_label(d["bucket"]), d["reqs"]) for d in series],
+                                 _t(request, "mon.reqs_day")),
+        "tokens_line": charts.line([(_series_label(d["bucket"]), d["tokens"]) for d in series],
+                                   _t(request, "mon.tokens_day"), color=charts.ACCENT),
     }
     return render(request, "monitor.html", {
         "server": srv, "summary": summary, "per_key": per_key,
         "per_model": per_model, "status": status, "svg": svg,
+        "horizon": horizon, "horizons": usage.HORIZONS,
     })
 
 

@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: rakkaus
+
+hz:
+  "24h": "24 t"
+  "1w": "1 vko"
+  "2w": "2 vko"
+  "1m": "1 kk"
+  "3m": "3 kk"
+chart:
+  horizon: "Aikaväli"
+  values: "Näytä arvot"

@@ -162,6 +162,20 @@
     .models-tags { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.3rem; }
     .chart-wrap { margin:.4rem 0; overflow-x:auto; }
     .chart-wrap svg, .chart { max-width:100%; }
+    /* Contrôles de graphe : sélecteur d'horizon (pilules) + case « afficher les valeurs ». */
+    .chart-controls { display:flex; flex-wrap:wrap; gap:.5rem 1.1rem; align-items:center; margin:.2rem 0 .7rem; }
+    .horizon-pills { display:flex; gap:.25rem; flex-wrap:wrap; }
+    .pill-sm { display:inline-flex; align-items:center; padding:.28rem .72rem; border-radius:999px;
+               font-size:13px; font-weight:600; color:var(--text-2); border:1px solid var(--line);
+               background:var(--surface); cursor:pointer; }
+    .pill-sm:hover { background:#F3F4F6; text-decoration:none; }
+    .pill-sm.active { background:var(--color-brand-soft); color:var(--color-brand); border-color:transparent; }
+    .value-toggle { display:inline-flex; align-items:center; gap:.4rem; margin:0; font-size:13.5px;
+                    font-weight:500; color:var(--text-2); cursor:pointer; }
+    .value-toggle input[type=checkbox] { width:16px; height:16px; min-height:0; padding:0; flex:none; }
+    /* Étiquettes de valeur des points : masquées par défaut, révélées par la case (non persistée). */
+    .pt-val { display:none; }
+    .show-values .pt-val { display:inline; }
     .donut-wrap { display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; }
     .donut-wrap .legend { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:.35rem; }
     .donut-wrap .legend li { display:flex; align-items:center; gap:.5rem; font-size:13px; }
@@ -400,5 +414,15 @@
     })();
   </script>
   {% endif %}
+  <script>
+    // Case « afficher les valeurs » (UI seule, non persistée) : bascule .show-values sur <body>,
+    // ce qui révèle les étiquettes .pt-val de tous les graphes en courbe. Défaut : décochée.
+    (function () {
+      var cb = document.getElementById('values-toggle');
+      if (cb) cb.addEventListener('change', function () {
+        document.body.classList.toggle('show-values', cb.checked);
+      });
+    })();
+  </script>
 </body>
 </html>

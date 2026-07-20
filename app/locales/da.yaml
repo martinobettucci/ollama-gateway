@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: kærlighed
+
+hz:
+  "24h": "24 t"
+  "1w": "1 uge"
+  "2w": "2 uger"
+  "1m": "1 måned"
+  "3m": "3 måneder"
+chart:
+  horizon: "Tidsrum"
+  values: "Vis værdier"

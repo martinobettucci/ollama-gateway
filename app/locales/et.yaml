@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: armastus
+
+hz:
+  "24h": "24 h"
+  "1w": "1 näd."
+  "2w": "2 näd."
+  "1m": "1 kuu"
+  "3m": "3 kuud"
+chart:
+  horizon: "Ajavahemik"
+  values: "Näita väärtusi"

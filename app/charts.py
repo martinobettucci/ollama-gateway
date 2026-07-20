@@ -13,6 +13,7 @@ ACCENT = "#D9CF4A"
 DANGER = "#F24141"
 INK = "#0D0D0D"
 MUTED = "#8A94A6"
+LINE = "#E5E7EB"   # lignes de repère des axes (token --line)
 
 # Couleurs par classe de statut HTTP (camembert de répartition).
 STATUS_COLORS = {"2xx": SUCCESS, "3xx": BRAND, "4xx": ACCENT, "5xx": DANGER}
@@ -86,30 +87,54 @@ def donut(parts: list[tuple[str, float, str]], title: str = "Répartition",
 
 
 def line(points: list[tuple[str, float]], title: str = "Série", color: str = BRAND,
-         width: int = 460, height: int = 140) -> str:
-    """Courbe (aire) d'une série ordonnée : `points` = [(libellé_x, valeur)]."""
+         width: int = 480, height: int = 170) -> str:
+    """Courbe (aire) d'une série ordonnée : `points` = [(libellé_x, valeur)].
+
+    Rendu avec **échelle Y** (0 · milieu · max + lignes de repère) et **échelle X** (libellés
+    répartis). Chaque point porte une **étiquette de valeur masquée par défaut** (`class="pt-val"`)
+    qu'un conteneur `.show-values` (case à cocher UI, non persistée) révèle sans recharger."""
     points = [(str(x), float(v or 0)) for x, v in points]
     if len(points) < 2 or max((v for _, v in points), default=0) <= 0:
         return _empty(width, height, title)
-    pad_l, pad_b, pad_t = 8, 20, 10
+    pad_l, pad_r, pad_b, pad_t = 46, 12, 22, 12
     vmax = max(v for _, v in points)
-    plot_w, plot_h = width - pad_l * 2, height - pad_b - pad_t
+    plot_w, plot_h = width - pad_l - pad_r, height - pad_b - pad_t
     n = len(points)
     xs = [pad_l + (i / (n - 1)) * plot_w for i in range(n)]
     ys = [pad_t + plot_h - (v / vmax) * plot_h for _, v in points]
     poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
     area = f"{xs[0]:.1f},{pad_t + plot_h:.1f} " + poly + f" {xs[-1]:.1f},{pad_t + plot_h:.1f}"
-    dots = "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{color}"/>'
-                   for x, y in zip(xs, ys))
-    return (f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
-            f'aria-label="{_esc(title)}" class="chart">'
-            f'<polygon points="{area}" fill="{color}" opacity="0.10"/>'
-            f'<polyline points="{poly}" fill="none" stroke="{color}" stroke-width="2"/>'
-            f'{dots}'
-            f'<text x="{pad_l}" y="{height - 5}" font-size="11" fill="{MUTED}">'
-            f'{_esc(points[0][0])}</text>'
-            f'<text x="{width - pad_l}" y="{height - 5}" font-size="11" fill="{MUTED}" '
-            f'text-anchor="end">{_esc(points[-1][0])}</text></svg>')
+    parts = [f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
+             f'aria-label="{_esc(title)}" class="chart">']
+    # Axe Y : lignes de repère + valeurs (0, milieu, max).
+    for frac in (0.0, 0.5, 1.0):
+        gy = pad_t + plot_h - frac * plot_h
+        parts.append(
+            f'<line x1="{pad_l}" y1="{gy:.1f}" x2="{width - pad_r}" y2="{gy:.1f}" '
+            f'stroke="{LINE}" stroke-width="1"/>'
+            f'<text x="{pad_l - 6}" y="{gy + 3.5:.1f}" text-anchor="end" font-size="10" '
+            f'fill="{MUTED}">{_fmt(vmax * frac)}</text>')
+    # Aire + courbe + points.
+    parts.append(f'<polygon points="{area}" fill="{color}" opacity="0.10"/>'
+                 f'<polyline points="{poly}" fill="none" stroke="{color}" stroke-width="2"/>')
+    parts.append("".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{color}"/>'
+                         for x, y in zip(xs, ys)))
+    # Étiquettes de valeur par point (masquées par défaut ; révélées par `.show-values`).
+    parts.append("".join(
+        f'<text class="pt-val" x="{x:.1f}" y="{y - 6:.1f}" text-anchor="middle" '
+        f'font-size="10" fill="{INK}">{_fmt(v)}</text>'
+        for (_, v), x, y in zip(points, xs, ys)))
+    # Axe X : libellés répartis (jusqu'à ~5), extrémités alignées aux bords.
+    step = max(1, (n - 1) // 4)
+    idxs = list(range(0, n, step))
+    if idxs[-1] != n - 1:
+        idxs.append(n - 1)
+    for i in idxs:
+        anchor = "start" if i == 0 else ("end" if i == n - 1 else "middle")
+        parts.append(f'<text x="{xs[i]:.1f}" y="{height - 6}" font-size="10" fill="{MUTED}" '
+                     f'text-anchor="{anchor}">{_esc(points[i][0])}</text>')
+    parts.append("</svg>")
+    return "".join(parts)
 
 
 def _fmt(v: float) -> str:

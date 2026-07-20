@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
+{% from "_charts.html" import controls %}
 {% block title %}{{ t('mon.heading', name=server.name) }} — {{ t('brand.name') }}{% endblock %}
 {% block body %}
 <p><a class="backlink" href="/admin/servers">{{ icon('arrow-left') }} {{ t('nav.servers') }}</a></p>
 <h1>{{ t('mon.heading', name=server.name) }}</h1>
 <p class="page-meta mono">{{ server.base_url }}</p>
+{{ controls(horizons, horizon, '/admin/servers/' ~ server.id ~ '/monitor', t) }}
 
 <div class="stats">
   <div class="card stat cat-brand">

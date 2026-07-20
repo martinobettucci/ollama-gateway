@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: grá
+
+hz:
+  "24h": "24 u"
+  "1w": "1 tseachtain"
+  "2w": "2 sheachtain"
+  "1m": "1 mhí"
+  "3m": "3 mhí"
+chart:
+  horizon: "Raon ama"
+  values: "Taispeáin luachanna"

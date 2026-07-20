@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: liefde
+
+hz:
+  "24h": "24 u"
+  "1w": "1 week"
+  "2w": "2 weken"
+  "1m": "1 maand"
+  "3m": "3 maanden"
+chart:
+  horizon: "Periode"
+  values: "Waarden tonen"

@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: amor
+
+hz:
+  "24h": "24 h"
+  "1w": "1 sem."
+  "2w": "2 sem."
+  "1m": "1 mês"
+  "3m": "3 meses"
+chart:
+  horizon: "Período"
+  values: "Mostrar valores"

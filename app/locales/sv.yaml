@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: kärlek
+
+hz:
+  "24h": "24 h"
+  "1w": "1 vecka"
+  "2w": "2 veckor"
+  "1m": "1 månad"
+  "3m": "3 månader"
+chart:
+  horizon: "Tidsintervall"
+  values: "Visa värden"

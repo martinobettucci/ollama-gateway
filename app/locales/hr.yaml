@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: ljubav
+
+hz:
+  "24h": "24 h"
+  "1w": "1 tj."
+  "2w": "2 tj."
+  "1m": "1 mj."
+  "3m": "3 mj."
+chart:
+  horizon: "Vremenski raspon"
+  values: "Prikaži vrijednosti"

@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: dragoste
+
+hz:
+  "24h": "24 h"
+  "1w": "1 săpt."
+  "2w": "2 săpt."
+  "1m": "1 lună"
+  "3m": "3 luni"
+chart:
+  horizon: "Interval de timp"
+  values: "Afișează valorile"

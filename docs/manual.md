@@ -404,6 +404,14 @@ clé se mettent à jour (les tokens sont comptés y compris en streaming) :
 
 ![Usage visible sur le tableau de bord](../app/static/manual/04-usage.jpg)
 
+La page **détail d'une clé** trace l'usage en **graphes temporels** (requêtes / jour et tokens /
+jour, avec échelles d'axes) et une table **« Usage par modèle »** (requêtes, tokens, erreurs et
+dernier usage, par modèle réellement invoqué par la clé). Un **sélecteur d'horizon**
+(**24 h · 1 semaine · 2 semaines · 1 mois · 3 mois**) recadre les graphes et la table ; l'horizon
+24 h passe en **buckets horaires**. Une case **« Afficher les valeurs »** (décochée par défaut,
+non mémorisée) révèle la valeur de chaque point directement sur les courbes. Le **monitoring d'un
+serveur** dispose du même sélecteur d'horizon.
+
 ### Manuel intégré
 
 Ce manuel est accessible à tout moment via le bouton **Manuel** de la navigation, affiché

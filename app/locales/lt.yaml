@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: meilė
+
+hz:
+  "24h": "24 val."
+  "1w": "1 sav."
+  "2w": "2 sav."
+  "1m": "1 mėn."
+  "3m": "3 mėn."
+chart:
+  horizon: "Laikotarpis"
+  values: "Rodyti reikšmes"

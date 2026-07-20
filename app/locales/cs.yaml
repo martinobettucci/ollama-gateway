@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: láska
+
+hz:
+  "24h": "24 h"
+  "1w": "1 týden"
+  "2w": "2 týdny"
+  "1m": "1 měsíc"
+  "3m": "3 měsíce"
+chart:
+  horizon: "Časové období"
+  values: "Zobrazit hodnoty"

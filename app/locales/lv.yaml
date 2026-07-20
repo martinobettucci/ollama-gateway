@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: mīlestība
+
+hz:
+  "24h": "24 h"
+  "1w": "1 ned."
+  "2w": "2 ned."
+  "1m": "1 mēn."
+  "3m": "3 mēn."
+chart:
+  horizon: "Laika periods"
+  values: "Rādīt vērtības"

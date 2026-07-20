@@ -1,0 +1,15 @@
+{# Contrôles de graphe partagés : sélecteur d'horizon (recharge la page ?horizon=) + case
+   « afficher les valeurs » (UI seule, non persistée : bascule .show-values sur <body> en JS). #}
+{% macro controls(horizons, horizon, base_path, t) %}
+<div class="chart-controls" data-testid="chart-controls">
+  <div class="horizon-pills" role="group" aria-label="{{ t('chart.horizon') }}">
+    {% for h in horizons %}
+    <a class="pill-sm{{ ' active' if h == horizon }}" href="{{ base_path }}?horizon={{ h }}"
+       data-testid="horizon-{{ h }}"{% if h == horizon %} aria-current="true"{% endif %}>{{ t('hz.' ~ h) }}</a>
+    {% endfor %}
+  </div>
+  <label class="value-toggle">
+    <input type="checkbox" id="values-toggle" data-testid="values-toggle"> {{ t('chart.values') }}
+  </label>
+</div>
+{% endmacro %}

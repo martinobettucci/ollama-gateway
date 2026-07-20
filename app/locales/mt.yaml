@@ -355,3 +355,13 @@ kd:
     title: WHOIS
 foot:
   heart_aria: imħabba
+
+hz:
+  "24h": "24 s"
+  "1w": "1 ġimgħa"
+  "2w": "2 ġimgħat"
+  "1m": "1 xahar"
+  "3m": "3 xhur"
+chart:
+  horizon: "Firxa ta' żmien"
+  values: "Uri l-valuri"

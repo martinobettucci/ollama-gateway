@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_icons.html" import icon %}
+{% from "_charts.html" import controls %}
 {% from "_model_picker.html" import model_picker with context %}
 {% from "_api_picker.html" import api_picker with context %}
 {% block title %}{{ key.label }} — {{ t('brand.name') }}{% endblock %}
@@ -415,22 +416,50 @@
 </div>
 
 <div>
-<div class="card cat-success">
+<div class="card cat-success charts-section">
   <div class="card-head">
     <span class="chip-ic success">{{ icon('bar-chart', 18) }}</span>
     <h2>{{ t('kd.usage.title') }}</h2>
   </div>
-  {% if summary.per_day %}
+  {{ controls(horizons, horizon, '/admin/keys/' ~ key.id, t) }}
+  <div class="grid-split">
+    <div>
+      <div class="compat-fam-name">{{ t('kd.usage.th_reqs') }}</div>
+      <div class="chart-wrap" data-testid="key-reqs-chart">{{ svg.reqs|safe }}</div>
+    </div>
+    <div>
+      <div class="compat-fam-name">{{ t('kd.usage.th_tokens') }}</div>
+      <div class="chart-wrap" data-testid="key-tokens-chart">{{ svg.tokens|safe }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card cat-accent">
+  <div class="card-head">
+    <span class="chip-ic accent">{{ icon('coins', 18) }}</span>
+    <h2>{{ t('mon.models.title') }}</h2>
+  </div>
+  {% if per_model %}
   <div class="table-wrap">
-  <table>
-    <thead><tr><th>{{ t('kd.usage.th_day') }}</th><th>{{ t('kd.usage.th_reqs') }}</th><th>{{ t('kd.usage.th_tokens') }}</th></tr></thead>
-    <tbody>{% for d in summary.per_day %}
-      <tr><td class="mono">{{ d.day }}</td><td class="mono">{{ d.reqs }}</td><td class="mono">{{ d.tokens }}</td></tr>
-    {% endfor %}</tbody>
+  <table data-testid="key-permodel">
+    <thead><tr><th>{{ t('mon.models.th.model') }}</th><th>{{ t('kd.usage.th_reqs') }}</th>
+      <th>{{ t('kd.usage.th_tokens') }}</th><th>{{ t('kd.stat.errors') }}</th>
+      <th>{{ t('mon.models.th.last_used') }}</th></tr></thead>
+    <tbody>
+    {% for m in per_model %}
+      <tr>
+        <td class="mono">{{ m.model }}</td>
+        <td class="mono">{{ m.reqs }}</td>
+        <td class="mono">{{ m.tokens }}</td>
+        <td class="mono">{% if m.errors %}<span class="badge off">{{ m.errors }}</span>{% else %}0{% endif %}</td>
+        <td class="mono muted">{{ m.last_seen }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
   </table>
   </div>
   {% else %}
-  <div class="empty">{{ icon('bar-chart', 22) }}
+  <div class="empty">{{ icon('coins', 22) }}
     <span>{{ t('kd.usage.empty') }}</span></div>
   {% endif %}
 </div>
