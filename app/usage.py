@@ -88,6 +88,26 @@ def recent_request_count(key_id: int, seconds: int = 60, conn: sqlite3.Connectio
             conn.close()
 
 
+def rpm_window_reset(key_id: int, seconds: int = 60,
+                     conn: sqlite3.Connection | None = None) -> int:
+    """Secondes avant qu'un créneau de la fenêtre glissante rpm se libère (la requête la plus
+    ancienne de la fenêtre en sort). 0 si aucune requête en fenêtre. Sert à l'en-tête
+    `x-ratelimit-reset-requests`."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        row = conn.execute(
+            "SELECT CAST(strftime('%s','now') AS INTEGER) - "
+            "CAST(strftime('%s', MIN(ts)) AS INTEGER) AS age "
+            "FROM usage_events WHERE key_id = ? AND ts >= datetime('now', ?)",
+            (key_id, f"-{int(seconds)} seconds")).fetchone()
+        age = row["age"] if row and row["age"] is not None else None
+        return 0 if age is None else max(0, int(seconds) - int(age))
+    finally:
+        if own:
+            conn.close()
+
+
 def key_summary(key_id: int, conn: sqlite3.Connection | None = None) -> dict:
     """Agrégats d'affichage pour une clé (30 derniers jours + total)."""
     own = conn is None

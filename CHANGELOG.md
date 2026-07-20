@@ -6,6 +6,13 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **En-têtes d'état de quota (style OpenAI/Groq).** Les réponses du proxy portent désormais, quand
+  la clé a un rate-limit ou un plafond mensuel, `x-ratelimit-limit/remaining/reset-requests` et
+  `…-tokens` ; le 429 ajoute `Retry-After`. Les clients bien élevés — surtout les **boucles
+  d'agents** — peuvent ainsi se rythmer et décider d'attendre ou de s'arrêter proprement **avant**
+  l'appel qui échouerait, ce qui évite les tempêtes de retry. Coût serveur négligeable (l'état est
+  déjà calculé pour l'application des quotas) ; aucune en-tête pour une clé sans plafond.
+
 - **Préparation open-source (source-available).** Ajout d'une **LICENSE** : usage libre et gratuit
   (y compris en entreprise) tant que l'ensemble des instances d'une entité sert **≤ 1 milliard de
   tokens/mois** ; au-delà, **licence commerciale** (somme libératoire unique de **29 € HT par

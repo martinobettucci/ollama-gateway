@@ -36,7 +36,8 @@ ne sont **jamais** proxifiés (403) — la gestion des modèles se fait depuis l
 - **Clés API par client** — hachées (sha-256), secret affiché **une seule fois**, révocables.
 - **Restriction d'origine** par clé (IP/CIDR, résistante à l'usurpation de `X-Forwarded-For`).
 - **Quotas** — plafond mensuel de tokens + rate-limit (req/min), et plafonds/expiration « de vie »
-  (essai à coût plafonné).
+  (essai à coût plafonné). État exposé au client en **en-têtes `x-ratelimit-*`** (style OpenAI/Groq)
+  + `Retry-After` sur 429, pour que les clients (et les boucles d'agents) se rythment.
 - **Serveurs d'exécution multiples** — local + distants (jeton chiffré au repos), une clé ↦ un
   serveur, **serveur de repli** automatique sur panne 5xx/connexion.
 - **Restriction de modèles et d'API par clé** — agnostique du schéma (Ollama natif, OpenAI,

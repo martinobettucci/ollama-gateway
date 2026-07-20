@@ -188,6 +188,10 @@ Points de comportement :
 - La clé du client est **strippée avant l'amont** ; si le serveur distant exige un jeton, la
   passerelle l'injecte (déchiffré) à sa place. Ollama ne voit jamais la clé cliente.
 - Les erreurs (≥ 400) sont journalisées et visibles dans le panel.
+- Quand la clé a un **rate-limit** ou un **plafond mensuel**, les réponses portent des **en-têtes
+  d'état de quota** (`x-ratelimit-limit`/`remaining`/`reset-requests` et `…-tokens`, style
+  OpenAI/Groq) ; un refus 429 ajoute `Retry-After`. Un client — surtout une boucle d'agent — peut
+  ainsi se rythmer et décider d'attendre ou de s'arrêter proprement avant l'appel qui échouerait.
 
 ## Les clés API
 

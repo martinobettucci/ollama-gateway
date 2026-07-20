@@ -36,7 +36,8 @@ proxied (403) — model management happens from the admin console.
 - **Per-client API keys** — hashed (sha-256), secret shown **only once**, revocable.
 - **Per-key origin restriction** (IP/CIDR, resistant to `X-Forwarded-For` spoofing).
 - **Quotas** — monthly token cap + rate-limit (req/min), plus absolute "lifetime" caps/expiry
-  (cost-capped trials).
+  (cost-capped trials). State exposed to the client via **`x-ratelimit-*` headers** (OpenAI/Groq
+  style) + `Retry-After` on 429, so clients (and agent loops) can pace themselves.
 - **Multiple execution servers** — local + remote (token encrypted at rest), one key ↦ one server,
   automatic **fallback server** on 5xx/connection failure.
 - **Per-key model and API restriction** — schema-agnostic (native Ollama, OpenAI, Anthropic),

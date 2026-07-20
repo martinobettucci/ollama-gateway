@@ -238,11 +238,19 @@ async def proxy(request: Request, full_path: str):
         srv_auth = servers.auth_header_for(rec.server_id, conn) if srv else {}
         fb = servers.get_server(rec.fallback_server_id, conn) if rec.fallback_server_id else None
         fb_auth = servers.auth_header_for(rec.fallback_server_id, conn) if fb else {}
+        rl_headers = quotas.rate_limit_headers(rec, conn)
     finally:
         conn.close()
     if not ok:
         _log(rec.id, ip, method, path, "", 429, t0)
-        return JSONResponse({"error": reason}, status_code=429)
+        # Retry-After + en-têtes d'état : le client sait quand réessayer (anti-retry-storm).
+        h = dict(rl_headers)
+        retry = (rl_headers.get("x-ratelimit-reset-requests")
+                 if reason and "rate-limit" in reason
+                 else rl_headers.get("x-ratelimit-reset-tokens"))
+        if retry:
+            h["Retry-After"] = retry
+        return JSONResponse({"error": reason}, status_code=429, headers=h)
     if srv is None or not srv.enabled:
         _log(rec.id, ip, method, path, "", 503, t0)
         return JSONResponse(
@@ -346,7 +354,8 @@ async def proxy(request: Request, full_path: str):
         _content_log(up_resp.status_code, req_model)
         _release()
         media = up_resp.headers.get("content-type", "application/json")
-        return Response(content, status_code=up_resp.status_code, media_type=media)
+        return Response(content, status_code=up_resp.status_code, media_type=media,
+                        headers=rl_headers)
 
     up_resp, used = await _send_chain(stream=True)
     if up_resp is None:
@@ -381,6 +390,7 @@ async def proxy(request: Request, full_path: str):
     resp_headers = [(k, v) for k, v in up_resp.headers.items()
                     if k.lower() not in _DROP_RESP_HEADERS]
     return StreamingResponse(
-        stream_body(), status_code=up_resp.status_code, headers=dict(resp_headers),
+        stream_body(), status_code=up_resp.status_code,
+        headers={**dict(resp_headers), **rl_headers},
         background=BackgroundTask(finalize),
     )

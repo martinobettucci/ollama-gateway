@@ -6,6 +6,26 @@ const DEMO = 'sk-ollama-devdemokey0000000000000000000000000000000000000000000000
 const OUT = 'output';
 test.beforeAll(() => fs.mkdirSync(OUT, { recursive: true }));
 
+test('proxy: en-têtes x-ratelimit-* exposés pour une clé à quota', async ({ page, request }) => {
+  // Créer une clé avec un rate-limit via le panel, récupérer son secret.
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await page.click('button[type=submit]');
+  await page.fill('#label', 'ratelimited');
+  await page.fill('#rpm_limit', '30');
+  await page.locator('[data-testid=create-form] button[type=submit]').click();
+  const secret = (await page.locator('[data-testid=created-secret]').innerText()).trim();
+  // Appel proxifié : l'état du quota doit être renvoyé en en-têtes (style OpenAI/Groq).
+  const r = await request.post(`${PROXY}/api/chat`, {
+    headers: { Authorization: `Bearer ${secret}` }, data: { model: 'demo:latest' },
+  });
+  expect(r.status()).toBe(200);
+  const h = r.headers();
+  expect(h['x-ratelimit-limit-requests']).toBe('30');
+  expect(h['x-ratelimit-remaining-requests']).toBe('29');
+  expect(h['x-ratelimit-reset-tokens']).toBeUndefined(); // pas de plafond mensuel sur cette clé
+});
+
 test('proxy: clé valide → 200 streamé, clé bidon/absente → 401', async ({ request }) => {
   const ok = await request.post(`${PROXY}/api/chat`, {
     headers: { Authorization: `Bearer ${DEMO}` },

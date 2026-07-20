@@ -7,6 +7,7 @@ Deux natures distinctes :
   définitivement (pas de réinitialisation).
 """
 import sqlite3
+from datetime import datetime, timezone
 
 from . import usage
 from .keys import KeyRecord
@@ -37,6 +38,42 @@ def leave(key_id: int) -> None:
 def inflight(key_id: int) -> int:
     """Nombre de requêtes de la clé actuellement en vol (non encore journalisées)."""
     return _INFLIGHT.get(key_id, 0)
+
+
+def _seconds_to_month_end() -> int:
+    """Secondes jusqu'au 1er du mois suivant (UTC) : reset du plafond mensuel de tokens."""
+    now = datetime.now(timezone.utc)
+    if now.month == 12:
+        nxt = now.replace(year=now.year + 1, month=1, day=1, hour=0, minute=0,
+                          second=0, microsecond=0)
+    else:
+        nxt = now.replace(month=now.month + 1, day=1, hour=0, minute=0,
+                          second=0, microsecond=0)
+    return int((nxt - now).total_seconds())
+
+
+def rate_limit_headers(rec: KeyRecord, conn: sqlite3.Connection) -> dict[str, str]:
+    """En-têtes d'état de quota (style OpenAI/Groq) renvoyés au client, pour qu'il se rythme sans
+    percuter les 429 (utile surtout aux boucles d'agents : lire/décider avant l'appel qui échoue).
+    Seuls les plafonds DÉFINIS produisent des en-têtes (une clé illimitée n'en reçoit aucun).
+    Réutilise `conn` (déjà ouvert par le proxy) → coût négligeable.
+
+    - `x-ratelimit-{limit,remaining,reset}-requests` : rate-limit rpm (fenêtre glissante 60 s ;
+      `remaining` inclut la requête courante ; `reset` = secondes avant qu'un créneau se libère).
+    - `x-ratelimit-{limit,remaining,reset}-tokens` : plafond MENSUEL de tokens (`reset` = secondes
+      jusqu'au 1er du mois suivant, UTC)."""
+    h: dict[str, str] = {}
+    if rec.rpm_limit is not None:
+        used = usage.recent_request_count(rec.id, 60, conn) + inflight(rec.id) + 1
+        h["x-ratelimit-limit-requests"] = str(rec.rpm_limit)
+        h["x-ratelimit-remaining-requests"] = str(max(0, rec.rpm_limit - used))
+        h["x-ratelimit-reset-requests"] = str(usage.rpm_window_reset(rec.id, 60, conn))
+    if rec.monthly_token_cap is not None:
+        used_t = usage.month_tokens(rec.id, conn)
+        h["x-ratelimit-limit-tokens"] = str(rec.monthly_token_cap)
+        h["x-ratelimit-remaining-tokens"] = str(max(0, rec.monthly_token_cap - used_t))
+        h["x-ratelimit-reset-tokens"] = str(_seconds_to_month_end())
+    return h
 
 
 def check(rec: KeyRecord, conn: sqlite3.Connection) -> tuple[bool, str | None]:
