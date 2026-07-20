@@ -6,6 +6,14 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Mode déclaratif — phase 3 : export de la configuration.** Le panel gagne un bouton
+  **« Exporter »** (et une commande `python -m app.reconcile export`) qui produit l'état courant
+  (serveurs/cibles/clés) au **format YAML déclaratif** — l'inverse du mode headless : on configure à
+  la souris, on exporte, on versionne. **Sans aucun secret** : les clés sont exportées **sans
+  `value`** (une clé sera générée à l'import) ; les jetons de serveur distant (chiffrés) et la config
+  SMTP/livraison (non persistée) sont à réintroduire manuellement. Ré-importable sur une base neuve
+  pour recréer l'infrastructure. Route `GET /admin/config.yaml` (LAN-only, garde de session).
+
 - **Mode déclaratif — phase 2 : livraison du secret des clés générées.** Une clé déclarative
   **générée** (sans `value`) voit son secret **poussé** vers les canaux configurés, une seule fois,
   dans le même passage de réconciliation : **e-mail** (SMTP configuré en YAML, secrets par `${NOM}`,

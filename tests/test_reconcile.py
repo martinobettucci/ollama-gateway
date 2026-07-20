@@ -326,6 +326,72 @@ keys:
         reconcile.apply(path)
 
 
+# --- Export (phase 3) -------------------------------------------------------------------------
+
+def test_export_config_shape_without_secrets(tmp_path, monkeypatch):
+    monkeypatch.setenv("K", "sk-ollama-exportme000000000000000000000000000000000000000000000000")
+    reconcile.apply(_write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+    models: [llama3:8b]
+targets:
+  - name: pub
+    base_url: https://gw.example:8443
+    default: true
+keys:
+  - name: acme
+    value: ${K}
+    label: ACME
+    server: local
+    target: pub
+    origins: [203.0.113.0/24]
+    apis: [ollama]
+    rpm_limit: 60
+"""))
+    cfg = reconcile.export_config()
+    assert {s["name"] for s in cfg["servers"]} == {"local"}
+    assert cfg["servers"][0]["default"] is True and cfg["servers"][0]["models"] == ["llama3:8b"]
+    assert cfg["targets"][0] == {"name": "pub", "base_url": "https://gw.example:8443",
+                                 "default": True}
+    key = cfg["keys"][0]
+    assert key["name"] == "acme" and key["server"] == "local" and key["target"] == "pub"
+    assert key["rpm_limit"] == 60 and key["apis"] == ["ollama"]
+    assert "value" not in key                    # aucun secret exporté
+    # Aucun secret nulle part dans le YAML rendu.
+    text = reconcile.export_yaml()
+    assert "sk-ollama-exportme" not in text
+    assert "value:" not in text
+
+
+def test_export_yaml_is_reimportable(tmp_path):
+    reconcile.apply(_write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+keys:
+  - name: k1
+    rpm_limit: 10
+"""))
+    exported = reconcile.export_yaml()
+    # YAML exporté valide et ré-appliquable (clé gérée → mise à jour, pas de doublon).
+    reapply = _write(tmp_path, exported)
+    report = reconcile.apply(reapply)
+    assert "k1" in [*report.keys_updated, *report.keys_created]
+    assert len(keys.managed_refs()) == 1         # pas de duplication de la clé gérée
+
+
+def test_export_slugs_ui_keys(tmp_path):
+    # Une clé créée par l'UI (external_ref NULL) est exportée avec un nom dérivé du label.
+    servers.ensure_default()
+    keys.create_key(label="Client Bêta", origins=[], monthly_token_cap=None, rpm_limit=None)
+    cfg = reconcile.export_config()
+    names = [k["name"] for k in cfg["keys"]]
+    assert "client-beta" in names or any(n.startswith("client-b") for n in names)
+
+
 def test_declarative_mode_skips_auto_default_server(monkeypatch):
     # En mode déclaratif, ensure_default n'auto-crée PAS « Ollama local » (le reconciler le fera).
     monkeypatch.setattr(config, "DECLARATIVE", True)

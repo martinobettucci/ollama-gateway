@@ -3,6 +3,23 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-20 — Configuration déclarative, sous-phase 3 : export
+
+- **Fermer la boucle : configurer à la souris, exporter, versionner.** L'export (`GET
+  /admin/config.yaml` + CLI) est l'exact inverse d'`apply` : il sérialise serveurs/cibles/clés en
+  YAML déclaratif. Cas d'usage : bâtir en UISur un poste, exporter, committer, déployer en headless.
+- **L'export ne peut pas contenir de secret — et c'est cohérent.** Le secret d'une clé n'est pas
+  stocké (seulement son hash) → export **sans `value`** ; à la ré-import, la clé est **générée** (et
+  livrée). Les jetons de serveur (chiffrés) et la config SMTP/livraison (non persistée, pur YAML) ne
+  sont pas dans la base → non exportables, réintroduits à la main. On l'écrit noir sur blanc en tête
+  du fichier exporté pour lever toute ambiguïté.
+- **Identité des clés à l'export.** `name` = `external_ref` s'il existe, sinon un **slug** du label.
+  L'export sert de POINT DE DÉPART pour un déploiement neuf ; ré-appliqué sur la MÊME base, seules
+  les clés déjà gérées (external_ref) se mettent à jour sans doublon.
+- **Coût i18n assumé.** Le bouton « Exporter » ajoute une entrée de navigation → clé `nav.export`
+  (+ `export_hint`) propagée aux **24 locales** (règle dure de complétude i18n). Le changement de
+  barre de navigation impose de **régénérer les captures du manuel** dans le même lot.
+
 ## 2026-07-20 — Configuration déclarative, sous-phase 2 : livraison du secret
 
 - **Le problème central du provisioning headless : le secret n'est montré qu'une fois.** Sans UI

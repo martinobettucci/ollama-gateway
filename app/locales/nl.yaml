@@ -30,6 +30,8 @@ nav:
   logs: Logs
   manual: Handleiding
   logout: Afmelden
+  export: "Exporteren"
+  export_hint: "Configuratie exporteren (YAML)"
   language: Taal
 manual:
   title: Gebruikershandleiding

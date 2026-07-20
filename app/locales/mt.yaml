@@ -30,6 +30,8 @@ nav:
   logs: Logs
   manual: Manwal
   logout: Oħroġ
+  export: "Esporta"
+  export_hint: "Esporta l-konfigurazzjoni (YAML)"
   language: Lingwa
 manual:
   title: Manwal tal-utent

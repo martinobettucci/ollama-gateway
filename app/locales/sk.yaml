@@ -30,6 +30,8 @@ nav:
   logs: Protokoly
   manual: Príručka
   logout: Odhlásiť sa
+  export: "Exportovať"
+  export_hint: "Exportovať konfiguráciu (YAML)"
   language: Jazyk
 manual:
   title: Používateľská príručka

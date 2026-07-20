@@ -30,6 +30,8 @@ nav:
   logs: Loggar
   manual: Manual
   logout: Logga ut
+  export: "Exportera"
+  export_hint: "Exportera konfigurationen (YAML)"
   language: Språk
 manual:
   title: Användarmanual

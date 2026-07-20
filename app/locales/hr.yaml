@@ -30,6 +30,8 @@ nav:
   logs: Zapisi
   manual: Priručnik
   logout: Odjava
+  export: "Izvoz"
+  export_hint: "Izvezi konfiguraciju (YAML)"
   language: Jezik
 manual:
   title: Korisnički priručnik

@@ -344,6 +344,8 @@
          href="/admin/logs">{{ icon('scroll-text') }} {{ t('nav.logs') }}</a>
       <button type="button" class="pill-link" id="manual-open" data-testid="manual-open"
               aria-haspopup="dialog">{{ icon('book-open') }} {{ t('nav.manual') }}</button>
+      <a class="pill-link" href="/admin/config.yaml" data-testid="nav-export"
+         download="gateway.yaml" title="{{ t('nav.export_hint') }}">{{ icon('download') }} {{ t('nav.export') }}</a>
       <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} {{ t('nav.logout') }}</a>
     </nav>
     {% endif %}

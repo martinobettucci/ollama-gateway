@@ -30,6 +30,8 @@ nav:
   logs: Logfiler
   manual: Manual
   logout: Log ud
+  export: "Eksportér"
+  export_hint: "Eksportér konfiguration (YAML)"
   language: Sprog
 manual:
   title: Brugermanual

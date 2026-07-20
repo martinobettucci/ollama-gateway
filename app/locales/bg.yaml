@@ -30,6 +30,8 @@ nav:
   logs: Дневници
   manual: Ръководство
   logout: Изход
+  export: "Експорт"
+  export_hint: "Експорт на конфигурацията (YAML)"
   language: Език
 manual:
   title: Ръководство за потребителя

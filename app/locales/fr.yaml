@@ -32,6 +32,8 @@ nav:
   logs: Logs
   manual: Manuel
   logout: Déconnexion
+  export: "Exporter"
+  export_hint: "Exporter la configuration (YAML)"
   language: Langue
 manual:
   title: Manuel utilisateur

@@ -290,6 +290,15 @@ Si un canal échoue, l'erreur est rapportée et le secret étant irrécupérable
 la clé** (la retirer avec `prune: true` puis la remettre) pour relivrer. Pour une clé au secret
 **connu**, préférez l'import via `value: ${NOM}` (aucune livraison nécessaire).
 
+### Exporter la configuration (l'inverse)
+
+Le chemin inverse existe aussi : depuis le panel, le bouton **« Exporter »** de la navigation
+télécharge l'état courant (serveurs, cibles, clés) au **format `gateway.yaml`** déclaratif. On
+configure ainsi à la souris, puis on exporte pour versionner et redéployer en headless. L'export ne
+contient **aucun secret** : les clés sont sans `value` (une clé sera **générée** à l'import, avec un
+nouveau secret à livrer), et les jetons de serveur distant comme la configuration SMTP/livraison
+sont à réintroduire manuellement. En ligne de commande : `python -m app.reconcile export`.
+
 ## Le panel d'admin, fonctionnalité par fonctionnalité
 
 L'interface applique la charte graphique P2Enjoy (voir `docs/DESIGN_SYSTEM.md`).

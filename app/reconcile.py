@@ -508,13 +508,97 @@ def apply(path: str) -> Report:
     return report
 
 
+# --- Export -----------------------------------------------------------------------------------
+
+def _slug(label: str, key_id: int, taken: set[str]) -> str:
+    base = re.sub(r"[^a-z0-9]+", "-", (label or "").lower()).strip("-") or "cle"
+    name = base
+    if name in taken:
+        name = f"{base}-{key_id}"
+    return name
+
+
+def export_config() -> dict:
+    """Construit la configuration déclarative de l'état COURANT (serveurs/cibles/clés) — l'inverse
+    de `apply`. **Sans secret** : les clés sont exportées **sans `value`** (une clé sera générée à
+    l'import) ; les jetons de serveur distant (chiffrés) et la config SMTP/livraison (non persistée)
+    ne sont pas exportables. Ré-importable sur une base neuve pour recréer l'infrastructure."""
+    out: dict = {}
+    srvs = servers.list_servers()
+    if srvs:
+        out["servers"] = []
+        for s in srvs:
+            e = {"name": s.name, "base_url": s.base_url}
+            if s.is_default:
+                e["default"] = True
+            if not s.enabled:
+                e["enabled"] = False
+            if s.last_models:
+                e["models"] = s.last_models
+            out["servers"].append(e)
+    tgts = targets.list_targets()
+    if tgts:
+        out["targets"] = [
+            {"name": t.name, "base_url": t.base_url, **({"default": True} if t.is_default else {})}
+            for t in tgts]
+    kz = keys.list_keys()
+    if kz:
+        out["keys"] = []
+        taken: set[str] = set()
+        for k in kz:
+            name = k.external_ref or _slug(k.label, k.id, taken)
+            taken.add(name)
+            e: dict = {"name": name}
+            if k.label and k.label != name:
+                e["label"] = k.label
+            if k.server_name:
+                e["server"] = k.server_name
+            if k.target_name:
+                e["target"] = k.target_name
+            if not k.enabled:
+                e["enabled"] = False
+            if k.origins:
+                e["origins"] = k.origins
+            if k.models:
+                e["models"] = k.models
+            if k.apis:
+                e["apis"] = k.apis
+            if k.image_models:
+                e["image_models"] = k.image_models
+            for attr in ("rpm_limit", "monthly_token_cap", "total_token_cap",
+                         "total_request_cap", "idle_expiry_days"):
+                val = getattr(k, attr)
+                if val is not None:
+                    e[attr] = val
+            if k.expires_at:
+                e["expires_at"] = k.expires_at
+            out["keys"].append(e)
+    return out
+
+
+def export_yaml() -> str:
+    header = (
+        "# Configuration exportée depuis la passerelle (état courant).\n"
+        "# Les SECRETS ne sont pas exportables : les clés sont sans « value » (une clé sera GÉNÉRÉE\n"
+        "# à l'import, avec un nouveau secret à livrer). Les jetons de serveur distant (chiffrés) et\n"
+        "# la configuration SMTP / de livraison (non persistée) sont à réintroduire manuellement —\n"
+        "# voir gateway.example.yaml.\n\n")
+    body = yaml.safe_dump(export_config(), sort_keys=False, allow_unicode=True,
+                          default_flow_style=False)
+    return header + body
+
+
 # --- CLI --------------------------------------------------------------------------------------
 
 def main(argv: list[str]) -> None:
-    if len(argv) < 1 or argv[0] not in ("apply", "validate"):
-        print("usage : python -m app.reconcile {apply|validate} <fichier.yaml>", file=sys.stderr)
+    if len(argv) < 1 or argv[0] not in ("apply", "validate", "export"):
+        print("usage : python -m app.reconcile {apply|validate|export} [fichier.yaml]",
+              file=sys.stderr)
         sys.exit(2)
     cmd = argv[0]
+    if cmd == "export":
+        print(export_yaml(), end="")
+        return
     path = argv[1] if len(argv) > 1 else os.environ.get("GATEWAY_CONFIG", "")
     if not path:
         print("chemin du fichier de configuration manquant", file=sys.stderr)

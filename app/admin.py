@@ -17,8 +17,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import (apis, auth, bans, charts, config, db, i18n, keys, reqlog, servers,
-               targets, usage, whois)
+from . import (apis, auth, bans, charts, config, db, i18n, keys, reconcile, reqlog,
+               servers, targets, usage, whois)
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -264,6 +264,17 @@ async def login_submit(request: Request, password: str = Form(...)):
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse("/admin/login", status_code=303)
+
+
+@app.get("/admin/config.yaml")
+async def export_config(request: Request):
+    """Exporte l'état courant (serveurs/cibles/clés) en YAML déclaratif — l'inverse du mode
+    headless. **Sans secret** (clés sans `value`, jetons/SMTP non exportables). LAN-only (garde)."""
+    if (r := _guard(request)):
+        return r
+    return PlainTextResponse(
+        reconcile.export_yaml(), media_type="application/x-yaml",
+        headers={"Content-Disposition": 'attachment; filename="gateway.yaml"'})
 
 
 @app.post("/admin/lang")

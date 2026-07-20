@@ -30,6 +30,8 @@ nav:
   logs: Žurnāli
   manual: Rokasgrāmata
   logout: Iziet
+  export: "Eksportēt"
+  export_hint: "Eksportēt konfigurāciju (YAML)"
   language: Valoda
 manual:
   title: Lietotāja rokasgrāmata

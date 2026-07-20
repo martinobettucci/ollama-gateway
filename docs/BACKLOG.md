@@ -281,9 +281,16 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   + idempotence, échec rapporté non marqué, clé importée non livrée, e-mail exige SMTP) ; E2E
   `e2e/tests/delivery.spec.ts` (même secret livré par e-mail ET webhook, env valorisé, horodatage) ;
   **vision faite** (capture 29-delivery).*
-- [ ] **Sous-phase 3 — Export de la configuration en YAML.** Depuis l'UI (et CLI) : dump des
-  serveurs/cibles/clés courants au format `gateway.yaml` (sans secret : clés sans valeur, SMTP en
-  `${NOM}`). — *tests à venir (unit + E2E).*
+- [x] **Sous-phase 3 — Export de la configuration en YAML.** `reconcile.export_config`/`export_yaml`
+  sérialisent l'état courant (serveurs/cibles/clés) en YAML déclaratif **sans secret** (clés sans
+  `value` ; jetons de serveur et SMTP/livraison non exportables — ré-introduits à la main) ; noms de
+  clés = `external_ref` sinon slug du label. Bouton **« Exporter »** (nav, icône `download`, clé i18n
+  `nav.export`/`export_hint` ajoutée aux **24 locales**) → `GET /admin/config.yaml` (garde de session,
+  téléchargement `gateway.yaml`) ; commande `python -m app.reconcile export`. — *tests :
+  `tests/test_reconcile.py` (forme sans secret, ré-importable sans doublon, slug des clés UI) ;
+  `tests/test_i18n.py` (clés `nav.export*` complètes sur les 24 locales) ; E2E `e2e/tests/export.spec.ts`
+  (bouton → téléchargement `gateway.yaml`, structure présente, aucun secret / `value:`) ; **vision
+  faite** (captures 30-export, 31-export-yaml).*
 
 ## Idées ultérieures (non planifiées)
 

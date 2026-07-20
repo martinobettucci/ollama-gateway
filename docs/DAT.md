@@ -76,7 +76,10 @@ car Ollama est en loopback natif (hors Docker).
   `api_keys.external_ref` (le `name` du YAML). **Élagage** : clé gérée retirée → **désactivée**
   (défaut) ou **supprimée** si `prune: true` ; les clés UI (`external_ref` NULL) sont intouchées.
   En mode déclaratif, `servers.ensure_default`/`targets.ensure_default` **n'auto-créent pas** de
-  défaut (le reconciler s'en charge depuis le YAML). CLI : `apply` / `validate`.
+  défaut (le reconciler s'en charge depuis le YAML). **Export** (`export_config`/`export_yaml`) :
+  l'inverse d'`apply` — sérialise l'état courant (serveurs/cibles/clés) en YAML **sans secret**
+  (clés sans `value`, jetons/SMTP non exportables), servi par `GET /admin/config.yaml` (LAN-only) et
+  en CLI. CLI : `apply` / `validate` / `export`.
 - `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
   (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
   `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).

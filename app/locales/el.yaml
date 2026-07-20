@@ -30,6 +30,8 @@ nav:
   logs: Αρχεία καταγραφής
   manual: Εγχειρίδιο
   logout: Αποσύνδεση
+  export: "Εξαγωγή"
+  export_hint: "Εξαγωγή διαμόρφωσης (YAML)"
   language: Γλώσσα
 manual:
   title: Εγχειρίδιο χρήστη

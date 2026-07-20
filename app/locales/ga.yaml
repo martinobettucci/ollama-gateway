@@ -30,6 +30,8 @@ nav:
   logs: Logaí
   manual: Lámhleabhar
   logout: Logáil amach
+  export: "Easpórtáil"
+  export_hint: "Easpórtáil an chumraíocht (YAML)"
   language: Teanga
 manual:
   title: Lámhleabhar úsáideora
