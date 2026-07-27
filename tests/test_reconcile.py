@@ -326,6 +326,41 @@ keys:
         reconcile.apply(path)
 
 
+def test_max_context_from_yaml_accepts_int_and_label(tmp_path):
+    """Le plafond de contexte se déclare en entier ou en libellé (« 32k ») ; absent → défaut."""
+    from app import context
+    reconcile.apply(_write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+keys:
+  - name: k-int
+    max_context_tokens: 32768
+  - name: k-label
+    max_context_tokens: 32k
+  - name: k-default
+"""))
+    refs = keys.managed_refs()
+    assert keys.get_key(refs["k-int"]).max_context_tokens == 32768
+    assert keys.get_key(refs["k-label"]).max_context_tokens == 32768
+    assert keys.get_key(refs["k-default"]).max_context_tokens == context.CONTEXT_DEFAULT
+
+
+def test_export_includes_max_context(tmp_path):
+    reconcile.apply(_write(tmp_path, """
+servers:
+  - name: local
+    base_url: http://127.0.0.1:11434
+    default: true
+keys:
+  - name: k1
+    max_context_tokens: 16k
+"""))
+    cfg = reconcile.export_config()
+    assert cfg["keys"][0]["max_context_tokens"] == 16384
+
+
 # --- Export (phase 3) -------------------------------------------------------------------------
 
 def test_export_config_shape_without_secrets(tmp_path, monkeypatch):

@@ -16,7 +16,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
 from starlette.background import BackgroundTask
 
-from . import apis, auth, bans, config, db, keys, quotas, reqlog, servers, usage
+from . import (apis, auth, bans, config, context, db, keys, quotas, reqlog,
+               servers, usage)
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
 # cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
@@ -287,6 +288,25 @@ async def proxy(request: Request, full_path: str):
         _content_log(403, req_model)
         return JSONResponse(
             {"error": f"API non autorisée pour cette clé: {cap or path}"}, status_code=403)
+
+    # --- Limite de CONTEXTE de la clé (garde-fou d'entrée) ---
+    # On compte les tokens du corps (tiktoken + marge de 15 %, cf. app/context.py) AVANT de relayer :
+    # une requête démesurée est refusée en quelques millisecondes, au lieu d'asphyxier le serveur
+    # d'exécution (prefill interminable → délai d'attente amont, ou échec d'allocation mémoire).
+    over, tok_est, tok_billed = context.exceeds(body, rec.max_context_tokens)
+    if over:
+        _log(rec.id, ip, method, path, req_model, 413, t0, bytes_in=len(body), server_id=srv.id)
+        _content_log(413, req_model)
+        return JSONResponse({
+            "error": "contexte de la requête trop grand pour cette clé",
+            "tokens_estimated": tok_est, "tokens_with_margin": tok_billed,
+            "max_context_tokens": rec.max_context_tokens,
+        }, status_code=413)
+
+    # Contrainte à l'amont : on force `options.num_ctx` (Ollama natif) au plafond de la clé pour que
+    # le serveur n'alloue pas un contexte plus grand que nécessaire (cache KV, mémoire GPU). Les
+    # APIs OpenAI/Anthropic n'ont pas d'équivalent standard par requête → refus d'entrée seul.
+    body = context.inject_num_ctx(body, path, rec.max_context_tokens)
 
     keys.touch_last_used(rec.id)
 

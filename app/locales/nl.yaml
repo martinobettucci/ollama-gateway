@@ -124,6 +124,8 @@ dash:
     monthly_cap: Tokenlimiet / maand
     empty_unlimited: Leeg = onbeperkt.
     rpm: Snelheidslimiet (aanvr./min)
+    max_ctx: "Max. context"
+    max_ctx_hint: "Verzoeken boven deze limiet worden geweigerd (413) en num_ctx wordt afgedwongen."
     expiry_legend: Vervaldatum / levensduurlimieten
     expiry_hint: (kostengelimiteerde proef — los van de snelheidslimiet)
     total_tokens: Totale tokenlimiet

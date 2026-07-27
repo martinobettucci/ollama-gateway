@@ -124,6 +124,8 @@ dash:
     monthly_cap: Tokengräns / månad
     empty_unlimited: Tomt = obegränsat.
     rpm: Hastighetsgräns (begär./min)
+    max_ctx: "Max kontext"
+    max_ctx_hint: "Förfrågningar över gränsen avvisas (413) och num_ctx tvingas på servern."
     expiry_legend: Utgång / livstidsgränser
     expiry_hint: (kostnadsbegränsad testning — skild från hastighetsgränsen)
     total_tokens: Total tokengräns

@@ -3,6 +3,32 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-27 — Limite de contexte par clé (garde-fou anti-saturation)
+
+- **Constat terrain d'abord.** L'analyse des 5xx de la prod a montré deux familles : des **502
+  après exactement 3600 s** (le délai amont) avec des prompts jusqu'à **148 Ko**, et des **500
+  courts** renvoyés par l'amont (échec d'allocation). Cause commune : l'amont charge les modèles
+  avec une fenêtre de **256 k** et se fait engorger. La passerelle relayait correctement — mais
+  **subissait**. D'où un garde-fou **côté passerelle**, par clé.
+- **Deux leviers, pas un.** (1) **Refuser tôt** : compter les tokens et rendre **413 en quelques
+  ms** plutôt que de laisser filer une heure de prefill. (2) **Contraindre l'amont** : injecter
+  `options.num_ctx` pour qu'il n'alloue pas 256 k quand 112 k suffisent. Le levier (2) est le plus
+  efficace sur la mémoire ; le (1) protège des prompts vraiment démesurés.
+- **Plafond = maximum, pas consigne.** Si le client demande `num_ctx` **plus petit**, on garde le
+  sien : on ne gonfle jamais un contexte que le client voulait court.
+- **tiktoken + marge de 15 %, assumée.** `cl100k_base` n'est pas le tokenizer de Qwen/Gemma ; le
+  compte réel peut dépasser l'estimation. On majore donc de 15 % avant comparaison. Alternative
+  écartée : embarquer le tokenizer exact de chaque modèle (coût et complexité sans rapport avec le
+  besoin, qui est un **garde-fou**, pas une facturation).
+- **Hermétisme préservé.** tiktoken télécharge son BPE au premier usage : inacceptable pour une
+  passerelle self-hosted. Le fichier (1,7 Mo) est donc **mis en cache dans l'image au build** ;
+  au runtime, zéro appel sortant. Et si l'encodage manquait, on **replie sur une estimation**
+  plutôt que de casser le proxy — un garde-fou ne doit jamais devenir un point de panne.
+- **Valeur obligatoire, bornée, alignée.** Pas de « vide = illimité » ici (ce serait rouvrir le
+  problème) : la valeur est toujours définie, multiple de 4 k, de 4 k à 1 M, défaut 112 k.
+- **Images non comptées.** Un base64 d'image dans le corps aurait fait exploser l'estimation ; les
+  champs binaires sont explicitement exclus du comptage de texte.
+
 ## 2026-07-27 — Réémission de clé & correctif du bouton « Copier »
 
 - **Réémettre plutôt que recréer.** Diagnostic terrain : une clé « échouait toujours » simplement

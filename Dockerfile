@@ -11,6 +11,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Cache du tokenizer (tiktoken) EMBARQUÉ DANS L'IMAGE : le fichier BPE est téléchargé UNE FOIS au
+# build, jamais au runtime. La passerelle reste ainsi hermétique (aucun appel sortant en prod) et
+# démarre sans dépendre d'Internet. Sans ce pré-chargement, le premier comptage de contexte
+# tenterait un téléchargement et retomberait sur l'estimation approximative (cf. app/context.py).
+ENV TIKTOKEN_CACHE_DIR=/opt/tiktoken
+RUN mkdir -p "$TIKTOKEN_CACHE_DIR" \
+    && python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')" \
+    && chmod -R a+rX "$TIKTOKEN_CACHE_DIR"
+
 COPY app ./app
 COPY db ./db
 COPY devfixtures ./devfixtures

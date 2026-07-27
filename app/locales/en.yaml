@@ -124,6 +124,8 @@ dash:
     monthly_cap: Token cap / month
     empty_unlimited: Empty = unlimited.
     rpm: Rate limit (req/min)
+    max_ctx: "Max context"
+    max_ctx_hint: "Requests above this cap are rejected (413) and num_ctx is enforced upstream."
     expiry_legend: Expiry / lifetime caps
     expiry_hint: (cost-capped trial — distinct from the rate limit)
     total_tokens: Total token cap

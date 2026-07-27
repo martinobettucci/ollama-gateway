@@ -15,6 +15,8 @@ _CHUNKS = ["Bonjour", ", ", "ceci ", "est ", "un ", "faux ", "modèle."]
 # Derniers en-têtes porteurs de clé vus (les tests vérifient que le proxy les strip avant l'amont).
 LAST_AUTH: str | None = "unset"
 LAST_XAPIKEY: str | None = "unset"
+# Dernier corps JSON reçu (les tests vérifient que le proxy injecte bien `options.num_ctx`).
+LAST_BODY: dict | None = None
 
 
 @app.get("/")
@@ -152,13 +154,14 @@ async def _ndjson_stream(model: str):
 
 @app.post("/api/chat")
 async def chat(request: Request):
-    global LAST_AUTH, LAST_XAPIKEY
+    global LAST_AUTH, LAST_XAPIKEY, LAST_BODY
     LAST_AUTH = request.headers.get("authorization")
     LAST_XAPIKEY = request.headers.get("x-api-key")
     # Simulation d'erreur serveur pour tester le repli : Host contenant « fail » → 500.
     if "fail" in (request.headers.get("host", "")):
         return JSONResponse({"error": "boom"}, status_code=500)
     body = await request.json()
+    LAST_BODY = body
     model = body.get("model", "demo:latest")
     if body.get("stream", True):
         return StreamingResponse(_ndjson_stream(model), media_type="application/x-ndjson")
@@ -203,3 +206,9 @@ async def webhook_sink(request: Request):
 @app.get("/webhook/last")
 async def webhook_last() -> JSONResponse:
     return JSONResponse(LAST_WEBHOOK or {})
+
+
+@app.get("/last-body")
+async def last_body() -> JSONResponse:
+    """Dernier corps JSON reçu par /api/chat — les tests E2E y vérifient l'injection de num_ctx."""
+    return JSONResponse(LAST_BODY or {})

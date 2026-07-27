@@ -205,8 +205,41 @@ Points de comportement :
 | Rate-limit | requêtes par minute glissante ; dépassé → 429 |
 | Serveur | serveur d'exécution rattaché (exactement un ; local par défaut) |
 | Modèles | liste de modèles autorisés sur ce serveur ; vide = tous autorisés |
+| Contexte max. | plafond de tokens par requête (obligatoire, multiple de 4k, 4k → 1M ; défaut 112k) |
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
+
+### Limite de contexte par clé
+
+Chaque clé porte un **plafond de contexte** : le nombre maximum de tokens qu'une requête peut
+mobiliser. La valeur est **toujours définie** (jamais vide), **multiple de 4k**, comprise entre
+**4k et 1M**, et vaut **112k** par défaut. Elle se règle à la création et à l'édition d'une clé, et
+s'affiche sur sa ligne du tableau de bord.
+
+Le plafond agit à deux endroits :
+
+1. **En entrée** — la passerelle **compte les tokens** de la requête et la **refuse (413)** si le
+   total dépasse le plafond, **avant** de solliciter le serveur d'exécution. Une requête démesurée
+   échoue donc en quelques millisecondes, au lieu d'accaparer le serveur pendant de longues minutes
+   (voire de le faire échouer faute de mémoire). La réponse indique l'estimation, la valeur majorée
+   et le plafond, pour que le client sache de combien il dépasse.
+2. **À l'amont** — le plafond est **transmis au serveur d'exécution** (paramètre de fenêtre de
+   contexte) afin qu'il n'alloue pas plus de mémoire que nécessaire. Si le client demande déjà une
+   fenêtre **plus petite**, sa valeur est respectée : le plafond est un **maximum**, pas une
+   consigne. Les APIs de type OpenAI et Anthropic n'ayant pas d'équivalent standard par requête, la
+   limite y est appliquée par le refus d'entrée uniquement.
+
+```mermaid
+flowchart LR
+    C[Client] -->|requête| G{Comptage des tokens<br/>+ marge de 15 %}
+    G -->|au-dessus du plafond| R[413 refusée<br/>l'amont n'est jamais appelé]
+    G -->|dans le plafond| I[Fenêtre de contexte imposée] --> S[Serveur d'exécution]
+```
+
+> **Pourquoi une marge de 15 % ?** Le comptage utilise un tokenizer de référence, qui n'est pas
+> exactement celui de chaque modèle servi. Le nombre réel peut donc différer un peu ; la marge
+> garantit qu'un écart de tokenisation ne laisse pas passer une requête qui déborderait vraiment.
+> Les images jointes ne sont pas comptées comme du texte.
 
 Le bouton **Réémettre** d'une clé en **fait tourner le secret** : un nouveau secret est généré pour
 le **même compte** (l'ancien cesse aussitôt de fonctionner), tout le reste étant conservé — label,

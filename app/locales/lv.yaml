@@ -124,6 +124,8 @@ dash:
     monthly_cap: Marķieru ierobežojums / mēnesī
     empty_unlimited: Tukšs = neierobežots.
     rpm: Ātruma ierobežojums (piepr./min)
+    max_ctx: "Maks. konteksts"
+    max_ctx_hint: "Pieprasījumi virs ierobežojuma tiek noraidīti (413), un num_ctx tiek uzspiests."
     expiry_legend: Derīguma termiņš / dzīves cikla ierobežojumi
     expiry_hint: (izmēģinājums ar ierobežotām izmaksām — atsevišķs no ātruma ierobežojuma)
     total_tokens: Kopējais marķieru ierobežojums

@@ -124,6 +124,8 @@ dash:
     monthly_cap: Ograničenje tokena / mjesec
     empty_unlimited: Prazno = neograničeno.
     rpm: Ograničenje brzine (zaht./min)
+    max_ctx: "Maks. kontekst"
+    max_ctx_hint: "Zahtjevi iznad ograničenja se odbijaju (413), a num_ctx se nameće poslužitelju."
     expiry_legend: Istek / ograničenja životnog vijeka
     expiry_hint: (proba s ograničenim troškom — odvojena od ograničenja brzine)
     total_tokens: Ukupno ograničenje tokena

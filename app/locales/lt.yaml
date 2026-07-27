@@ -124,6 +124,8 @@ dash:
     monthly_cap: Žetonų riba / mėn.
     empty_unlimited: Tuščia = neribota.
     rpm: Spartos riba (užkl./min)
+    max_ctx: "Maks. kontekstas"
+    max_ctx_hint: "Užklausos virš ribos atmetamos (413), o num_ctx priverstinai taikomas serveryje."
     expiry_legend: Galiojimo pabaiga / gyvavimo ribos
     expiry_hint: (bandymas su ribota kaina — atskiras nuo spartos ribos)
     total_tokens: Bendra žetonų riba

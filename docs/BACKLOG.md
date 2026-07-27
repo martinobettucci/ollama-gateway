@@ -309,6 +309,26 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   modale. — *tests : E2E `e2e/tests/reissue.spec.ts` (contexte non sécurisé simulé : `navigator.
   clipboard` retiré → repli réussit, libellé « Copié »).*
 
+## Phase 15 — Limite de contexte par clé (2026-07-27)
+
+- [x] **Plafond de contexte par clé, appliqué avant l'amont et imposé à l'amont.** `app/context.py`
+  (migration 0012, `max_context_tokens` NOT NULL DEFAULT 114688) : valeur **obligatoire**, multiple
+  de **4096**, bornée **4k → 1M**, défaut **112k** ; `normalize()` accepte entier ou « 112k ».
+  Comptage **multi-API** du texte du corps (messages/prompt/input/system ; images base64 exclues)
+  via **tiktoken** `cl100k_base`, **majoré de 15 %** ; le proxy renvoie **413** (avec estimation,
+  valeur majorée et plafond) **sans jamais appeler l'amont**, et injecte `options.num_ctx` sur les
+  chemins Ollama natifs (`min(client, plafond)`). Tokenizer **hors-ligne** (cache BPE embarqué dans
+  l'image au build) avec repli sur estimation. UI : sélecteur à la création + à l'édition, badge sur
+  la ligne de la clé ; i18n `dash.new.max_ctx`/`max_ctx_hint` sur les **24 locales** ; supporté en
+  configuration déclarative (`max_context_tokens: 112k`) et repris dans l'export. — *tests :
+  `tests/test_context.py` (30 : bornes/normalisation/arrondi, comptage Ollama/OpenAI/Anthropic,
+  exclusion des images base64, marge de 15 %, injection num_ctx dont plafonnement et respect d'une
+  valeur client plus petite, non-injection hors Ollama ; **intégration proxy** : 413 sans appel
+  amont, num_ctx reçu par l'amont, requête normale acceptée) ; `tests/test_reconcile.py` (YAML
+  entier/libellé/défaut + export) ; E2E `e2e/tests/max_context.spec.ts` (sélection à la création,
+  badge, 413 avec marge vérifiée, refus journalisé, num_ctx reçu par le faux amont) ; **vision
+  faite** (capture 33-max-context).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

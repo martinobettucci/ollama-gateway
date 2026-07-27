@@ -68,6 +68,9 @@ keys:
     apis: [ollama, openai]           # familles d'API autorisées (vide = toutes)
     rpm_limit: 60                     # requêtes/min
     monthly_token_cap: 100000000      # plafond mensuel de tokens
+    max_context_tokens: 112k          # plafond de CONTEXTE (entier ou « 112k ») : au-delà, la
+                                      # requête est refusée (413) et num_ctx est imposé à l'amont.
+                                      # Multiple de 4k, de 4k à 1M. Absent → défaut 112k.
 
   - name: essai-interne
     server: local

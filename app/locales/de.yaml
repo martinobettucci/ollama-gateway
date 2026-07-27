@@ -124,6 +124,8 @@ dash:
     monthly_cap: Token-Limit / Monat
     empty_unlimited: Leer = unbegrenzt.
     rpm: Rate-Limit (Anf./min)
+    max_ctx: "Max. Kontext"
+    max_ctx_hint: "Anfragen über diesem Limit werden abgelehnt (413); num_ctx wird erzwungen."
     expiry_legend: Ablauf / Lebensdauer-Limits
     expiry_hint: (kostengedeckelter Test — getrennt vom Rate-Limit)
     total_tokens: Gesamt-Token-Limit

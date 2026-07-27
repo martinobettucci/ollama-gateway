@@ -12,6 +12,10 @@ itsdangerous==2.2.0             # signature des cookies de session (SessionMiddl
 markdown==3.10.2                # rendu du manuel utilisateur (docs/manual.md) dans le panel
 cryptography==49.0.0            # Fernet : chiffrement au repos des jetons des serveurs distants
 pyyaml==6.0.3                   # catalogues i18n (app/locales/*.yaml) chargés par app/i18n.py
+tiktoken==0.13.0                # comptage de tokens (limite de contexte par clé, app/context.py)
+                                # Roue précompilée manylinux aarch64 dispo (pas de build Rust sur
+                                # l'hôte ARM). Le fichier BPE est mis en cache DANS L'IMAGE au build
+                                # (TIKTOKEN_CACHE_DIR, cf. Dockerfile) : aucun accès réseau au runtime.
 # --- tests ---
 pytest==9.1.1
 pytest-asyncio==1.4.0

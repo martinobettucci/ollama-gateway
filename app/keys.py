@@ -7,7 +7,7 @@ import ipaddress
 import sqlite3
 from dataclasses import dataclass, field
 
-from . import apis, auth, db, servers, targets
+from . import apis, auth, context, db, servers, targets
 
 
 @dataclass
@@ -39,6 +39,8 @@ class KeyRecord:
     expires_at: str | None = None
     idle_expiry_days: int | None = None
     external_ref: str | None = None  # identité stable si clé gérée par la config déclarative (YAML)
+    # Plafond de contexte (tokens) appliqué par le proxy — TOUJOURS défini (jamais NULL).
+    max_context_tokens: int = context.CONTEXT_DEFAULT
 
 
 # --- Lookup / validation (chemin proxy) -------------------------------------------------------
@@ -117,7 +119,8 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
                log_retention_days: int | None = None,
-               external_ref: str | None = None) -> tuple[KeyRecord, str]:
+               external_ref: str | None = None,
+               max_context_tokens: int | None = None) -> tuple[KeyRecord, str]:
     """Crée une clé. Renvoie (record, clé_en_clair). La clé n'est visible qu'ici (jamais restockée).
 
     `key_value` permet d'injecter une clé existante (migration) au lieu d'en générer une neuve.
@@ -134,11 +137,12 @@ def create_key(label: str, origins: list[str], monthly_token_cap: int | None,
             cur = conn.execute(
                 "INSERT INTO api_keys(label, key_prefix, key_hash, note, server_id, target_id, "
                 "fallback_server_id, total_token_cap, total_request_cap, expires_at, "
-                "idle_expiry_days, log_retention_days, external_ref) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "idle_expiry_days, log_retention_days, external_ref, max_context_tokens) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (label, auth.key_prefix(key), auth.hash_key(key), note, sid, tid,
                  fallback_server_id, total_token_cap, total_request_cap, expires_at,
-                 idle_expiry_days, log_retention_days, external_ref),
+                 idle_expiry_days, log_retention_days, external_ref,
+                 context.normalize(max_context_tokens)),
             )
             kid = cur.lastrowid
             for c in origins:
@@ -207,6 +211,8 @@ def get_key(key_id: int, conn: sqlite3.Connection | None = None) -> KeyRecord | 
                               if "idle_expiry_days" in row.keys() else None),
             external_ref=(row["external_ref"]
                           if "external_ref" in row.keys() else None),
+            max_context_tokens=context.normalize(
+                row["max_context_tokens"] if "max_context_tokens" in row.keys() else None),
         )
     finally:
         if own:
@@ -285,7 +291,8 @@ def update_key(key_id: int, label: str, origins: list[str],
                image_models: list[str] | None = None,
                total_token_cap: int | None = None, total_request_cap: int | None = None,
                expires_at: str | None = None, idle_expiry_days: int | None = None,
-               log_retention_days: int | None = None) -> None:
+               log_retention_days: int | None = None,
+               max_context_tokens: int | None = None) -> None:
     """Met à jour une clé. `server_id`/`models`/`key_apis`/`target_id` non fournis (None) → inchangés.
 
     `log_retention_days` est toujours appliqué (le formulaire l'inclut ; vide = NULL = défaut).
@@ -296,9 +303,9 @@ def update_key(key_id: int, label: str, origins: list[str],
             conn.execute(
                 "UPDATE api_keys SET label = ?, note = ?, log_retention_days = ?, "
                 "total_token_cap = ?, total_request_cap = ?, expires_at = ?, "
-                "idle_expiry_days = ? WHERE id = ?",
+                "idle_expiry_days = ?, max_context_tokens = ? WHERE id = ?",
                 (label, note, log_retention_days, total_token_cap, total_request_cap,
-                 expires_at, idle_expiry_days, key_id))
+                 expires_at, idle_expiry_days, context.normalize(max_context_tokens), key_id))
             if server_id is not None:
                 conn.execute("UPDATE api_keys SET server_id = ? WHERE id = ?",
                              (server_id, key_id))

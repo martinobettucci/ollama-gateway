@@ -124,6 +124,8 @@ dash:
     monthly_cap: Limit tokenov / mesiac
     empty_unlimited: Prázdne = neobmedzene.
     rpm: Limit rýchlosti (pož./min)
+    max_ctx: "Max. kontext"
+    max_ctx_hint: "Požiadavky nad limit sú odmietnuté (413) a num_ctx je vynútený na serveri."
     expiry_legend: Vypršanie / limity životnosti
     expiry_hint: (skúška s obmedzenými nákladmi — oddelená od limitu rýchlosti)
     total_tokens: Celkový limit tokenov

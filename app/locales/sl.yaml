@@ -124,6 +124,8 @@ dash:
     monthly_cap: Omejitev žetonov / mesec
     empty_unlimited: Prazno = neomejeno.
     rpm: Omejitev hitrosti (zaht./min)
+    max_ctx: "Najv. kontekst"
+    max_ctx_hint: "Zahteve nad omejitvijo so zavrnjene (413), num_ctx pa je vsiljen strežniku."
     expiry_legend: Potek / omejitve življenjske dobe
     expiry_hint: (preizkus z omejenimi stroški — ločen od omejitve hitrosti)
     total_tokens: Skupna omejitev žetonov

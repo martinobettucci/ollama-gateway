@@ -31,7 +31,7 @@ from pathlib import Path
 
 import yaml
 
-from . import apis, db, deliver, keys, servers, targets
+from . import apis, context, db, deliver, keys, servers, targets
 
 # ${NOM} → valeur d'environnement. Nom façon shell : lettre/underscore puis alphanumériques.
 _ENV_RE = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
@@ -262,6 +262,9 @@ def _validate_keys(raw: object, server_names: set[str], target_names: set[str]) 
             "expires_at": (k.get("expires_at") or None),
             "idle_expiry_days": _opt_int(k, "idle_expiry_days", where),
             "log_retention_days": _opt_int(k, "log_retention_days", where),
+            # Plafond de contexte : entier (114688) ou libellé (« 112k »), normalisé
+            # au multiple de 4k valide ; absent → défaut (jamais vide).
+            "max_context_tokens": context.normalize(k.get("max_context_tokens")),
             "deliver": _validate_deliver(k.get("deliver"), where),
         })
     return out
@@ -439,6 +442,7 @@ def _apply_keys(cfg: list[dict], server_ids: dict[str, int], target_ids: dict[st
             total_token_cap=k["total_token_cap"], total_request_cap=k["total_request_cap"],
             expires_at=k["expires_at"], idle_expiry_days=k["idle_expiry_days"],
             log_retention_days=k["log_retention_days"],
+            max_context_tokens=k["max_context_tokens"],
         )
         if ref in managed:
             keys.update_key(managed[ref], note="clé déclarative (YAML)", **common)
@@ -572,6 +576,7 @@ def export_config() -> dict:
                     e[attr] = val
             if k.expires_at:
                 e["expires_at"] = k.expires_at
+            e["max_context_tokens"] = k.max_context_tokens
             out["keys"].append(e)
     return out
 

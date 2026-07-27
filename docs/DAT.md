@@ -80,6 +80,16 @@ car Ollama est en loopback natif (hors Docker).
   l'inverse d'`apply` — sérialise l'état courant (serveurs/cibles/clés) en YAML **sans secret**
   (clés sans `value`, jetons/SMTP non exportables), servi par `GET /admin/config.yaml` (LAN-only) et
   en CLI. CLI : `apply` / `validate` / `export`.
+- `context.py` — **limite de contexte par clé**. `normalize()` impose une valeur TOUJOURS définie :
+  multiple de **4096**, bornée **4 Ki → 1 Mi**, défaut **114688 (112k)** ; accepte « 112k »/entier.
+  `count_tokens()` extrait le TEXTE du corps quelle que soit l'API (`messages[].content`, `prompt`,
+  `input`, `system`… ; images base64 exclues) et le tokenise via **tiktoken** (`cl100k_base`).
+  `exceeds()` applique une **marge de +15 %** (tiktoken ≠ tokenizer exact des modèles servis) : le
+  proxy refuse **413 avant l'amont**. `inject_num_ctx()` force `options.num_ctx` sur les chemins
+  **Ollama natifs** (`min(valeur client, plafond)` — le plafond est un maximum) ; OpenAI/Anthropic
+  n'ont pas d'équivalent par requête → refus d'entrée seul. **Hors-ligne** : le fichier BPE est mis
+  en cache **dans l'image au build** (`TIKTOKEN_CACHE_DIR`, cf. Dockerfile) ; si l'encodage est
+  indisponible, repli sur une estimation (≈ 4 o/token) — jamais d'échec du proxy.
 - `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
   (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
   `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).
@@ -98,6 +108,9 @@ car Ollama est en loopback natif (hors Docker).
 - **Configuration déclarative (migration 0010).** `api_keys.external_ref` (index unique partiel,
   NULL non contraint) — identité stable d'une clé gérée par le YAML headless (`app/reconcile.py`) ;
   NULL = clé créée par l'UI, jamais touchée par la réconciliation ni son élagage.
+- **Limite de contexte (migration 0012).** `api_keys.max_context_tokens` **NOT NULL DEFAULT
+  114688** (112k) — plafond de tokens par requête, appliqué par le proxy (413) et injecté à l'amont
+  (`options.num_ctx`). Valeur toujours définie ; la migration normalise les valeurs hors bornes.
 - **Livraison du secret (migration 0011).** `api_keys.secret_delivered_at` — horodatage de la
   livraison (webhook/e-mail) du secret d'une clé générée en mode déclaratif ; NULL = jamais livré
   (clé importée ou sans canal). Garantit l'idempotence (pas de relivraison).

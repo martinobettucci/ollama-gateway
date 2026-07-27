@@ -6,6 +6,27 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Limite de contexte par clé (garde-fou anti-saturation de l'amont).** Chaque clé porte
+  désormais un **plafond de contexte** — valeur **obligatoire** (jamais vide), **multiple de 4k**,
+  de **4k à 1M**, **défaut 112k** — réglable dans le panel (création et édition) et affiché sur la
+  ligne de la clé. Deux effets complémentaires :
+  - **Refus en entrée** : le proxy **compte les tokens** du corps de la requête (tokenizer
+    `tiktoken`) et **refuse (413) avant d'appeler l'amont** si le total dépasse le plafond. La
+    réponse détaille l'estimation, la valeur majorée et le plafond. On échoue en quelques
+    millisecondes au lieu de laisser une requête démesurée saturer le serveur d'exécution
+    (prefill interminable → délai d'attente, ou échec d'allocation mémoire).
+  - **Contrainte à l'amont** : le plafond est **injecté** dans la requête (`options.num_ctx`,
+    Ollama natif) pour que le serveur n'alloue pas un contexte plus grand que nécessaire. Si le
+    client demande déjà **moins**, sa valeur est conservée (le plafond est un maximum, pas une
+    consigne). Les APIs OpenAI/Anthropic n'ayant pas d'équivalent standard par requête, la limite
+    y est appliquée par le refus d'entrée seul.
+  Le comptage est **majoré de 15 %** avant comparaison : `tiktoken` n'est pas le tokenizer exact
+  des modèles servis, cette marge évite qu'un écart de tokenisation laisse passer une requête qui
+  déborderait réellement. Les images (base64) ne sont pas comptées comme du texte. Le tokenizer
+  fonctionne **hors-ligne** (fichier BPE embarqué dans l'image au build, aucun appel réseau au
+  runtime) et, s'il était indisponible, replie sur une estimation plutôt que d'échouer. Réglable
+  aussi en configuration déclarative (`max_context_tokens: 112k`), et repris dans l'export.
+
 - **Réémission d'une clé (« Réémettre »).** Chaque clé du tableau de bord gagne un bouton
   **Réémettre** qui **génère un nouveau secret pour le même compte** : l'ancien secret est
   **invalidé immédiatement**, mais tout le reste est conservé — même clé/identité, label, origines,

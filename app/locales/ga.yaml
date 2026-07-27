@@ -124,6 +124,8 @@ dash:
     monthly_cap: Uasteorainn comharthaí / mí
     empty_unlimited: Folamh = gan teorainn.
     rpm: Teorainn ráta (iarr./nóim)
+    max_ctx: "Uas-chomhthéacs"
+    max_ctx_hint: "Diúltaítear iarratais os cionn an uasteorainn (413) agus cuirtear num_ctx i bhfeidhm."
     expiry_legend: Éag / teorainneacha saolré
     expiry_hint: (triail faoi theorainn costais — ar leithligh ón teorainn ráta)
     total_tokens: Uasteorainn iomlán comharthaí

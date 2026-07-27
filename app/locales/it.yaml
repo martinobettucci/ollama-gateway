@@ -124,6 +124,8 @@ dash:
     monthly_cap: Limite token / mese
     empty_unlimited: Vuoto = illimitato.
     rpm: Limite di frequenza (ric./min)
+    max_ctx: "Contesto max"
+    max_ctx_hint: "Le richieste oltre il limite sono rifiutate (413) e num_ctx viene imposto a monte."
     expiry_legend: Scadenza / limiti di vita
     expiry_hint: (prova a costo limitato — distinta dal limite di frequenza)
     total_tokens: Limite totale di token

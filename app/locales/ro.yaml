@@ -124,6 +124,8 @@ dash:
     monthly_cap: Plafon tokenuri / lună
     empty_unlimited: Gol = nelimitat.
     rpm: Limită de rată (cereri/min)
+    max_ctx: "Context max."
+    max_ctx_hint: "Cererile peste plafon sunt respinse (413), iar num_ctx este impus pe server."
     expiry_legend: Expirare / plafoane de viață
     expiry_hint: (probă cu cost plafonat — distinctă de limita de rată)
     total_tokens: Plafon total de tokenuri

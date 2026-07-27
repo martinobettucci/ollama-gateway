@@ -124,6 +124,8 @@ dash:
     monthly_cap: Token-korlát / hó
     empty_unlimited: Üres = korlátlan.
     rpm: Sebességkorlát (kérés/perc)
+    max_ctx: "Max. kontextus"
+    max_ctx_hint: "A korlát feletti kéréseket elutasítjuk (413), és a num_ctx kikényszerítésre kerül."
     expiry_legend: Lejárat / élettartam-korlátok
     expiry_hint: (költségkorlátos próba — a sebességkorláttól elkülönülő)
     total_tokens: Teljes token-korlát

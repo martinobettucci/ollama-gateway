@@ -124,6 +124,8 @@ dash:
     monthly_cap: Limitu ta' tokens / xahar
     empty_unlimited: Vojt = bla limitu.
     rpm: Limitu tar-rata (talbiet/min)
+    max_ctx: "Kuntest massimu"
+    max_ctx_hint: "It-talbiet 'il fuq mil-limitu jiġu rrifjutati (413) u num_ctx jiġi infurzat."
     expiry_legend: Skadenza / limiti taċ-ċiklu tal-ħajja
     expiry_hint: (prova b'kost limitat — separata mil-limitu tar-rata)
     total_tokens: Limitu totali ta' tokens

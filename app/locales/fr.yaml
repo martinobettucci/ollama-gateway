@@ -126,6 +126,8 @@ dash:
     monthly_cap: Plafond tokens / mois
     empty_unlimited: Vide = illimité.
     rpm: Rate-limit (req/min)
+    max_ctx: "Contexte max."
+    max_ctx_hint: "Les requêtes au-delà du plafond sont refusées (413) et num_ctx est imposé à l'amont."
     expiry_legend: Expiration / plafonds de vie
     expiry_hint: (essai à coût plafonné — distinct du rate-limit)
     total_tokens: Plafond total de tokens

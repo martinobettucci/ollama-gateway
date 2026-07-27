@@ -124,6 +124,8 @@ dash:
     monthly_cap: Token-katto / kk
     empty_unlimited: Tyhjä = rajoittamaton.
     rpm: Nopeusraja (pyyntöä/min)
+    max_ctx: "Enimmäiskonteksti"
+    max_ctx_hint: "Rajan ylittävät pyynnöt hylätään (413) ja num_ctx pakotetaan palvelimelle."
     expiry_legend: Vanheneminen / elinkaaren rajat
     expiry_hint: (kustannuskatollinen kokeilu — erillään nopeusrajasta)
     total_tokens: Tokenien kokonaiskatto

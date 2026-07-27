@@ -17,8 +17,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import (apis, auth, bans, charts, config, db, i18n, keys, reconcile, reqlog,
-               servers, targets, usage, whois)
+from . import (apis, auth, bans, charts, config, context, db, i18n, keys, reconcile,
+               reqlog, servers, targets, usage, whois)
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 MANUAL_PATH = Path(__file__).parent.parent / "docs" / "manual.md"
@@ -317,6 +317,9 @@ async def dashboard(request: Request):
         "targets": targets.list_targets(),
         "created": request.session.pop("created_key", None),
         "public_base_url": config.PUBLIC_BASE_URL,
+        "ctx_choices": context.choices(),
+        "ctx_default": context.CONTEXT_DEFAULT,
+        "ctx_label": context.label,
     })
 
 
@@ -340,7 +343,8 @@ async def create_key(request: Request):
         total_request_cap=_parse_int(form.get("total_request_cap", "")),
         expires_at=_parse_dt_local(form.get("expires_at", "")),
         idle_expiry_days=_parse_int(form.get("idle_expiry_days", "")),
-        log_retention_days=_parse_retention(form.get("log_retention_days", "")))
+        log_retention_days=_parse_retention(form.get("log_retention_days", "")),
+        max_context_tokens=context.normalize(form.get("max_context_tokens", "")))
     # Le secret n'est montré qu'ici, une seule fois (via un flash de session). L'URL de la cible
     # rattachée sert à générer les variables d'environnement ; si la cible est restée sur le
     # placeholder, on préfère l'URL publique configurée (robuste quel que soit l'ordre de démarrage).
@@ -385,6 +389,9 @@ async def key_detail(request: Request, key_id: int):
         "retention_default": config.REQUEST_LOG_RETENTION_DAYS,
         "svg": svg, "per_model": per_model,
         "horizon": horizon, "horizons": usage.HORIZONS,
+        "ctx_choices": context.choices(),
+        "ctx_default": context.CONTEXT_DEFAULT,
+        "ctx_label": context.label,
     })
 
 
@@ -409,7 +416,8 @@ async def key_update(request: Request, key_id: int):
         total_request_cap=_parse_int(form.get("total_request_cap", "")),
         expires_at=_parse_dt_local(form.get("expires_at", "")),
         idle_expiry_days=_parse_int(form.get("idle_expiry_days", "")),
-        log_retention_days=_parse_retention(form.get("log_retention_days", "")))
+        log_retention_days=_parse_retention(form.get("log_retention_days", "")),
+        max_context_tokens=context.normalize(form.get("max_context_tokens", "")))
     return RedirectResponse(f"/admin/keys/{key_id}", status_code=303)
 
 

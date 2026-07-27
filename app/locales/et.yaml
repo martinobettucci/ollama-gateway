@@ -124,6 +124,8 @@ dash:
     monthly_cap: Tokenite piirmäär / kuus
     empty_unlimited: Tühi = piiramatu.
     rpm: Kiiruspiirang (päringut/min)
+    max_ctx: "Maks. kontekst"
+    max_ctx_hint: "Ülempiiri ületavad päringud lükatakse tagasi (413) ja num_ctx sunnitakse peale."
     expiry_legend: Aegumine / eluea piirangud
     expiry_hint: (kulupiiranguga proov — eraldi kiiruspiirangust)
     total_tokens: Tokenite kogupiirmäär

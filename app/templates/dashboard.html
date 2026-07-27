@@ -158,6 +158,8 @@
           {% if k.monthly_token_cap %}{{ k.monthly_token_cap }} {{ t('dash.keys.tok_month') }}{% endif %}
           {% if k.rpm_limit %}{% if k.monthly_token_cap %} · {% endif %}{{ k.rpm_limit }} {{ t('dash.keys.req_min') }}{% endif %}
           {% if not k.monthly_token_cap and not k.rpm_limit %}—{% endif %}
+          <span class="ctx-badge" data-testid="ctx-badge"
+                title="{{ t('dash.new.max_ctx') }}">{{ ctx_label(k.max_context_tokens) }}</span>
         </td>
         <td class="muted">{{ k.last_used_at or t('common.never') }}</td>
         <td style="white-space:nowrap">
@@ -257,6 +259,16 @@
       <div><label for="rpm_limit">{{ t('dash.new.rpm') }}</label>
         <input id="rpm_limit" name="rpm_limit" type="number" min="1">
         <p class="hint">{{ t('dash.new.empty_unlimited') }}</p></div>
+    </div>
+    <div class="row">
+      <div><label for="max_context_tokens">{{ t('dash.new.max_ctx') }}</label>
+        <select id="max_context_tokens" name="max_context_tokens" data-testid="max-ctx">
+          {% for v in ctx_choices %}
+          <option value="{{ v }}" {% if v == ctx_default %}selected{% endif %}>{{ ctx_label(v) }}</option>
+          {% endfor %}
+        </select>
+        <p class="hint">{{ t('dash.new.max_ctx_hint') }}</p></div>
+      <div></div>
     </div>
     <fieldset class="expiry" data-testid="expiry-fields">
       <legend>{{ t('dash.new.expiry_legend') }} <span class="hint">{{ t('dash.new.expiry_hint') }}</span></legend>
