@@ -107,6 +107,8 @@ dash:
     activate: gníomhachtaigh
     delete_confirm: Scrios an eochair „{label}“?
     delete_short: scrios
+    reissue_short: "Atheisiúint"
+    reissue_confirm: "Atheisiúint na heochrach « {label} »? Cuirfear an sean-rún ar neamhní."
     empty: Gan eochracha go fóill — cruthaigh an chéad cheann leis an bhfoirm thíos.
     no_match: Níl aon eochair ag teacht leis na scagairí.
   new:

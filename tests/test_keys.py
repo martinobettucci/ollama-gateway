@@ -1,5 +1,39 @@
 """Tests unitaires du store de clés (CRUD, origines, migration/import de clé)."""
-from app import auth, keys
+from app import auth, db, keys, servers
+
+
+def test_reissue_key_rotates_secret_keeps_account_and_history():
+    servers.ensure_default()
+    rec, old = keys.create_key(
+        "acme", ["192.168.0.0/24"], 1000, 5, "note",
+        models=["m1"], key_apis=["ollama"])
+    kid = rec.id
+    # Un événement d'usage rattaché à la clé (doit survivre à la réémission).
+    conn = db.connect()
+    with conn:
+        conn.execute("INSERT INTO usage_events(key_id, status) VALUES (?, 200)", (kid,))
+    conn.close()
+
+    new_rec, new = keys.reissue_key(kid)
+    assert new != old and new.startswith("sk-ollama-")
+    assert new_rec.id == kid                                  # même compte (id inchangé)
+    # Ancien secret invalidé, nouveau opérationnel.
+    assert keys.find_by_key(old) is None
+    assert keys.find_by_key(new)["id"] == kid
+    # Config intégralement conservée.
+    assert new_rec.label == "acme" and new_rec.origins == ["192.168.0.0/24"]
+    assert new_rec.monthly_token_cap == 1000 and new_rec.rpm_limit == 5
+    assert new_rec.models == ["m1"] and new_rec.apis == ["ollama"]
+    assert new_rec.key_prefix == auth.key_prefix(new) and new_rec.key_prefix != rec.key_prefix
+    # Historique d'usage préservé (key_id inchangé).
+    conn = db.connect()
+    n = conn.execute("SELECT COUNT(*) n FROM usage_events WHERE key_id=?", (kid,)).fetchone()["n"]
+    conn.close()
+    assert n == 1
+
+
+def test_reissue_missing_key_returns_none():
+    assert keys.reissue_key(999999) is None
 
 
 def test_create_and_get_key():

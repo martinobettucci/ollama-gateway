@@ -107,6 +107,8 @@ dash:
     activate: aktivera
     delete_confirm: Ta bort nyckeln ”{label}”?
     delete_short: ta bort
+    reissue_short: "Återutfärda"
+    reissue_confirm: "Återutfärda nyckeln « {label} »? Den gamla hemligheten ogiltigförklaras."
     empty: Inga nycklar ännu — skapa den första med formuläret nedan.
     no_match: Ingen nyckel matchar filtren.
   new:

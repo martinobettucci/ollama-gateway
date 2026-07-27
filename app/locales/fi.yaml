@@ -107,6 +107,8 @@ dash:
     activate: ota käyttöön
     delete_confirm: Poistetaanko avain ”{label}”?
     delete_short: poista
+    reissue_short: "Anna uudelleen"
+    reissue_confirm: "Annetaanko avain « {label} » uudelleen? Vanha salaisuus mitätöityy."
     empty: Ei vielä avaimia — luo ensimmäinen alla olevalla lomakkeella.
     no_match: Yksikään avain ei vastaa suodattimia.
   new:

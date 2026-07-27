@@ -107,6 +107,8 @@ dash:
     activate: activate
     delete_confirm: Delete key “{label}”?
     delete_short: del.
+    reissue_short: "Reissue"
+    reissue_confirm: "Reissue key « {label} »? The old secret will be invalidated."
     empty: No keys yet — create the first one with the form below.
     no_match: No key matches the filters.
   new:

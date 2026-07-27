@@ -107,6 +107,8 @@ dash:
     activate: aktywuj
     delete_confirm: Usunąć klucz „{label}”?
     delete_short: usuń
+    reissue_short: "Wydaj ponownie"
+    reissue_confirm: "Wydać ponownie klucz « {label} »? Stary sekret zostanie unieważniony."
     empty: Brak kluczy — utwórz pierwszy za pomocą formularza poniżej.
     no_match: Żaden klucz nie pasuje do filtrów.
   new:

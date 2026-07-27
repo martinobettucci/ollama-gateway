@@ -6,7 +6,18 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
-_Rien à publier pour le moment…_
+- **Réémission d'une clé (« Réémettre »).** Chaque clé du tableau de bord gagne un bouton
+  **Réémettre** qui **génère un nouveau secret pour le même compte** : l'ancien secret est
+  **invalidé immédiatement**, mais tout le reste est conservé — même clé/identité, label, origines,
+  modèles, API, quotas, plafonds de vie, serveur/cible, et **tout l'historique d'usage**. Le nouveau
+  secret est présenté **une seule fois** via la même modale que la création (variables
+  d'environnement prêtes à coller). Utile quand un secret a fuité ou a été perdu, sans avoir à
+  recréer et reconfigurer la clé de zéro.
+- **Correction — bouton « Copier les variables » inopérant sur l'admin en HTTP (LAN).** En contexte
+  **non sécurisé** (l'admin est servi en clair sur le LAN), `navigator.clipboard` est indisponible ;
+  le repli `execCommand` échouait car sa zone de texte temporaire était ajoutée **hors** de la
+  fenêtre modale, rendue **inerte** par `showModal()`. La zone est désormais insérée **dans** la
+  modale (calque supérieur) → la copie fonctionne aussi en HTTP.
 
 ## [Publié]
 

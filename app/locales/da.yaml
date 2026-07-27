@@ -107,6 +107,8 @@ dash:
     activate: aktivér
     delete_confirm: Slet nøglen »{label}«?
     delete_short: slet
+    reissue_short: "Genudsted"
+    reissue_confirm: "Genudsted nøglen « {label} »? Den gamle hemmelighed annulleres."
     empty: Ingen nøgler endnu — opret den første med formularen nedenfor.
     no_match: Ingen nøgle matcher filtrene.
   new:

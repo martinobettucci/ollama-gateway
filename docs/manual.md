@@ -208,6 +208,12 @@ Points de comportement :
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
 
+Le bouton **Réémettre** d'une clé en **fait tourner le secret** : un nouveau secret est généré pour
+le **même compte** (l'ancien cesse aussitôt de fonctionner), tout le reste étant conservé — label,
+origines, modèles, API, quotas, plafonds, serveur/cible et **historique d'usage**. Le nouveau secret
+est affiché **une seule fois**, dans la même fenêtre que lors de la création (variables
+d'environnement prêtes à copier). À utiliser en cas de fuite ou de perte du secret.
+
 ## Mode déclaratif (headless / sans WebUI)
 
 En plus du panel, la passerelle peut se piloter par un **fichier de configuration YAML** versionné

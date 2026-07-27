@@ -107,6 +107,8 @@ dash:
     activate: aktiviraj
     delete_confirm: Izbrisati ključ „{label}“?
     delete_short: izbriši
+    reissue_short: "Ponovno izdaj"
+    reissue_confirm: "Ponovno izdati ključ « {label} »? Stara tajna bit će poništena."
     empty: Još nema ključeva — stvorite prvi pomoću obrasca u nastavku.
     no_match: Nijedan ključ ne odgovara filtrima.
   new:

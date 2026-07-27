@@ -3,6 +3,23 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-27 — Réémission de clé & correctif du bouton « Copier »
+
+- **Réémettre plutôt que recréer.** Diagnostic terrain : une clé « échouait toujours » simplement
+  parce que sa valeur côté client était **tronquée** (56 hex au lieu de 64) → hash introuvable →
+  401. Le secret n'étant pas récupérable (haché au repos), il faut **faire tourner** la clé. D'où
+  `keys.reissue_key` : nouveau secret sur le **même compte** (id/config/historique conservés,
+  ancien secret invalidé), présenté via la modale de création réutilisée. Évite de recréer et de
+  tout reconfigurer, et préserve l'usage agrégé.
+- **Bug « Copier » = contexte non sécurisé + modale inerte.** `navigator.clipboard` n'existe qu'en
+  contexte sécurisé (HTTPS ou localhost) ; l'admin est servi en **HTTP sur le LAN** → API absente.
+  Le repli `execCommand` existait mais ajoutait sa textarea à `document.body`, **hors** du `<dialog>`
+  ouvert en `showModal()` — or tout ce qui est hors du dialog est **inert**, donc `select()`/
+  `execCommand` échouaient en silence. Les tests E2E ne le voyaient pas (ils tournent sur
+  `127.0.0.1` = contexte sécurisé, chemin `navigator.clipboard`). Correctif : insérer la textarea
+  **dans** la modale ; test E2E dédié qui **retire `navigator.clipboard`** pour forcer et valider le
+  repli.
+
 ## 2026-07-20 — Configuration déclarative, sous-phase 3 : export
 
 - **Fermer la boucle : configurer à la souris, exporter, versionner.** L'export (`GET

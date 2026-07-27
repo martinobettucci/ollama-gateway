@@ -107,6 +107,8 @@ dash:
     activate: aktivieren
     delete_confirm: Schlüssel „{label}“ löschen?
     delete_short: lösch.
+    reissue_short: "Neu ausstellen"
+    reissue_confirm: "Schlüssel « {label} » neu ausstellen? Das alte Geheimnis wird ungültig."
     empty: Noch keine Schlüssel — erstellen Sie den ersten mit dem Formular unten.
     no_match: Kein Schlüssel entspricht den Filtern.
   new:

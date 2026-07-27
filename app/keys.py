@@ -245,6 +245,27 @@ def set_enabled(key_id: int, enabled: bool) -> None:
         conn.close()
 
 
+def reissue_key(key_id: int) -> tuple[KeyRecord, str] | None:
+    """Réémet le secret d'une clé EXISTANTE (« rotation ») : génère une nouvelle valeur, remplace
+    `key_hash` + `key_prefix`, et **invalide immédiatement l'ancien secret**. Tout le reste est
+    conservé — même id/compte, label, note, état, origines/modèles/API/quotas, plafonds de vie,
+    serveur/cible/repli, `external_ref`, `created_at` et **tout l'historique d'usage** (`key_id`
+    inchangé). Renvoie (record, nouveau_secret) — affiché **une seule fois** — ou None si la clé
+    n'existe pas."""
+    new_key = auth.generate_key()
+    conn = db.connect()
+    try:
+        if conn.execute("SELECT 1 FROM api_keys WHERE id = ?", (key_id,)).fetchone() is None:
+            return None
+        with conn:
+            conn.execute(
+                "UPDATE api_keys SET key_hash = ?, key_prefix = ? WHERE id = ?",
+                (auth.hash_key(new_key), auth.key_prefix(new_key), key_id))
+    finally:
+        conn.close()
+    return get_key(key_id), new_key
+
+
 def mark_delivered(key_id: int) -> None:
     """Horodate la livraison du secret d'une clé générée (mode déclaratif, cf. app/deliver.py)."""
     conn = db.connect()

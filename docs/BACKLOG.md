@@ -292,6 +292,23 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   (bouton → téléchargement `gateway.yaml`, structure présente, aucun secret / `value:`) ; **vision
   faite** (captures 30-export, 31-export-yaml).*
 
+## Phase 14 — Réémission de clé & correctif copie (2026-07-27)
+
+- [x] **Réémission d'une clé (rotation du secret).** `keys.reissue_key(key_id)` régénère
+  `key_hash`/`key_prefix` (nouveau secret, ancien invalidé) en conservant id/label/config/plafonds/
+  serveur/cible/`external_ref`/`created_at` et **l'historique d'usage** ; route
+  `POST /admin/keys/{id}/reissue` réutilise la modale de création (secret montré une fois) ; bouton
+  **Réémettre** (icône `refresh-cw`, confirmation) sur chaque ligne du tableau de bord ; i18n
+  `dash.keys.reissue_short`/`reissue_confirm` sur les **24 locales**. — *tests : `tests/test_keys.py`
+  (rotation : nouveau≠ancien, ancien invalidé, id/config/historique conservés ; clé absente → None) ;
+  E2E `e2e/tests/reissue.spec.ts` (ancien secret 401, nouveau 200 via proxy, clé toujours active) ;
+  **vision faite** (capture 32-reissue).*
+- [x] **Correctif : bouton « Copier » inopérant sur l'admin en HTTP (LAN).** En contexte non
+  sécurisé `navigator.clipboard` est absent ; le repli `execCommand` échouait car sa textarea était
+  ajoutée **hors** du `<dialog>` (rendu inerte par `showModal()`). Insertion désormais **dans** la
+  modale. — *tests : E2E `e2e/tests/reissue.spec.ts` (contexte non sécurisé simulé : `navigator.
+  clipboard` retiré → repli réussit, libellé « Copié »).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

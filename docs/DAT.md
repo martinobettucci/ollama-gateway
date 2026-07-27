@@ -92,6 +92,9 @@ car Ollama est en loopback natif (hors Docker).
 
 - `api_keys(id, label, key_prefix, key_hash UNIQUE, enabled, note, created_at, last_used_at)` —
   la clé n'est jamais stockée en clair (uniquement son sha-256) ; `key_prefix` = début lisible.
+  **Réémission** (`keys.reissue_key` ← `POST /admin/keys/{id}/reissue`) : régénère `key_hash` +
+  `key_prefix` (nouveau secret, ancien invalidé) **en conservant l'id et tout le reste** (config +
+  historique `usage_events.key_id`) ; le secret est présenté une fois via la modale de création.
 - **Configuration déclarative (migration 0010).** `api_keys.external_ref` (index unique partiel,
   NULL non contraint) — identité stable d'une clé gérée par le YAML headless (`app/reconcile.py`) ;
   NULL = clé créée par l'UI, jamais touchée par la réconciliation ni son élagage.

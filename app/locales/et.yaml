@@ -107,6 +107,8 @@ dash:
     activate: luba
     delete_confirm: Kas kustutada võti „{label}“?
     delete_short: kustuta
+    reissue_short: "Väljasta uuesti"
+    reissue_confirm: "Väljastada võti « {label} » uuesti? Vana saladus muutub kehtetuks."
     empty: Võtmeid veel pole — looge esimene alloleva vormiga.
     no_match: Ükski võti ei vasta filtritele.
   new:

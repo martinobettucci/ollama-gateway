@@ -107,6 +107,8 @@ dash:
     activate: activar
     delete_confirm: ¿Eliminar la clave «{label}»?
     delete_short: elim.
+    reissue_short: "Reemitir"
+    reissue_confirm: "¿Reemitir la clave « {label} »? El secreto anterior quedará invalidado."
     empty: Aún no hay claves — cree la primera con el formulario de abajo.
     no_match: Ninguna clave coincide con los filtros.
   new:

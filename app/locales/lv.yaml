@@ -107,6 +107,8 @@ dash:
     activate: aktivizēt
     delete_confirm: Vai dzēst atslēgu „{label}“?
     delete_short: dzēst
+    reissue_short: "Atkārtoti izsniegt"
+    reissue_confirm: "Atkārtoti izsniegt atslēgu « {label} »? Vecais noslēpums tiks anulēts."
     empty: Vēl nav atslēgu — izveidojiet pirmo ar zemāk esošo veidlapu.
     no_match: Neviena atslēga neatbilst filtriem.
   new:

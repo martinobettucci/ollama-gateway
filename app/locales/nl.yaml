@@ -107,6 +107,8 @@ dash:
     activate: activeren
     delete_confirm: Sleutel “{label}” verwijderen?
     delete_short: verw.
+    reissue_short: "Opnieuw uitgeven"
+    reissue_confirm: "Sleutel « {label} » opnieuw uitgeven? Het oude geheim wordt ongeldig."
     empty: Nog geen sleutels — maak de eerste aan met het formulier hieronder.
     no_match: Geen sleutel komt overeen met de filters.
   new:

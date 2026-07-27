@@ -67,10 +67,16 @@
   copyBtn.addEventListener('click', async () => {
     let ok = false;
     try { await navigator.clipboard.writeText(out.textContent); ok = true; } catch (e) {}
-    if (!ok) {  // admin LAN servi en http : contexte non sécurisé → repli execCommand
+    if (!ok) {  // admin LAN servi en http : contexte non sécurisé (navigator.clipboard absent) →
+      // repli execCommand. La textarea DOIT vivre DANS le <dialog> ouvert (showModal) : hors du
+      // dialog, le fond est INERT → select()/execCommand échouent en silence. On la cale hors écran.
       const ta = document.createElement('textarea');
-      ta.value = out.textContent; document.body.append(ta); ta.select();
-      ok = document.execCommand('copy'); ta.remove();
+      ta.value = out.textContent;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+      dlg.append(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
     }
     const lbl = document.getElementById('env-copy-label');
     lbl.textContent = ok ? copyBtn.dataset.copied : copyBtn.dataset.failed;
@@ -157,6 +163,10 @@
         <td style="white-space:nowrap">
           <form class="inline" method="post" action="/admin/keys/{{ k.id }}/toggle">
             <button class="btn-secondary btn-sm" type="submit">{{ icon('power', 14) }} {{ t('dash.keys.deactivate') if k.enabled else t('dash.keys.activate') }}</button>
+          </form>
+          <form class="inline" method="post" action="/admin/keys/{{ k.id }}/reissue"
+                onsubmit="return confirm('{{ t('dash.keys.reissue_confirm', label=k.label) }}');">
+            <button class="btn-secondary btn-sm" type="submit" data-testid="reissue-btn">{{ icon('refresh-cw', 14) }} {{ t('dash.keys.reissue_short') }}</button>
           </form>
           <form class="inline" method="post" action="/admin/keys/{{ k.id }}/delete"
                 onsubmit="return confirm('{{ t('dash.keys.delete_confirm', label=k.label) }}');">

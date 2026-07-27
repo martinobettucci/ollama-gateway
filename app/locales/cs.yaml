@@ -107,6 +107,8 @@ dash:
     activate: aktivovat
     delete_confirm: Smazat klíč „{label}“?
     delete_short: smazat
+    reissue_short: "Vydat znovu"
+    reissue_confirm: "Znovu vydat klíč « {label} »? Starý tajný klíč bude zneplatněn."
     empty: Zatím žádné klíče — vytvořte první pomocí formuláře níže.
     no_match: Žádný klíč neodpovídá filtrům.
   new:

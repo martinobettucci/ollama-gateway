@@ -107,6 +107,8 @@ dash:
     activate: aktiválás
     delete_confirm: Törli a(z) „{label}” kulcsot?
     delete_short: törlés
+    reissue_short: "Újrakiadás"
+    reissue_confirm: "Újra kiadja a(z) « {label} » kulcsot? A régi titok érvénytelenné válik."
     empty: Még nincsenek kulcsok — hozza létre az elsőt az alábbi űrlappal.
     no_match: Egyetlen kulcs sem felel meg a szűrőknek.
   new:

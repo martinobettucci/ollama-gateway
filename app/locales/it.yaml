@@ -107,6 +107,8 @@ dash:
     activate: attiva
     delete_confirm: Eliminare la chiave «{label}»?
     delete_short: elim.
+    reissue_short: "Rigenera"
+    reissue_confirm: "Rigenerare la chiave « {label} »? Il vecchio segreto sarà invalidato."
     empty: Ancora nessuna chiave — crea la prima con il modulo qui sotto.
     no_match: Nessuna chiave corrisponde ai filtri.
   new:

@@ -491,6 +491,23 @@ async def key_try_image(request: Request, key_id: int):
     return JSONResponse({"image": f"data:image/png;base64,{b64}", "model": model, "api": api})
 
 
+@app.post("/admin/keys/{key_id}/reissue")
+async def key_reissue(request: Request, key_id: int):
+    """Réémet le secret d'une clé (rotation) : même clé/config/historique, nouveau secret. L'ancien
+    est invalidé aussitôt. Le nouveau secret est présenté UNE fois via la même modale que la création."""
+    if (r := _guard(request)):
+        return r
+    res = keys.reissue_key(key_id)
+    if res is None:
+        return RedirectResponse("/admin", status_code=303)
+    rec, secret = res
+    turl = rec.target_base_url
+    if not turl or turl == targets.PLACEHOLDER_URL:
+        turl = config.PUBLIC_BASE_URL or turl
+    request.session["created_key"] = {"label": rec.label, "secret": secret, "target_url": turl}
+    return RedirectResponse("/admin", status_code=303)
+
+
 @app.post("/admin/keys/{key_id}/toggle")
 async def key_toggle(request: Request, key_id: int):
     if (r := _guard(request)):

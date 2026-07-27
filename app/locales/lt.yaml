@@ -107,6 +107,8 @@ dash:
     activate: įjungti
     delete_confirm: Ištrinti raktą „{label}“?
     delete_short: trinti
+    reissue_short: "Perleisti"
+    reissue_confirm: "Perleisti raktą « {label} »? Senasis slaptažodis bus panaikintas."
     empty: Kol kas raktų nėra — sukurkite pirmą naudodami žemiau esančią formą.
     no_match: Nė vienas raktas neatitinka filtrų.
   new:

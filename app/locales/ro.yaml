@@ -107,6 +107,8 @@ dash:
     activate: activează
     delete_confirm: Ștergeți cheia „{label}”?
     delete_short: șterge
+    reissue_short: "Reemite"
+    reissue_confirm: "Reemiteți cheia « {label} »? Secretul vechi va fi invalidat."
     empty: Încă nu există chei — creați-o pe prima cu formularul de mai jos.
     no_match: Nicio cheie nu corespunde filtrelor.
   new:

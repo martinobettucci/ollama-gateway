@@ -107,6 +107,8 @@ dash:
     activate: attiva
     delete_confirm: Ħassar iċ-ċavetta „{label}“?
     delete_short: ħassar
+    reissue_short: "Erġa' oħroġ"
+    reissue_confirm: "Terġa' toħroġ iċ-ċavetta « {label} »? Is-sigriet il-qadim jiġi invalidat."
     empty: L-ebda ċavetta għadha — oħloq l-ewwel waħda bil-formola hawn taħt.
     no_match: L-ebda ċavetta ma taqbel mal-filtri.
   new:
