@@ -30,6 +30,7 @@ nav:
   logs: Registros
   manual: Manual
   logout: Cerrar sesión
+  menu: "Menú"
   export: "Exportar"
   export_hint: "Exportar la configuración (YAML)"
   language: Idioma

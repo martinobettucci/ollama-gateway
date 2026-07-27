@@ -30,6 +30,7 @@ nav:
   logs: Naplók
   manual: Kézikönyv
   logout: Kijelentkezés
+  menu: "Menü"
   export: "Exportálás"
   export_hint: "Konfiguráció exportálása (YAML)"
   language: Nyelv

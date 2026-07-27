@@ -30,6 +30,7 @@ nav:
   logs: Logid
   manual: Käsiraamat
   logout: Logi välja
+  menu: "Menüü"
   export: "Ekspordi"
   export_hint: "Ekspordi konfiguratsioon (YAML)"
   language: Keel

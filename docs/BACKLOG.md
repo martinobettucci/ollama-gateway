@@ -347,6 +347,26 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   E2E `max_context.spec.ts` (camembert + tableau rendus sur la page clé et le monitoring, libellés de
   palier, dernier usage non vide) ; **vision faite** (captures 34-ctx-stats-key, 35-ctx-stats-server).*
 
+## Phase 17 — Navigation adaptative (mobile) (2026-07-28)
+
+- [x] **Correctif : la barre de navigation était inutilisable sur mobile.** Avec 7 entrées, `.pills`
+  (flex sans `wrap` ni media query) mesurait **852 px** et forçait le document à **875 px** : à
+  360-390 px, **Logs / Manuel / Exporter / Déconnexion étaient hors écran et inatteignables**, et la
+  `.topbar` montait à **154 px**. Sous **900 px**, la barre se replie derrière un bouton
+  (icône lucide `menu`/`x`, 44×44) et les pilules deviennent une **pile verticale pleine largeur**
+  (`order:3; flex-basis:100%`) ; au-dessus, la rangée d'origine est inchangée. Cibles ≥ 44 px, icône
+  + libellé conservés, état actif préservé, **déconnexion séparée** (`.pill-exit`, danger + filet).
+  Accessibilité : `aria-expanded`/`aria-controls`, **Échap** referme et rend le focus. **Sans JS** :
+  bouton masqué, pile dépliée (marqueur `has-js` posé dans le `<head>`) → rien d'inaccessible.
+  Clé i18n `nav.menu` sur les **24 locales**. Conception passée par le skill UI/UX (règles
+  `overflow-menu`, `horizontal-scroll`, `touch-target-size`, `nav-label-icon`, `nav-state-active`,
+  `destructive-nav-separation`, `mobile-first`). — *tests : `tests/test_admin_pages.py` (bouton, nav
+  identifiée, `has-js` non codé en dur, `.pill-exit`) ; E2E `e2e/tests/mobile_nav.spec.ts` (390 px :
+  **zéro débordement** du document avant ET après ouverture, 7 entrées entièrement dans le viewport,
+  hauteur ≥ 44 px, état actif unique, Échap referme + focus rendu, navigation réelle vers Logs
+  depuis le menu ; 1280 px : rangée conservée, bouton masqué) ; **vision faite** (captures
+  36-nav-mobile-closed, 37-nav-mobile-open).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

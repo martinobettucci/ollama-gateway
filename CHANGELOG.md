@@ -6,6 +6,18 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Correction — navigation inutilisable sur mobile.** Avec sept entrées, la barre de navigation
+  mesurait ~850 px et **forçait la page entière à déborder** (875 px de large sur un écran de
+  360 px) : **quatre entrées — Logs, Manuel, Exporter et Déconnexion — étaient hors écran, donc
+  totalement inaccessibles** depuis un téléphone, et le bandeau occupait 154 px de haut. Sous
+  900 px, la barre se **replie** désormais derrière un bouton et les entrées deviennent une **pile
+  verticale pleine largeur** : plus aucun débordement horizontal, cibles tactiles d'au moins 44 px,
+  icône **et** libellé conservés, entrée courante toujours signalée, et la **déconnexion** est
+  visuellement détachée des entrées de navigation. Le bandeau retombe à 64 px. Au-dessus de 900 px,
+  la rangée de pilules d'origine est inchangée. Accessible au clavier (bouton `aria-expanded` /
+  `aria-controls`, **Échap** referme et rend le focus) ; sans JavaScript, le bouton est masqué et la
+  pile reste dépliée — rien n'est jamais hors d'atteinte.
+
 - **Statistique des tailles de contexte réellement utilisées (par clé et par serveur).** L'échelle
   des plafonds devient une **liste de paliers** (2k · 4k · 8k · 12k · 24k · 36k · 48k · 64k · 72k ·
   96k · 108k · 112k · 128k · 144k · 180k · 224k · 256k · 384k · 512k · 640k · 768k · 1M) et chaque

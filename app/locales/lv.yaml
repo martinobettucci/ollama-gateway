@@ -30,6 +30,7 @@ nav:
   logs: Žurnāli
   manual: Rokasgrāmata
   logout: Iziet
+  menu: "Izvēlne"
   export: "Eksportēt"
   export_hint: "Eksportēt konfigurāciju (YAML)"
   language: Valoda

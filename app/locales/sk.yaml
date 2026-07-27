@@ -30,6 +30,7 @@ nav:
   logs: Protokoly
   manual: Príručka
   logout: Odhlásiť sa
+  menu: "Ponuka"
   export: "Exportovať"
   export_hint: "Exportovať konfiguráciu (YAML)"
   language: Jazyk

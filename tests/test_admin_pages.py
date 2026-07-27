@@ -83,3 +83,18 @@ async def test_footer_attribution_and_p2enjoy_link(admin_client):
         assert "Made proudly with AI by" in r.text
         assert 'href="https://p2enjoy.studio"' in r.text
         assert 'rel="noopener noreferrer"' in r.text
+
+
+async def test_topbar_exposes_collapsible_nav(admin_client):
+    """La barre porte le bouton de repli (mobile), la nav identifiée qu'il pilote, et le marqueur
+    `has-js` — sans JS, le bouton reste masqué et la pile dépliée (rien d'inaccessible)."""
+    async with admin_client as c:
+        await _login(c)
+        html = (await c.get("/admin")).text
+    assert 'class="has-js"' not in html          # posé par le script, pas en dur
+    assert "classList.add('has-js')" in html     # marqueur avant rendu
+    assert 'id="nav-toggle"' in html and 'aria-controls="main-nav"' in html
+    assert 'id="main-nav"' in html
+    assert 'aria-expanded="false"' in html
+    # L'action de sortie est distinguée des entrées de navigation.
+    assert "pill-exit" in html

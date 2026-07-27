@@ -30,6 +30,7 @@ nav:
   logs: Dzienniki
   manual: Podręcznik
   logout: Wyloguj
+  menu: "Menu"
   export: "Eksportuj"
   export_hint: "Eksportuj konfigurację (YAML)"
   language: Język

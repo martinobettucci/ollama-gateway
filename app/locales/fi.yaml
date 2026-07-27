@@ -30,6 +30,7 @@ nav:
   logs: Lokit
   manual: Käyttöopas
   logout: Kirjaudu ulos
+  menu: "Valikko"
   export: "Vie"
   export_hint: "Vie asetukset (YAML)"
   language: Kieli

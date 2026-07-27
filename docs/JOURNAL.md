@@ -3,6 +3,28 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-28 — Navigation adaptative : la barre mobile était cassée, pas seulement à l'étroit
+
+- **Mesurer avant de dessiner.** Le diagnostic a chiffré le problème : nav = **852 px**, document
+  forcé à **875 px** sur un écran de 360 px, `.topbar` à **154 px**. Conclusion importante : ce
+  n'était pas un défaut cosmétique mais une **perte de fonction** — 4 des 7 entrées (dont
+  Déconnexion) étaient hors écran et **inatteignables** depuis un téléphone. Le reste de l'app était
+  bien responsive, ce qui masquait le problème.
+- **Repli, pas défilement horizontal.** Une rangée qui défile latéralement « rentre » aussi, mais
+  cache les entrées derrière un geste non découvrable et entre en conflit avec le défilement
+  vertical. On replie donc derrière un bouton (motif « overflow menu ») : les 7 entrées deviennent
+  une pile verticale pleine largeur, chacune avec **icône + libellé** (une nav en icônes seules
+  nuirait à la découvrabilité).
+- **Point de rupture déduit de la mesure, pas d'un chiffre rond.** 900 px : juste au-dessus des
+  852 px nécessaires à la rangée, pour ne jamais la casser au-delà.
+- **La déconnexion se détache.** Action de sortie ≠ entrée de navigation : filet de séparation et
+  couleur danger, pour éviter le clic accidentel dans une pile où tout se ressemble.
+- **Amélioration progressive assumée.** Le bouton n'apparaît que si JS est disponible (`has-js`
+  posé dans le `<head>` avant rendu) ; sans JS, la pile reste dépliée. Un repli piloté par JS qui
+  cacherait la navigation en cas d'échec du script serait pire que le bug d'origine.
+- **Coût collatéral accepté.** La barre est sur toutes les pages ⇒ **toutes les captures du manuel**
+  ont été régénérées dans le même lot (règle dure de synchronisation manuel/captures).
+
 ## 2026-07-28 — Tailles de contexte réellement utilisées (dimensionnement par la mesure)
 
 - **Le plafond seul ne dit pas quoi choisir.** On savait limiter, pas **à combien**. D'où le

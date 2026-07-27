@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ t('brand.name') }}{% endblock %}</title>
+  {# Marque « JS disponible » AVANT le rendu : la navigation repliable n'est activée que dans ce
+     cas (sinon la pile reste dépliée et le bouton masqué — aucune entrée inaccessible). #}
+  <script>document.documentElement.classList.add('has-js');</script>
   <style>
     /* ── Tokens (docs/DESIGN_SYSTEM.md — charte P2Enjoy SAS, thème clair) ─────────── */
     :root {
@@ -36,11 +39,42 @@
     .brand-badge { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px;
                    border-radius:10px; background:linear-gradient(135deg,var(--color-brand),#3560B8); color:#fff; }
     .pills { display:flex; gap:.35rem; }
-    .pill-link { display:inline-flex; align-items:center; gap:.45rem; padding:.5rem .95rem; min-height:40px;
+    .pill-link { display:inline-flex; align-items:center; gap:.45rem; padding:.5rem .95rem; min-height:44px;
                  border-radius:999px; font-weight:600; font-size:14px; color:var(--text-2); cursor:pointer;
                  transition:background .15s ease-out,color .15s ease-out; }
     .pill-link:hover { background:#F3F4F6; text-decoration:none; }
     .pill-link.active { background:var(--color-brand-soft); color:var(--color-brand); }
+
+    /* ── Navigation repliable (petits écrans) ───────────────────────────────────────
+       Les 7 entrées mesurent ~850 px : impossible sur une ligne mobile. Sous le point de
+       rupture, la barre se replie derrière un bouton et les pilules deviennent une PILE
+       verticale pleine largeur (aucun défilement horizontal, cibles tactiles ≥ 44 px,
+       icône ET libellé conservés). Au-dessus, on retrouve la rangée de pilules d'origine. */
+    .nav-toggle { display:none; align-items:center; justify-content:center; width:44px; height:44px;
+                  border-radius:12px; background:transparent; color:var(--text-2); border:1px solid var(--line);
+                  cursor:pointer; padding:0; }
+    .nav-toggle:hover { background:#F3F4F6; }
+    .nav-toggle .nav-toggle-close { display:none; }
+    .nav-toggle[aria-expanded="true"] .nav-toggle-open { display:none; }
+    .nav-toggle[aria-expanded="true"] .nav-toggle-close { display:inline-flex; }
+    .pill-exit { color:var(--color-danger); }
+    .pill-exit:hover { background:var(--color-danger-soft); }
+
+    @media (max-width:899px) {
+      .topbar { padding:.6rem 1rem; gap:.6rem; }
+      .brand { min-width:0; flex:1 1 auto; }
+      .brand span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .brand small { display:none; }            /* la baseline s'efface avant le nom du produit */
+      /* La pile occupe sa PROPRE ligne : le bandeau reste « marque + bouton » sur la première. */
+      .pills { flex-direction:column; align-items:stretch; gap:.15rem;
+               order:3; flex-basis:100%; padding:.35rem 0 .15rem; }
+      .pill-link { width:100%; justify-content:flex-start; padding:.7rem 1rem; font-size:15px; }
+      .pill-exit { margin-top:.35rem; border-top:1px solid var(--line); border-radius:0; }
+      /* Le bouton n'a de sens QUE si JS peut le piloter (cf. `has-js`, posé dans <head>).
+         Sans JS : pas de bouton, et la pile reste dépliée — rien n'est jamais inaccessible. */
+      .has-js .nav-toggle { display:inline-flex; flex:none; }
+      .has-js .nav-toggle[aria-expanded="false"] + .pills { display:none; }
+    }
 
     main { width:100%; flex:1; padding:1.4rem 1.6rem 2rem; }
     /* ── Pied de page (attribution P2Enjoy, lien vers le site) ──────────────────────── */
@@ -341,7 +375,14 @@
       <span>{{ t('brand.name') }} <small>· {{ t('brand.tagline') }}</small></span>
     </a>
     {% if request.session.get('admin') %}
-    <nav class="pills" aria-label="{{ t('nav.aria') }}">
+    {# Bascule de navigation (petits écrans) : les 7 entrées ne tiennent pas sur une ligne mobile.
+       Masquée en CSS au-delà du point de rupture, où les pilules reprennent leur rangée. #}
+    <button type="button" class="nav-toggle" id="nav-toggle" data-testid="nav-toggle"
+            aria-expanded="false" aria-controls="main-nav" aria-label="{{ t('nav.menu') }}">
+      <span class="nav-toggle-open">{{ icon('menu', 20) }}</span>
+      <span class="nav-toggle-close">{{ icon('x', 20) }}</span>
+    </button>
+    <nav class="pills" id="main-nav" aria-label="{{ t('nav.aria') }}">
       <a class="pill-link{% if request.url.path == '/admin' or request.url.path.startswith('/admin/keys') %} active{% endif %}"
          href="/admin">{{ icon('layout-dashboard') }} {{ t('nav.dashboard') }}</a>
       <a class="pill-link{% if request.url.path.startswith('/admin/servers') %} active{% endif %}"
@@ -354,10 +395,37 @@
               aria-haspopup="dialog">{{ icon('book-open') }} {{ t('nav.manual') }}</button>
       <a class="pill-link" href="/admin/config.yaml" data-testid="nav-export"
          download="gateway.yaml" title="{{ t('nav.export_hint') }}">{{ icon('download') }} {{ t('nav.export') }}</a>
-      <a class="pill-link" href="/admin/logout">{{ icon('log-out') }} {{ t('nav.logout') }}</a>
+      {# Action destructive/sortie : séparée visuellement des entrées de navigation. #}
+      <a class="pill-link pill-exit" href="/admin/logout">{{ icon('log-out') }} {{ t('nav.logout') }}</a>
     </nav>
     {% endif %}
   </header>
+{% if request.session.get('admin') %}
+<script>
+(function () {
+  // Navigation repliable sous le point de rupture : les pilules deviennent une pile verticale.
+  // Progressive enhancement — sans JS, le CSS laisse la navigation dépliée (rien d'inaccessible).
+  const btn = document.getElementById('nav-toggle');
+  const nav = document.getElementById('main-nav');
+  if (!btn || !nav) return;
+  const setOpen = (open) => {
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    nav.toggleAttribute('data-open', open);
+  };
+  setOpen(false);            // état initial explicite (replié) dès que JS est disponible
+  btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  // Échap referme et rend le focus au bouton (règle d'échappement des surfaces dépliées).
+  nav.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { setOpen(false); btn.focus(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+      setOpen(false); btn.focus();
+    }
+  });
+})();
+</script>
+{% endif %}
   <main class="{% block main_class %}{% endblock %}">{% block body %}{% endblock %}</main>
 
   <footer class="appfooter" data-testid="app-footer">

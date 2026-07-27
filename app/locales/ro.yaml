@@ -30,6 +30,7 @@ nav:
   logs: Jurnale
   manual: Manual
   logout: Deconectare
+  menu: "Meniu"
   export: "Exportă"
   export_hint: "Exportă configurația (YAML)"
   language: Limbă

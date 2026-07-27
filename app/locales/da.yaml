@@ -30,6 +30,7 @@ nav:
   logs: Logfiler
   manual: Manual
   logout: Log ud
+  menu: "Menu"
   export: "Eksportér"
   export_hint: "Eksportér konfiguration (YAML)"
   language: Sprog

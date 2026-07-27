@@ -30,6 +30,7 @@ nav:
   logs: Žurnalai
   manual: Vadovas
   logout: Atsijungti
+  menu: "Meniu"
   export: "Eksportuoti"
   export_hint: "Eksportuoti konfigūraciją (YAML)"
   language: Kalba

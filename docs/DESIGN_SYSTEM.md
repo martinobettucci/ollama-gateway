@@ -108,3 +108,20 @@ charte n'en définit pas un.
   générique « React + Vite pour les UI » est volontairement écartée ici ; elle redevient la
   règle si le panel grossit (graphiques interactifs, temps réel). La charte visuelle,
   elle, s'applique intégralement.
+
+## Navigation adaptative (barre supérieure)
+
+La barre supérieure porte sept entrées (tableau de bord, serveurs, cibles, logs, manuel, export,
+déconnexion). Leur rangée de pilules mesure ~850 px : elle ne tient pas sur un écran de téléphone.
+
+- **≥ 900 px** — rangée de **pilules** horizontale (référence de la charte), entrée active en
+  `--color-brand-soft` / `--color-brand`.
+- **< 900 px** — la rangée se **replie** derrière un bouton (icône lucide `menu` / `x`, 44×44) et
+  devient une **pile verticale pleine largeur**. Règles appliquées : aucun défilement horizontal du
+  document, cibles tactiles ≥ 44 px, **icône + libellé** toujours affichés (une nav en icônes seules
+  nuit à la découvrabilité), état actif conservé, et **action de sortie séparée** (`.pill-exit`,
+  couleur `--color-danger`, filet de séparation) des entrées de navigation.
+- **Accessibilité** — `aria-expanded` / `aria-controls` sur le bouton, **Échap** referme et rend le
+  focus au bouton, ordre de tabulation inchangé.
+- **Sans JavaScript** — le bouton est masqué et la pile reste dépliée : aucune entrée n'est
+  inaccessible (amélioration progressive, marqueur `has-js` posé dans le `<head>`).
