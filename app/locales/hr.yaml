@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Vremenski raspon"
   values: "Prikaži vrijednosti"
+
+ctx:
+  stat_title: "Korištene veličine konteksta"
+  stat_intro: "Svaki zahtjev razvrstava se u najmanju veličinu koja ga obuhvaća, pa se vidi koje su veličine stvarno potrebne."
+  stat_empty: "Još nema izmjerenih zahtjeva."
+  th:
+    size: "Veličina"
+    reqs: "Zahtjevi"
+    tokens: "Tokeni"
+    last_used: "Zadnja upotreba"

@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Időszak"
   values: "Értékek megjelenítése"
+
+ctx:
+  stat_title: "Használt kontextusméretek"
+  stat_intro: "Minden kérés a legkisebb befogadó mérethez kerül, így látszik, mely méretekre van valóban szükség."
+  stat_empty: "Még nincs mért kérés."
+  th:
+    size: "Méret"
+    reqs: "Kérések"
+    tokens: "Tokenek"
+    last_used: "Utoljára használt"

@@ -23,10 +23,16 @@ import json
 import math
 import os
 
-# Unité et bornes de la limite : multiple de 4 Ki tokens, de 4 Ki à 1 Mi.
-CONTEXT_UNIT = 4096
-CONTEXT_MIN = 4096                 # 4k
-CONTEXT_MAX = 1024 * 1024          # 1M (1 048 576)
+# ÉCHELLE DE PALIERS (« tailles de contexte »), en k tokens. C'est l'ENSEMBLE des valeurs
+# autorisées : un plafond de clé est toujours l'un de ces paliers, et chaque requête est classée
+# dans le **plus petit palier qui la contient** (cf. `bucket`) pour la statistique d'usage.
+# Paliers usuels des modèles servis (2k → 1M), 112k inclus (valeur par défaut historique).
+CONTEXT_SIZES_K = (2, 4, 8, 12, 24, 36, 48, 64, 72, 96, 108, 112, 128, 144, 180, 224, 256,
+                   384, 512, 640, 768, 1024)
+CONTEXT_SIZES = tuple(k * 1024 for k in CONTEXT_SIZES_K)   # en tokens
+
+CONTEXT_MIN = CONTEXT_SIZES[0]     # 2k (2 048)
+CONTEXT_MAX = CONTEXT_SIZES[-1]    # 1M (1 048 576)
 CONTEXT_DEFAULT = 112 * 1024       # 112k (114 688) — valeur par défaut imposée, jamais vide
 
 # Majoration appliquée à l'estimation avant comparaison (écart de tokenizer, cf. docstring).
@@ -58,18 +64,30 @@ def _encoder():
 # --- Validation de la limite ------------------------------------------------------------------
 
 def is_valid(value: int) -> bool:
-    """True si `value` est un multiple de 4 Ki compris entre 4 Ki et 1 Mi."""
+    """True si `value` est l'un des paliers de l'échelle (`CONTEXT_SIZES`)."""
     return (isinstance(value, int) and not isinstance(value, bool)
-            and CONTEXT_MIN <= value <= CONTEXT_MAX and value % CONTEXT_UNIT == 0)
+            and value in CONTEXT_SIZES)
+
+
+def bucket(tokens: int) -> int:
+    """**Plus petit palier qui CONTIENT** `tokens` (classement d'une requête sur l'échelle).
+
+    C'est la taille de contexte qu'il faudrait réellement provisionner pour servir la requête :
+    27 734 tokens ne tiennent pas dans 24k → palier **36k** ; 2 096 tokens ne tiennent pas dans
+    2k → palier **4k**. Au-delà du dernier palier, on renvoie le plus grand (1M)."""
+    for size in CONTEXT_SIZES:
+        if tokens <= size:
+            return size
+    return CONTEXT_MAX
 
 
 def normalize(value) -> int:
     """Ramène une saisie quelconque à une limite VALIDE (la valeur ne peut jamais être vide).
 
     Accepte un entier ou une chaîne (« 112k », « 114688 », « 112 »). Toute valeur inutilisable
-    retombe sur `CONTEXT_DEFAULT` ; une valeur hors bornes est bornée ; une valeur non alignée est
-    arrondie au multiple de 4 Ki **supérieur** (on ne rétrécit jamais silencieusement le contexte
-    demandé en dessous du besoin exprimé)."""
+    retombe sur `CONTEXT_DEFAULT` ; une valeur hors bornes est bornée ; une valeur qui ne tombe pas
+    sur un palier est **remontée au palier supérieur** (on ne rétrécit jamais silencieusement le
+    contexte demandé en dessous du besoin exprimé)."""
     if isinstance(value, str):
         s = value.strip().lower().replace(" ", "")
         if not s:
@@ -94,9 +112,7 @@ def normalize(value) -> int:
     if 0 < num <= 1024:
         num *= 1024
     num = max(CONTEXT_MIN, min(CONTEXT_MAX, num))
-    if num % CONTEXT_UNIT:
-        num = min(CONTEXT_MAX, math.ceil(num / CONTEXT_UNIT) * CONTEXT_UNIT)
-    return num
+    return bucket(num)          # cale sur l'échelle (palier ≥ valeur demandée)
 
 
 def label(value: int) -> str:
@@ -105,10 +121,8 @@ def label(value: int) -> str:
 
 
 def choices() -> list[int]:
-    """Valeurs proposées dans l'UI : puissances de 2 usuelles + le défaut, toutes valides."""
-    vals = [4096, 8192, 16384, 32768, 65536, 98304, CONTEXT_DEFAULT, 131072, 262144,
-            524288, CONTEXT_MAX]
-    return sorted({v for v in vals if is_valid(v)})
+    """Paliers proposés dans l'UI = l'échelle complète."""
+    return list(CONTEXT_SIZES)
 
 
 # --- Comptage de tokens -----------------------------------------------------------------------

@@ -356,6 +356,14 @@ async def create_key(request: Request):
     return RedirectResponse("/admin", status_code=303)
 
 
+# Palette cyclique des parts du camembert « tailles de contexte » (couleurs de la charte).
+_CTX_PALETTE = (charts.BRAND, charts.SUCCESS, charts.ACCENT, charts.DANGER, charts.MUTED)
+
+
+def _ctx_color(i: int) -> str:
+    return _CTX_PALETTE[i % len(_CTX_PALETTE)]
+
+
 def _series_label(bucket: str) -> str:
     """Libellé d'axe X court : 'YYYY-MM-DD' → 'MM-DD' ; 'YYYY-MM-DD HH:00' → 'HH:00'."""
     return bucket[11:] if len(bucket) > 10 else bucket[5:]
@@ -381,6 +389,10 @@ async def key_detail(request: Request, key_id: int):
         "tokens": charts.line([(_series_label(d["bucket"]), d["tokens"]) for d in series],
                               _t(request, "kd.usage.th_tokens"), charts.ACCENT),
     }
+    ctx_buckets = usage.key_ctx_buckets(key_id)
+    svg["ctx_donut"] = charts.donut(
+        [(context.label(b["bucket"]), b["reqs"], _ctx_color(i))
+         for i, b in enumerate(ctx_buckets)], _t(request, "ctx.stat_title"))
     return render(request, "key_detail.html", {
         "key": rec, "summary": usage.key_summary(key_id),
         "servers": servers.list_servers(),
@@ -392,6 +404,7 @@ async def key_detail(request: Request, key_id: int):
         "ctx_choices": context.choices(),
         "ctx_default": context.CONTEXT_DEFAULT,
         "ctx_label": context.label,
+        "ctx_buckets": ctx_buckets,
     })
 
 
@@ -729,6 +742,7 @@ async def server_monitor(request: Request, server_id: int):
         series = usage.server_series(server_id, horizon, conn)
     finally:
         conn.close()
+    srv_ctx_buckets = usage.server_ctx_buckets(server_id)
     svg = {
         "tokens_bar": charts.hbar([(r["label"], r["tokens"]) for r in per_key[:10]],
                                   "Tokens par clé", unit=" tok"),
@@ -740,11 +754,15 @@ async def server_monitor(request: Request, server_id: int):
                                  _t(request, "mon.reqs_day")),
         "tokens_line": charts.line([(_series_label(d["bucket"]), d["tokens"]) for d in series],
                                    _t(request, "mon.tokens_day"), color=charts.ACCENT),
+        "ctx_donut": charts.donut(
+            [(context.label(b["bucket"]), b["reqs"], _ctx_color(i))
+             for i, b in enumerate(srv_ctx_buckets)], _t(request, "ctx.stat_title")),
     }
     return render(request, "monitor.html", {
         "server": srv, "summary": summary, "per_key": per_key,
         "per_model": per_model, "status": status, "svg": svg,
         "horizon": horizon, "horizons": usage.HORIZONS,
+        "ctx_buckets": srv_ctx_buckets, "ctx_label": context.label,
     })
 
 

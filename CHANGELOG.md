@@ -6,9 +6,21 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Statistique des tailles de contexte réellement utilisées (par clé et par serveur).** L'échelle
+  des plafonds devient une **liste de paliers** (2k · 4k · 8k · 12k · 24k · 36k · 48k · 64k · 72k ·
+  96k · 108k · 112k · 128k · 144k · 180k · 224k · 256k · 384k · 512k · 640k · 768k · 1M) et chaque
+  requête est **classée dans le plus petit palier qui la contient** (27 734 tokens → **36k**, car
+  ils ne tiennent pas dans 24k ; 2 096 tokens → **4k**). La **page d'une clé** et le **monitoring
+  d'un serveur** affichent désormais un **camembert** des tailles utilisées + un tableau
+  **nombre de requêtes / tokens / dernier usage par palier**. On voit ainsi, parmi les tailles
+  disponibles, lesquelles servent réellement — et on ajuste le plafond de chaque clé au plus juste.
+  Le classement s'appuie sur les **compteurs réels de l'amont** (prompt + complétion) quand ils sont
+  disponibles, sinon sur l'estimation d'entrée ; une requête refusée pour dépassement apparaît au
+  palier qu'elle aurait nécessité (signal direct pour re-dimensionner).
+
 - **Limite de contexte par clé (garde-fou anti-saturation de l'amont).** Chaque clé porte
-  désormais un **plafond de contexte** — valeur **obligatoire** (jamais vide), **multiple de 4k**,
-  de **4k à 1M**, **défaut 112k** — réglable dans le panel (création et édition) et affiché sur la
+  désormais un **plafond de contexte** — valeur **obligatoire** (jamais vide), choisie parmi les
+  **paliers** de l'échelle (2k → 1M), **défaut 112k** — réglable dans le panel (création et édition) et affiché sur la
   ligne de la clé. Deux effets complémentaires :
   - **Refus en entrée** : le proxy **compte les tokens** du corps de la requête (tokenizer
     `tiktoken`) et **refuse (413) avant d'appeler l'amont** si le total dépasse le plafond. La

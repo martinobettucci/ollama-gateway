@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Tidsintervall"
   values: "Visa värden"
+
+ctx:
+  stat_title: "Använda kontextstorlekar"
+  stat_intro: "Varje förfrågan placeras i den minsta storlek som rymmer den, så du ser vilka storlekar som faktiskt behövs."
+  stat_empty: "Inga mätta förfrågningar ännu."
+  th:
+    size: "Storlek"
+    reqs: "Förfrågningar"
+    tokens: "Tokens"
+    last_used: "Senast använd"

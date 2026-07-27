@@ -8,7 +8,7 @@ def record(
     *, key_id: int | None, client_ip: str, method: str, path: str, model: str,
     status: int, duration_ms: int, tokens_prompt: int = 0, tokens_completion: int = 0,
     bytes_in: int = 0, bytes_out: int = 0, server_id: int | None = None,
-    conn: sqlite3.Connection | None = None,
+    ctx_bucket: int | None = None, conn: sqlite3.Connection | None = None,
 ) -> None:
     """Insère un événement d'usage (append-only). `server_id` = serveur ayant réellement traité
     (repli inclus ; None si la requête n'a pas atteint d'amont)."""
@@ -18,10 +18,12 @@ def record(
         with conn:
             conn.execute(
                 "INSERT INTO usage_events(key_id, client_ip, method, path, model, status, "
-                "duration_ms, tokens_prompt, tokens_completion, bytes_in, bytes_out, server_id) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                "duration_ms, tokens_prompt, tokens_completion, bytes_in, bytes_out, "
+                "server_id, ctx_bucket) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (key_id, client_ip, method, path, model, status, duration_ms,
-                 tokens_prompt, tokens_completion, bytes_in, bytes_out, server_id),
+                 tokens_prompt, tokens_completion, bytes_in, bytes_out, server_id,
+                 ctx_bucket),
             )
     finally:
         if own:
@@ -408,3 +410,34 @@ def server_daily(server_id: int, days: int = 30,
     finally:
         if own:
             conn.close()
+
+
+# --- Tailles de contexte réellement utilisées (paliers) ---------------------------------------
+
+def _ctx_buckets(where: str, param, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Agrégat par PALIER de contexte : nombre de requêtes et **dernier usage**, du palier le plus
+    grand au plus petit. Les événements sans palier mesuré (`ctx_bucket` NULL : refus avant lecture
+    du corps, ou antérieurs à la migration 0013) sont exclus."""
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT ctx_bucket AS bucket, COUNT(*) AS reqs, "
+            "COALESCE(SUM(tokens_prompt + tokens_completion),0) AS tokens, "
+            "MIN(ts) AS first_seen, MAX(ts) AS last_seen "
+            f"FROM usage_events WHERE ctx_bucket IS NOT NULL AND {where} "
+            "GROUP BY ctx_bucket ORDER BY ctx_bucket DESC", (param,)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        if own:
+            conn.close()
+
+
+def key_ctx_buckets(key_id: int, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Tailles de contexte réellement utilisées par une CLÉ (compte + dernier usage par palier)."""
+    return _ctx_buckets("key_id = ?", key_id, conn)
+
+
+def server_ctx_buckets(server_id: int, conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Tailles de contexte réellement utilisées sur un SERVEUR (compte + dernier usage)."""
+    return _ctx_buckets("server_id = ?", server_id, conn)

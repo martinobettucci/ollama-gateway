@@ -329,6 +329,24 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   badge, 413 avec marge vérifiée, refus journalisé, num_ctx reçu par le faux amont) ; **vision
   faite** (capture 33-max-context).*
 
+## Phase 16 — Statistique des tailles de contexte utilisées (2026-07-28)
+
+- [x] **Échelle de paliers + classement de chaque requête + statistique par clé et par serveur.**
+  `context.CONTEXT_SIZES` devient l'ensemble des valeurs autorisées (2k · 4k · 8k · 12k · 24k · 36k ·
+  48k · 64k · 72k · 96k · 108k · **112k** · 128k · 144k · 180k · 224k · 256k · 384k · 512k · 640k ·
+  768k · 1M) ; `is_valid`/`normalize` calés dessus (normalisation = palier ≥ demandé).
+  `context.bucket(tokens)` = **plus petit palier qui contient** (27 734 → 36k ; 2 096 → 4k).
+  `usage_events.ctx_bucket` (migration 0013, index dédié) enregistré par le proxy à partir des
+  **compteurs réels de l'amont** quand disponibles, sinon de l'estimation d'entrée ; NULL (non
+  mesuré) exclu des agrégats. `usage.key_ctx_buckets`/`server_ctx_buckets` → compte, tokens, premier
+  et **dernier usage** par palier, du plus grand au plus petit. UI : **camembert + tableau** sur la
+  page d'une clé ET le monitoring d'un serveur ; i18n `ctx.*` sur les **24 locales**. — *tests :
+  `tests/test_context.py` (échelle = ensemble autorisé, `bucket` sur les exemples de la spec et
+  bornes, normalisation vers palier supérieur, agrégats multi-paliers avec compte/dernier usage par
+  clé ET serveur, affinage par les tokens réels de l'amont, exclusion des événements non mesurés) ;
+  E2E `max_context.spec.ts` (camembert + tableau rendus sur la page clé et le monitoring, libellés de
+  palier, dernier usage non vide) ; **vision faite** (captures 34-ctx-stats-key, 35-ctx-stats-server).*
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

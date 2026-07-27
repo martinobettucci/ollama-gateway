@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Firxa ta' żmien"
   values: "Uri l-valuri"
+
+ctx:
+  stat_title: "Daqsijiet ta' kuntest użati"
+  stat_intro: "Kull talba tiġi kklassifikata fl-iżgħar daqs li jesagħha, biex tara liema daqsijiet verament jinħtieġu."
+  stat_empty: "Għad m'hemm l-ebda talba mkejla."
+  th:
+    size: "Daqs"
+    reqs: "Talbiet"
+    tokens: "Tokens"
+    last_used: "L-aħħar użu"

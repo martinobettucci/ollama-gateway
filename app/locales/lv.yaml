@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Laika periods"
   values: "Rādīt vērtības"
+
+ctx:
+  stat_title: "Izmantotie konteksta izmēri"
+  stat_intro: "Katrs pieprasījums tiek iedalīts mazākajā izmērā, kas to ietver, tāpēc redzat, kuri izmēri patiešām nepieciešami."
+  stat_empty: "Vēl nav izmērītu pieprasījumu."
+  th:
+    size: "Izmērs"
+    reqs: "Pieprasījumi"
+    tokens: "Marķieri"
+    last_used: "Pēdējā lietošana"

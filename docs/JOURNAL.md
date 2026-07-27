@@ -3,6 +3,27 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-28 — Tailles de contexte réellement utilisées (dimensionnement par la mesure)
+
+- **Le plafond seul ne dit pas quoi choisir.** On savait limiter, pas **à combien**. D'où le
+  classement de chaque requête dans le **plus petit palier qui la contient** : la statistique répond
+  directement à « parmi les tailles disponibles, lesquelles servent vraiment ? ».
+- **L'échelle devient l'ensemble des valeurs autorisées.** Plutôt qu'« un multiple de 4k », une
+  **liste de paliers** correspondant aux fenêtres usuelles des modèles. 112k, absent de la liste
+  proposée, y a été **conservé** sur décision du responsable : sinon les 6 clés de prod auraient vu
+  leur plafond bouger silencieusement (128k au-dessus, 108k en dessous). Un changement de plafond en
+  prod ne doit jamais être un effet de bord d'un changement d'échelle.
+- **Le palier vient des compteurs RÉELS quand ils existent.** L'amont renvoie `prompt_eval_count` /
+  `eval_count` (ou `usage`) : c'est le contexte effectivement mobilisé, bien plus juste que notre
+  estimation d'entrée. On ne garde l'estimation que si l'amont est muet (ou si la requête a été
+  refusée avant lui).
+- **Les refus comptent — et c'est voulu.** Une requête refusée pour dépassement apparaît au palier
+  qu'elle **aurait nécessité** : c'est précisément le signal « ce plafond est trop bas ». Les
+  événements sans contexte mesurable (refus d'auth/origine, avant lecture du corps) sont eux exclus
+  (`ctx_bucket` NULL) pour ne pas polluer la statistique.
+- **Même vue à deux échelles.** Par **clé** (dimensionner son plafond) et par **serveur** (voir la
+  charge de contexte que la machine encaisse réellement, toutes clés confondues).
+
 ## 2026-07-27 — Limite de contexte par clé (garde-fou anti-saturation)
 
 - **Constat terrain d'abord.** L'analyse des 5xx de la prod a montré deux familles : des **502

@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Časové obdobie"
   values: "Zobraziť hodnoty"
+
+ctx:
+  stat_title: "Použité veľkosti kontextu"
+  stat_intro: "Každá požiadavka sa zaradí do najmenšej veľkosti, ktorá ju pojme – vidíte, ktoré veľkosti sú naozaj potrebné."
+  stat_empty: "Zatiaľ žiadna zmeraná požiadavka."
+  th:
+    size: "Veľkosť"
+    reqs: "Požiadavky"
+    tokens: "Tokeny"
+    last_used: "Posledné použitie"

@@ -294,8 +294,13 @@ async def proxy(request: Request, full_path: str):
     # une requête démesurée est refusée en quelques millisecondes, au lieu d'asphyxier le serveur
     # d'exécution (prefill interminable → délai d'attente amont, ou échec d'allocation mémoire).
     over, tok_est, tok_billed = context.exceeds(body, rec.max_context_tokens)
+    # Palier de contexte « nécessaire » pour cette requête (plus petit palier qui la contient) :
+    # statistique des tailles réellement mobilisées, par clé et par serveur. On part de l'estimation
+    # d'entrée ; les chemins qui obtiennent les compteurs RÉELS de l'amont l'affinent ensuite.
+    ctx_bucket = context.bucket(tok_est) if tok_est else None
     if over:
-        _log(rec.id, ip, method, path, req_model, 413, t0, bytes_in=len(body), server_id=srv.id)
+        _log(rec.id, ip, method, path, req_model, 413, t0, bytes_in=len(body), server_id=srv.id,
+             ctx_bucket=ctx_bucket)
         _content_log(413, req_model)
         return JSONResponse({
             "error": "contexte de la requête trop grand pour cette clé",
@@ -362,7 +367,7 @@ async def proxy(request: Request, full_path: str):
         up_resp, used = await _send_chain(stream=False)
         if up_resp is None:
             _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body),
-                 server_id=srv.id)
+                 server_id=srv.id, ctx_bucket=ctx_bucket)
             _content_log(502, req_model)
             _release()
             return JSONResponse({"error": "upstream indisponible"}, status_code=502)
@@ -370,7 +375,8 @@ async def proxy(request: Request, full_path: str):
         if up_resp.status_code == 200:
             content = _filter_models(content, set(rec.models))
         _log(rec.id, ip, method, path, "", up_resp.status_code, t0,
-             bytes_in=len(body), bytes_out=len(content), server_id=used.id)
+             bytes_in=len(body), bytes_out=len(content), server_id=used.id,
+             ctx_bucket=ctx_bucket)
         _content_log(up_resp.status_code, req_model)
         _release()
         media = up_resp.headers.get("content-type", "application/json")
@@ -379,7 +385,8 @@ async def proxy(request: Request, full_path: str):
 
     up_resp, used = await _send_chain(stream=True)
     if up_resp is None:
-        _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body), server_id=srv.id)
+        _log(rec.id, ip, method, path, req_model, 502, t0, bytes_in=len(body),
+             server_id=srv.id, ctx_bucket=ctx_bucket)
         _content_log(502, req_model)
         _release()
         return JSONResponse({"error": "upstream indisponible"}, status_code=502)
@@ -402,9 +409,13 @@ async def proxy(request: Request, full_path: str):
 
     def finalize():
         model = sniff.model or _model_from_body(body)
+        # Palier affiné avec les compteurs RÉELS de l'amont (prompt + complétion) : c'est le
+        # contexte effectivement mobilisé. À défaut (amont muet), on garde l'estimation d'entrée.
+        real = sniff.tokens_prompt + sniff.tokens_completion
+        ctx = context.bucket(real) if real else ctx_bucket
         _log(rec.id, ip, method, path, model, up_resp.status_code, t0,
              tokens_prompt=sniff.tokens_prompt, tokens_completion=sniff.tokens_completion,
-             bytes_in=len(body), bytes_out=bytes_out, server_id=used.id)
+             bytes_in=len(body), bytes_out=bytes_out, server_id=used.id, ctx_bucket=ctx)
         _content_log(up_resp.status_code, model)
 
     resp_headers = [(k, v) for k, v in up_resp.headers.items()

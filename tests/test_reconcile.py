@@ -336,14 +336,14 @@ servers:
     default: true
 keys:
   - name: k-int
-    max_context_tokens: 32768
+    max_context_tokens: 24576
   - name: k-label
-    max_context_tokens: 32k
+    max_context_tokens: 24k
   - name: k-default
 """))
     refs = keys.managed_refs()
-    assert keys.get_key(refs["k-int"]).max_context_tokens == 32768
-    assert keys.get_key(refs["k-label"]).max_context_tokens == 32768
+    assert keys.get_key(refs["k-int"]).max_context_tokens == 24576
+    assert keys.get_key(refs["k-label"]).max_context_tokens == 24576
     assert keys.get_key(refs["k-default"]).max_context_tokens == context.CONTEXT_DEFAULT
 
 
@@ -355,10 +355,10 @@ servers:
     default: true
 keys:
   - name: k1
-    max_context_tokens: 16k
+    max_context_tokens: 24k
 """))
     cfg = reconcile.export_config()
-    assert cfg["keys"][0]["max_context_tokens"] == 16384
+    assert cfg["keys"][0]["max_context_tokens"] == 24576
 
 
 # --- Export (phase 3) -------------------------------------------------------------------------

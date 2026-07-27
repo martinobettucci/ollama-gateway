@@ -373,3 +373,13 @@ hz:
 chart:
   horizon: "Période"
   values: "Afficher les valeurs"
+
+ctx:
+  stat_title: "Tailles de contexte utilisées"
+  stat_intro: "Chaque requête est classée dans le plus petit palier qui la contient : on voit ainsi quelles tailles servent réellement, et on ajuste le plafond au plus juste."
+  stat_empty: "Aucune requête mesurée pour le moment."
+  th:
+    size: "Taille"
+    reqs: "Requêtes"
+    tokens: "Tokens"
+    last_used: "Dernier usage"

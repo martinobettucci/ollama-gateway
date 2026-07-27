@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Tidsrum"
   values: "Vis værdier"
+
+ctx:
+  stat_title: "Anvendte kontekststørrelser"
+  stat_intro: "Hver anmodning placeres i den mindste størrelse, der rummer den, så du ser hvilke størrelser der reelt bruges."
+  stat_empty: "Ingen målte anmodninger endnu."
+  th:
+    size: "Størrelse"
+    reqs: "Anmodninger"
+    tokens: "Tokens"
+    last_used: "Sidst brugt"

@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Zakres czasu"
   values: "Pokaż wartości"
+
+ctx:
+  stat_title: "Używane rozmiary kontekstu"
+  stat_intro: "Każde żądanie trafia do najmniejszego mieszczącego je progu — widać więc, które rozmiary są naprawdę potrzebne."
+  stat_empty: "Brak zmierzonych żądań."
+  th:
+    size: "Rozmiar"
+    reqs: "Żądania"
+    tokens: "Tokeny"
+    last_used: "Ostatnie użycie"

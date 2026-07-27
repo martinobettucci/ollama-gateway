@@ -74,3 +74,41 @@ test('contexte max : le proxy impose num_ctx à l\'amont (Ollama natif)', async 
   const seen = await (await request.get('http://127.0.0.1:11533/last-body')).json();
   expect(seen.options.num_ctx).toBe(114688);
 });
+
+test('stats : paliers de contexte réellement utilisés (camembert + tableau), clé et serveur',
+  async ({ page, request }) => {
+    const DEMO = 'sk-ollama-devdemokey000000000000000000000000000000000000000000000000';
+    // Deux requêtes pour alimenter la statistique.
+    for (const content of ['bonjour', 'mot '.repeat(200)]) {
+      const r = await request.post(`${PROXY}/api/chat`, {
+        headers: { Authorization: `Bearer ${DEMO}` },
+        data: { model: 'demo:latest', messages: [{ role: 'user', content }] },
+      });
+      expect(r.status()).toBe(200);
+    }
+
+    await page.goto('/admin/login');
+    await page.fill('#password', 'adminpass');
+    await page.click('button[type=submit]');
+
+    // --- Page de la CLÉ : camembert + tableau des paliers ---
+    await page.locator('[data-testid=key-row]', { hasText: 'demo (dev)' })
+      .getByRole('link').first().click();
+    await expect(page.locator('[data-testid=ctx-donut] svg')).toBeVisible();
+    const rows = page.locator('[data-testid=ctx-buckets] tbody tr');
+    await expect(rows.first()).toBeVisible();
+    // Chaque ligne : un palier de l'échelle, un compte, un dernier usage non vide.
+    const firstSize = await rows.first().locator('td').first().innerText();
+    expect(firstSize.trim()).toMatch(/^\d+k$/);
+    const lastUsed = await rows.first().locator('td').nth(3).innerText();
+    expect(lastUsed.trim().length).toBeGreaterThan(0);
+    await page.screenshot({ path: `${OUT}/34-ctx-stats-key.jpg`, type: 'jpeg', fullPage: true });
+
+    // --- Monitoring du SERVEUR : même statistique ---
+    await page.goto('/admin/servers');
+    await page.locator('[data-testid^=monitor-link-]').first().click();
+    await page.waitForURL('**/monitor');
+    await expect(page.locator('[data-testid=ctx-donut] svg')).toBeVisible();
+    await expect(page.locator('[data-testid=ctx-buckets] tbody tr').first()).toBeVisible();
+    await page.screenshot({ path: `${OUT}/35-ctx-stats-server.jpg`, type: 'jpeg', fullPage: true });
+  });

@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Periode"
   values: "Waarden tonen"
+
+ctx:
+  stat_title: "Gebruikte contextgroottes"
+  stat_intro: "Elk verzoek wordt ingedeeld bij de kleinste passende grootte, zodat u ziet welke groottes echt nodig zijn."
+  stat_empty: "Nog geen gemeten verzoek."
+  th:
+    size: "Grootte"
+    reqs: "Verzoeken"
+    tokens: "Tokens"
+    last_used: "Laatst gebruikt"

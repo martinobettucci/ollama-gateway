@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Time range"
   values: "Show values"
+
+ctx:
+  stat_title: "Context sizes used"
+  stat_intro: "Each request is classified into the smallest size that fits it, so you can see which sizes are actually needed and right-size the cap."
+  stat_empty: "No measured request yet."
+  th:
+    size: "Size"
+    reqs: "Requests"
+    tokens: "Tokens"
+    last_used: "Last used"

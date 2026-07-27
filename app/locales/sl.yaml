@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Časovni razpon"
   values: "Pokaži vrednosti"
+
+ctx:
+  stat_title: "Uporabljene velikosti konteksta"
+  stat_intro: "Vsaka zahteva se uvrsti v najmanjšo velikost, ki jo vsebuje, zato vidite, katere velikosti so res potrebne."
+  stat_empty: "Še ni izmerjenih zahtev."
+  th:
+    size: "Velikost"
+    reqs: "Zahteve"
+    tokens: "Žetoni"
+    last_used: "Zadnja uporaba"

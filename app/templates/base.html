@@ -121,6 +121,10 @@
     .ctx-badge { display:inline-block; margin-left:.4rem; padding:.05rem .5rem; border-radius:999px;
                  font-size:11.5px; font-weight:600; font-variant-numeric:tabular-nums;
                  background:var(--color-accent-soft); color:var(--color-ink); }
+    /* Statistique des tailles de contexte : camembert + tableau côte à côte (repli en colonne). */
+    .ctx-stat { display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap; }
+    .ctx-stat .donut-wrap { flex:0 0 auto; }
+    .ctx-stat .table-wrap { flex:1 1 320px; min-width:0; }
 
     /* ── Boutons ──────────────────────────────────────────────────────────────────── */
     button, .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem;

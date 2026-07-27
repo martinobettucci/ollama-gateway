@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Zeitraum"
   values: "Werte anzeigen"
+
+ctx:
+  stat_title: "Genutzte Kontextgrößen"
+  stat_intro: "Jede Anfrage wird der kleinsten passenden Stufe zugeordnet – so sehen Sie, welche Größen wirklich gebraucht werden."
+  stat_empty: "Noch keine gemessene Anfrage."
+  th:
+    size: "Größe"
+    reqs: "Anfragen"
+    tokens: "Tokens"
+    last_used: "Zuletzt genutzt"

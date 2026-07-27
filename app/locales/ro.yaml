@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Interval de timp"
   values: "Afișează valorile"
+
+ctx:
+  stat_title: "Dimensiuni de context utilizate"
+  stat_intro: "Fiecare cerere este clasificată în cea mai mică dimensiune care o cuprinde, ca să vedeți ce dimensiuni sunt cu adevărat necesare."
+  stat_empty: "Nicio cerere măsurată încă."
+  th:
+    size: "Dimensiune"
+    reqs: "Cereri"
+    tokens: "Tokenuri"
+    last_used: "Ultima utilizare"

@@ -16,13 +16,44 @@ def test_default_is_112k_and_valid():
     assert context.label(context.CONTEXT_DEFAULT) == "112k"
 
 
-def test_is_valid_bounds_and_multiple():
-    assert context.is_valid(4096) and context.is_valid(1024 * 1024)
+def test_ladder_is_the_allowed_set():
+    """L'échelle de paliers EST l'ensemble des valeurs autorisées (2k → 1M, 112k inclus)."""
+    assert context.CONTEXT_SIZES_K == (2, 4, 8, 12, 24, 36, 48, 64, 72, 96, 108, 112, 128,
+                                       144, 180, 224, 256, 384, 512, 640, 768, 1024)
+    assert context.CONTEXT_MIN == 2 * 1024 and context.CONTEXT_MAX == 1024 * 1024
+    assert list(context.CONTEXT_SIZES) == sorted(context.CONTEXT_SIZES)  # croissante
+    assert all(context.is_valid(v) for v in context.CONTEXT_SIZES)
+
+
+def test_is_valid_only_on_ladder():
+    assert context.is_valid(2048) and context.is_valid(1024 * 1024)
     assert not context.is_valid(0)
-    assert not context.is_valid(2048)             # sous la borne basse
-    assert not context.is_valid(1024 * 1024 + 4096)  # au-dessus de 1M
-    assert not context.is_valid(5000)             # non multiple de 4096
+    assert not context.is_valid(1024)             # sous le premier palier
+    assert not context.is_valid(1024 * 1024 + 4096)  # au-dessus du dernier
+    assert not context.is_valid(5000)             # hors échelle
+    assert not context.is_valid(16384)            # 16k n'est PAS un palier de l'échelle
     assert not context.is_valid(True)             # bool n'est pas un entier valide
+
+
+@pytest.mark.parametrize("tokens,expected_k", [
+    (0, 2), (1, 2), (2048, 2),           # tout ce qui tient dans 2k → 2k
+    (2049, 4), (2096, 4), (4096, 4),     # 2 096 tokens → 4k (exemple de la spec)
+    (4097, 8),
+    (24576, 24), (24577, 36),            # ne tient plus dans 24k → 36k
+    (27734, 36),                         # 27 734 tokens → 36k (exemple de la spec)
+    (110592, 108),                       # pile 108k → tient dans 108k
+    (110593, 112), (114688, 112),        # 108k < n ≤ 112k → 112k
+    (114689, 128),                       # au-delà de 112k → 128k
+    (1024 * 1024, 1024),
+    (99_999_999, 1024),                  # au-delà du dernier palier → plafonné à 1M
+])
+def test_bucket_is_lowest_fitting_size(tokens, expected_k):
+    assert context.bucket(tokens) == expected_k * 1024
+
+
+def test_bucket_always_on_ladder():
+    for n in (0, 1, 3000, 50_000, 200_000, 900_000, 5_000_000):
+        assert context.bucket(n) in context.CONTEXT_SIZES
 
 
 @pytest.mark.parametrize("raw,expected", [
@@ -34,10 +65,10 @@ def test_is_valid_bounds_and_multiple():
     ("112k", 114688),
     ("112", 114688),                      # saisie en « k » sans suffixe
     ("1m", 1024 * 1024),
-    (5000, 8192),                         # non aligné → multiple de 4k SUPÉRIEUR
-    (100, 102400),                        # 100k (aligné : 25 × 4k)
-    (10, 12288),                          # 10k = 10240 → arrondi au 4k supérieur
-    (1, 4096),                            # sous la borne → bornée à 4k
+    (5000, 8192),                         # hors palier → palier supérieur (8k)
+    (100, 110592),                        # 100k ne tient pas dans 96k → palier 108k
+    (10, 12288),                          # 10k = 10240 → palier supérieur (12k)
+    (1, 2048),                            # sous le premier palier → 2k
     (99_999_999, 1024 * 1024),            # au-dessus → bornée à 1M
 ])
 def test_normalize(raw, expected):
@@ -185,3 +216,83 @@ async def test_proxy_allows_normal_request_with_default_limit(fake_upstream):  #
                          json={"model": "demo:latest",
                                "messages": [{"role": "user", "content": "bonjour"}]})
     assert r.status_code == 200
+
+
+# --- Statistique des paliers réellement utilisés ----------------------------------------------
+
+@pytest.mark.asyncio
+async def test_usage_records_ctx_bucket_per_key_and_server(fake_upstream):  # noqa: F811
+    """Chaque requête est classée dans le plus petit palier qui la contient ; l'agrégat par clé et
+    par serveur compte les usages et retient le DERNIER usage de chaque palier."""
+    from app import usage
+    sid = servers.ensure_default()
+    _rec, secret = keys.create_key("stats", [], None, None)
+    kid = _rec.id
+    async with proxy_client(fake_upstream) as c:
+        for content in ("bonjour", "mot " * 3000, "mot " * 3000):
+            await c.post("/api/chat", headers={"Authorization": f"Bearer {secret}"},
+                         json={"model": "demo:latest",
+                               "messages": [{"role": "user", "content": content}]})
+    by_key = usage.key_ctx_buckets(kid)
+    assert by_key, "au moins un palier enregistré"
+    assert all(b["bucket"] in context.CONTEXT_SIZES for b in by_key)
+    assert all(b["last_seen"] for b in by_key)              # dernier usage suivi
+    assert sum(b["reqs"] for b in by_key) == 3              # 3 requêtes classées
+    # (Le faux amont renvoie des compteurs FIXES : les 3 requêtes tombent donc dans le même
+    #  palier — c'est le comportement attendu, le réel prime sur l'estimation d'entrée.)
+    # Même agrégat côté serveur.
+    by_srv = usage.server_ctx_buckets(sid)
+    assert sum(b["reqs"] for b in by_srv) == 3
+
+
+def test_ctx_buckets_aggregate_counts_and_last_usage():
+    """Agrégat multi-paliers : compte par palier, dernier usage, tri du plus grand au plus petit."""
+    from app import usage
+    sid = servers.ensure_default()
+    rec, _s = keys.create_key("agg", [], None, None)
+    for bucket_size, n in ((4096, 3), (24576, 1), (114688, 2)):
+        for _ in range(n):
+            usage.record(key_id=rec.id, client_ip="1.2.3.4", method="POST", path="/api/chat",
+                         model="m", status=200, duration_ms=5, tokens_prompt=10,
+                         server_id=sid, ctx_bucket=bucket_size)
+    rows = usage.key_ctx_buckets(rec.id)
+    assert [r["bucket"] for r in rows] == [114688, 24576, 4096]     # décroissant
+    assert {r["bucket"]: r["reqs"] for r in rows} == {4096: 3, 24576: 1, 114688: 2}
+    assert all(r["last_seen"] and r["first_seen"] for r in rows)
+    assert {r["bucket"]: r["reqs"] for r in usage.server_ctx_buckets(sid)} == {
+        4096: 3, 24576: 1, 114688: 2}
+
+
+@pytest.mark.asyncio
+async def test_ctx_bucket_uses_real_upstream_tokens(fake_upstream):  # noqa: F811
+    """Le palier est affiné avec les compteurs RÉELS de l'amont quand ils sont disponibles."""
+    from app import db, usage
+    servers.ensure_default()
+    _rec, secret = keys.create_key("real", [], None, None)
+    async with proxy_client(fake_upstream) as c:
+        await c.post("/api/chat", headers={"Authorization": f"Bearer {secret}"},
+                     json={"model": "demo:latest", "stream": True,
+                           "messages": [{"role": "user", "content": "bonjour"}]})
+    conn = db.connect()
+    row = conn.execute(
+        "SELECT tokens_prompt, tokens_completion, ctx_bucket FROM usage_events "
+        "WHERE key_id = ? ORDER BY id DESC LIMIT 1", (_rec.id,)).fetchone()
+    conn.close()
+    real = row["tokens_prompt"] + row["tokens_completion"]
+    assert real > 0                                        # le faux amont renvoie des compteurs
+    assert row["ctx_bucket"] == context.bucket(real)
+    assert usage.key_ctx_buckets(_rec.id)[0]["bucket"] == context.bucket(real)
+
+
+def test_ctx_buckets_exclude_unmeasured_events():
+    """Les événements sans palier (refus avant lecture du corps) sont hors agrégat."""
+    from app import db, usage
+    servers.ensure_default()
+    rec, _s = keys.create_key("nobucket", [], None, None)
+    usage.record(key_id=rec.id, client_ip="1.2.3.4", method="POST", path="/api/chat",
+                 model="", status=401, duration_ms=1)       # ctx_bucket NULL
+    usage.record(key_id=rec.id, client_ip="1.2.3.4", method="POST", path="/api/chat",
+                 model="m", status=200, duration_ms=5, ctx_bucket=4096)
+    buckets = usage.key_ctx_buckets(rec.id)
+    assert len(buckets) == 1 and buckets[0]["bucket"] == 4096 and buckets[0]["reqs"] == 1
+    del db

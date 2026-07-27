@@ -444,6 +444,38 @@
   </div>
 </div>
 
+<div class="card cat-brand">
+  <div class="card-head">
+    <span class="chip-ic brand">{{ icon('gauge', 18) }}</span>
+    <h2>{{ t('ctx.stat_title') }}</h2>
+  </div>
+  <p class="page-meta">{{ t('ctx.stat_intro') }}</p>
+  {% if ctx_buckets %}
+  <div class="ctx-stat">
+    <div class="donut-wrap" data-testid="ctx-donut">{{ svg.ctx_donut|safe }}</div>
+    <div class="table-wrap">
+    <table data-testid="ctx-buckets">
+      <thead><tr><th>{{ t('ctx.th.size') }}</th><th>{{ t('ctx.th.reqs') }}</th>
+        <th>{{ t('ctx.th.tokens') }}</th><th>{{ t('ctx.th.last_used') }}</th></tr></thead>
+      <tbody>
+      {% for b in ctx_buckets %}
+        <tr>
+          <td><span class="ctx-badge">{{ ctx_label(b.bucket) }}</span></td>
+          <td class="mono">{{ b.reqs }}</td>
+          <td class="mono">{{ b.tokens }}</td>
+          <td class="mono muted">{{ b.last_seen }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty">{{ icon('gauge', 22) }}
+    <span>{{ t('ctx.stat_empty') }}</span></div>
+  {% endif %}
+</div>
+
 <div class="card cat-accent">
   <div class="card-head">
     <span class="chip-ic accent">{{ icon('coins', 18) }}</span>

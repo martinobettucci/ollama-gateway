@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Laikotarpis"
   values: "Rodyti reikšmes"
+
+ctx:
+  stat_title: "Naudoti konteksto dydžiai"
+  stat_intro: "Kiekviena užklausa priskiriama mažiausiam ją talpinančiam dydžiui, todėl matote, kurie dydžiai iš tikrųjų reikalingi."
+  stat_empty: "Kol kas nėra išmatuotų užklausų."
+  th:
+    size: "Dydis"
+    reqs: "Užklausos"
+    tokens: "Žetonai"
+    last_used: "Paskutinis naudojimas"

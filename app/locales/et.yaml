@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Ajavahemik"
   values: "Näita väärtusi"
+
+ctx:
+  stat_title: "Kasutatud konteksti suurused"
+  stat_intro: "Iga päring liigitatakse väikseimasse sobivasse suurusse, nii näete, millised suurused on tegelikult vajalikud."
+  stat_empty: "Mõõdetud päringuid veel pole."
+  th:
+    size: "Suurus"
+    reqs: "Päringud"
+    tokens: "Tokenid"
+    last_used: "Viimati kasutatud"

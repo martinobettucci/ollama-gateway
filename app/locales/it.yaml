@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Periodo"
   values: "Mostra valori"
+
+ctx:
+  stat_title: "Dimensioni di contesto usate"
+  stat_intro: "Ogni richiesta è classificata nella più piccola dimensione che la contiene: si vede così quali dimensioni servono davvero."
+  stat_empty: "Nessuna richiesta misurata finora."
+  th:
+    size: "Dimensione"
+    reqs: "Richieste"
+    tokens: "Token"
+    last_used: "Ultimo uso"

@@ -80,8 +80,12 @@ car Ollama est en loopback natif (hors Docker).
   l'inverse d'`apply` — sérialise l'état courant (serveurs/cibles/clés) en YAML **sans secret**
   (clés sans `value`, jetons/SMTP non exportables), servi par `GET /admin/config.yaml` (LAN-only) et
   en CLI. CLI : `apply` / `validate` / `export`.
-- `context.py` — **limite de contexte par clé**. `normalize()` impose une valeur TOUJOURS définie :
-  multiple de **4096**, bornée **4 Ki → 1 Mi**, défaut **114688 (112k)** ; accepte « 112k »/entier.
+- `context.py` — **limite de contexte par clé**. `CONTEXT_SIZES` = **échelle de paliers** (2k · 4k ·
+  8k · 12k · 24k · 36k · 48k · 64k · 72k · 96k · 108k · 112k · 128k · 144k · 180k · 224k · 256k ·
+  384k · 512k · 640k · 768k · 1M) : c'est l'ENSEMBLE des valeurs autorisées. `normalize()` impose une
+  valeur TOUJOURS définie et la cale sur le palier ≥ demandé (défaut **114688 = 112k** ; accepte
+  « 112k »/entier). `bucket(tokens)` = **plus petit palier qui contient** `tokens` — base de la
+  statistique d'usage par taille (`usage.key_ctx_buckets` / `server_ctx_buckets`).
   `count_tokens()` extrait le TEXTE du corps quelle que soit l'API (`messages[].content`, `prompt`,
   `input`, `system`… ; images base64 exclues) et le tokenise via **tiktoken** (`cl100k_base`).
   `exceeds()` applique une **marge de +15 %** (tiktoken ≠ tokenizer exact des modèles servis) : le
@@ -108,6 +112,10 @@ car Ollama est en loopback natif (hors Docker).
 - **Configuration déclarative (migration 0010).** `api_keys.external_ref` (index unique partiel,
   NULL non contraint) — identité stable d'une clé gérée par le YAML headless (`app/reconcile.py`) ;
   NULL = clé créée par l'UI, jamais touchée par la réconciliation ni son élagage.
+- **Paliers de contexte utilisés (migration 0013).** `usage_events.ctx_bucket` — plus petit palier
+  contenant la requête (compteurs RÉELS de l'amont si disponibles, sinon estimation d'entrée) ;
+  NULL = non mesuré (refus avant lecture du corps) et exclu des agrégats. Index dédié. Alimente le
+  camembert + tableau « tailles de contexte utilisées » de la page clé et du monitoring serveur.
 - **Limite de contexte (migration 0012).** `api_keys.max_context_tokens` **NOT NULL DEFAULT
   114688** (112k) — plafond de tokens par requête, appliqué par le proxy (413) et injecté à l'amont
   (`options.num_ctx`). Valeur toujours définie ; la migration normalise les valeurs hors bornes.

@@ -205,15 +205,16 @@ Points de comportement :
 | Rate-limit | requêtes par minute glissante ; dépassé → 429 |
 | Serveur | serveur d'exécution rattaché (exactement un ; local par défaut) |
 | Modèles | liste de modèles autorisés sur ce serveur ; vide = tous autorisés |
-| Contexte max. | plafond de tokens par requête (obligatoire, multiple de 4k, 4k → 1M ; défaut 112k) |
+| Contexte max. | plafond de tokens par requête (obligatoire, choisi parmi les paliers 2k → 1M ; défaut 112k) |
 
 La suppression d'une clé est définitive (l'historique d'usage agrégé reste comptabilisé).
 
 ### Limite de contexte par clé
 
 Chaque clé porte un **plafond de contexte** : le nombre maximum de tokens qu'une requête peut
-mobiliser. La valeur est **toujours définie** (jamais vide), **multiple de 4k**, comprise entre
-**4k et 1M**, et vaut **112k** par défaut. Elle se règle à la création et à l'édition d'une clé, et
+mobiliser. La valeur est **toujours définie** (jamais vide) et se choisit parmi une **échelle de
+paliers** — 2k · 4k · 8k · 12k · 24k · 36k · 48k · 64k · 72k · 96k · 108k · 112k · 128k · 144k ·
+180k · 224k · 256k · 384k · 512k · 640k · 768k · 1M — avec **112k** par défaut. Elle se règle à la création et à l'édition d'une clé, et
 s'affiche sur sa ligne du tableau de bord.
 
 Le plafond agit à deux endroits :
@@ -235,6 +236,21 @@ flowchart LR
     G -->|au-dessus du plafond| R[413 refusée<br/>l'amont n'est jamais appelé]
     G -->|dans le plafond| I[Fenêtre de contexte imposée] --> S[Serveur d'exécution]
 ```
+
+### Quelles tailles de contexte servent réellement ?
+
+Chaque requête est **classée dans le plus petit palier qui la contient** : 27 734 tokens ne tiennent
+pas dans 24k → palier **36k** ; 2 096 tokens → palier **4k**. La **page d'une clé** et le
+**monitoring d'un serveur** affichent le résultat sous forme d'un **camembert** accompagné d'un
+tableau : pour chaque taille, le **nombre de requêtes**, les **tokens** et le **dernier usage**.
+
+C'est l'outil de dimensionnement : on voit, parmi toutes les tailles disponibles, **lesquelles
+servent vraiment**. Si toutes les requêtes d'une clé tiennent dans 24k, un plafond à 112k ne fait
+que réserver de la mémoire pour rien ; à l'inverse, une requête refusée apparaît au palier qu'elle
+**aurait nécessité**, ce qui indique immédiatement s'il faut relever le plafond.
+
+Le classement utilise les **compteurs réels du serveur d'exécution** (contexte d'entrée + réponse)
+quand ils sont disponibles, sinon l'estimation faite à l'entrée.
 
 > **Pourquoi une marge de 15 % ?** Le comptage utilise un tokenizer de référence, qui n'est pas
 > exactement celui de chaque modèle servi. Le nombre réel peut donc différer un peu ; la marge

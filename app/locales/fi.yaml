@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Aikaväli"
   values: "Näytä arvot"
+
+ctx:
+  stat_title: "Käytetyt kontekstikoot"
+  stat_intro: "Jokainen pyyntö luokitellaan pienimpään sopivaan kokoon, joten näet mitkä koot ovat todella tarpeen."
+  stat_empty: "Ei vielä mitattuja pyyntöjä."
+  th:
+    size: "Koko"
+    reqs: "Pyynnöt"
+    tokens: "Tokenit"
+    last_used: "Viimeksi käytetty"

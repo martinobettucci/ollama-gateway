@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Raon ama"
   values: "Taispeáin luachanna"
+
+ctx:
+  stat_title: "Méideanna comhthéacs in úsáid"
+  stat_intro: "Rangaítear gach iarratas sa mhéid is lú a fheileann dó, ionas go bhfeicfear cé na méideanna atá ag teastáil i ndáiríre."
+  stat_empty: "Níl aon iarratas tomhaiste go fóill."
+  th:
+    size: "Méid"
+    reqs: "Iarratais"
+    tokens: "Comharthaí"
+    last_used: "Úsáid dheireanach"

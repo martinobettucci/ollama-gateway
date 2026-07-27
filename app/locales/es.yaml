@@ -371,3 +371,13 @@ hz:
 chart:
   horizon: "Período"
   values: "Mostrar valores"
+
+ctx:
+  stat_title: "Tamaños de contexto usados"
+  stat_intro: "Cada petición se clasifica en el menor tamaño que la contiene: así se ve qué tamaños se usan realmente y se ajusta el tope."
+  stat_empty: "Aún no hay peticiones medidas."
+  th:
+    size: "Tamaño"
+    reqs: "Peticiones"
+    tokens: "Tokens"
+    last_used: "Último uso"
