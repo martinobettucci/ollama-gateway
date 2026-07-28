@@ -367,6 +367,18 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   depuis le menu ; 1280 px : rangée conservée, bouton masqué) ; **vision faite** (captures
   36-nav-mobile-closed, 37-nav-mobile-open).*
 
+## Fiabilité des tests
+
+- [x] **`reconcile.spec` (base partagée) durci contre un échec intermittent (2026-07-28).**
+  Assertion **en base** que la clé déclarative existe avant de vérifier l'UI (sépare écriture et
+  affichage), et **connexion prouvée** (attente explicite de `/admin`, erreur explicite portant
+  l'URL + le message du formulaire si refus 401/429) au lieu d'un délai d'attente muet. Cause
+  d'origine **non confirmée** (artefacts de l'échec effacés par `rm -rf output` avant lecture ;
+  3 exécutions complètes n'ont pas reproduit). Hypothèses écartées par la mesure : lenteur du rendu
+  (`list_keys()` ≤ 8 ms à 50 clés), verrouillage anti-brute-force (aucune spec n'envoie de mauvais
+  mot de passe), filtres clients (ne s'exécutent que sur `input`, contexte neuf par test). Aucun
+  délai d'attente rallongé : une expiration doit rester un échec réel.
+
 ## Idées ultérieures (non planifiées)
 
 - [ ] Changement du mot de passe admin depuis l'UI.

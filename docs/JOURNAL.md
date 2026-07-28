@@ -3,6 +3,34 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-07-28 — Fiabilisation d'un test E2E intermittent (reconcile, base partagée)
+
+- **Ce qui a été observé.** Un échec unique de `reconcile.spec` (« clé importée … visible au
+  dashboard ») sur une exécution complète, à **7,5 s** au lieu de ~2 s. Rejoué seul et en suite
+  complète : vert. Signature temporelle = ~2 s de test + **5 s** (délai d'attente par défaut d'un
+  `toBeVisible`) ⇒ c'est l'assertion sur la ligne du tableau qui a expiré.
+- **Honnêteté sur le diagnostic.** Le message d'erreur exact n'a **pas** pu être lu : `npm test`
+  commence par `rm -rf output`, ce qui a effacé la trace et la capture de l'échec avant inspection.
+  La cause n'est donc **pas prouvée** ; trois exécutions complètes supplémentaires (114 tests) n'ont
+  pas reproduit l'incident.
+- **Hypothèses écartées par la mesure, pas par l'intuition.** (1) *Lenteur du rendu à mesure que les
+  clés s'accumulent* : `keys.list_keys()` mesuré à ≤ 8 ms jusqu'à 50 clés → écarté. (2) *Verrouillage
+  anti-brute-force du login* : aucune spec n'envoie de mauvais mot de passe → écarté. (3) *Filtres
+  clients masquant la ligne* : le filtre ne s'exécute que sur `input` et chaque test a un contexte
+  neuf → écarté.
+- **Ce qui a été durci, et pourquoi c'est utile même sans diagnostic certain.** (a) **Assertion en
+  base avant l'UI** : on vérifie que la clé existe réellement, ce qui **sépare** « la réconciliation
+  n'a rien écrit » de « l'UI ne l'affiche pas ». (b) **Connexion prouvée** : on attend explicitement
+  la navigation vers `/admin` et, en cas d'échec, on lève une erreur portant l'URL et le message du
+  formulaire — au lieu d'un délai d'attente muet sur la page suivante. Un login refusé (401/429) ne
+  peut plus se déguiser en « ligne absente ».
+- **Pas de rustine.** Aucun délai d'attente rallongé sur l'assertion de la ligne : avec la
+  pré-vérification en base et la connexion prouvée, une expiration signifierait désormais un **vrai**
+  défaut d'affichage — il doit échouer.
+- **Portée volontairement limitée.** Le même motif de connexion sans attente existe dans d'autres
+  specs ; la cause n'étant pas confirmée, on ne réécrit pas dix fichiers pour un bénéfice non prouvé.
+  Le motif est documenté ici et sera généralisé si une autre spec se met à clignoter.
+
 ## 2026-07-28 — Navigation adaptative : la barre mobile était cassée, pas seulement à l'étroit
 
 - **Mesurer avant de dessiner.** Le diagnostic a chiffré le problème : nav = **852 px**, document

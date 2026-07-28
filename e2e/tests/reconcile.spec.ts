@@ -32,6 +32,28 @@ function writeYaml(name: string, text: string): string {
   return p;
 }
 
+/** Connexion au panel, avec preuve explicite d'avoir ABOUTI.
+ *
+ * Sans cette vérification, un login refusé (401 mauvais mot de passe, 429 anti-brute-force —
+ * l'état du throttle est global au process admin et partagé par TOUTES les specs) laisse la page
+ * sur le formulaire : l'échec se manifeste alors comme un délai d'attente muet de 5 s sur un
+ * sélecteur de la page suivante, sans dire pourquoi. On attend donc explicitement la navigation
+ * vers /admin, et on remonte le message d'erreur du formulaire s'il y en a un. */
+async function login(page) {
+  await page.goto('/admin/login');
+  await page.fill('#password', 'adminpass');
+  await Promise.all([
+    page.waitForURL('**/admin', { timeout: 15_000 }).catch(() => {}),
+    page.click('button[type=submit]'),
+  ]);
+  if (!/\/admin$/.test(new URL(page.url()).pathname)) {
+    const err = await page.locator('.err[role=alert]').first()
+      .innerText().catch(() => '(aucun message)');
+    throw new Error(`connexion au panel échouée — url=${page.url()} message=${err.trim()}`);
+  }
+  await expect(page.locator('h1')).toBeVisible();
+}
+
 test('reconcile CLI: serveurs/cibles/clés créés dans une base neuve + idempotence + prune', () => {
   const TDB = path.join(DATA, 'reco-fresh.db');
   for (const f of [TDB, `${TDB}-wal`, `${TDB}-shm`]) fs.rmSync(f, { force: true });
@@ -127,9 +149,15 @@ keys:
       // L'état du quota est exposé (rpm_limit: 42 → limite 42).
       expect(ok.headers()['x-ratelimit-limit-requests']).toBe('42');
 
-      await page.goto('/admin/login');
-      await page.fill('#password', 'adminpass');
-      await page.click('button[type=submit]');
+      // La clé est bien EN BASE avant d'aller regarder l'UI : sépare « la réconciliation n'a rien
+      // écrit » de « l'UI ne l'affiche pas », au lieu d'un délai d'attente muet sur le sélecteur.
+      const inDb = execSync(
+        `${PY} -c "import os,sqlite3;c=sqlite3.connect(os.environ['GATEWAY_DB_PATH']);` +
+        `print(c.execute(\\"select count(*) from api_keys where external_ref='reco-e2e'\\").fetchone()[0])"`,
+        { cwd: ROOT, env: { ...process.env, GATEWAY_DB_PATH: DB } }).toString().trim();
+      expect(inDb, 'la clé déclarative doit exister en base avant la vérification UI').toBe('1');
+
+      await login(page);
       const row = page.locator('[data-testid=key-row]', { hasText: 'Clé déclarative E2E' });
       await expect(row).toBeVisible();
       await page.screenshot({ path: `${OUT}/28-reconcile.jpg`, type: 'jpeg', fullPage: true });
