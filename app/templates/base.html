@@ -151,10 +151,33 @@
     .badge::before { content:""; width:6px; height:6px; border-radius:999px; background:currentColor; }
     .badge.on  { background:var(--color-success-soft); color:var(--color-success); }
     .badge.off { background:var(--color-danger-soft);  color:var(--color-danger); }
-    /* Plafond de contexte de la clé (catégorie « tokens » = jaune, cf. DESIGN_SYSTEM). */
+    /* Plafond de contexte de la clé (catégorie « tokens » = jaune, cf. DESIGN_SYSTEM).
+       Chaque taille de contexte reçoit une couleur distincte pour être immédiatement différenciable. */
     .ctx-badge { display:inline-block; margin-left:.4rem; padding:.05rem .5rem; border-radius:999px;
-                 font-size:11.5px; font-weight:600; font-variant-numeric:tabular-nums;
-                 background:var(--color-accent-soft); color:var(--color-ink); }
+                 font-size:11.5px; font-weight:600; font-variant-numeric:tabular-nums; }
+    /* Palette de 22 couleurs distinctes (22 paliers CONTEXT_SIZES_K) — toutes dérivées de la charte P2Enjoy + extensions harmonieuses. */
+    .ctx-badge[data-size="2k"]   { background:#E8F0FE; color:#1A73E8; }
+    .ctx-badge[data-size="4k"]   { background:#E6F4EA; color:#137333; }
+    .ctx-badge[data-size="8k"]   { background:#FEF7E0; color:#B06000; }
+    .ctx-badge[data-size="12k"]  { background:#F3E8FD; color:#7627BB; }
+    .ctx-badge[data-size="24k"]  { background:#FFF3E0; color:#E65100; }
+    .ctx-badge[data-size="36k"]  { background:#E0F7FA; color:#00838F; }
+    .ctx-badge[data-size="48k"]  { background:#FCE4EC; color:#C62828; }
+    .ctx-badge[data-size="64k"]  { background:#EDE7F6; color:#4527A0; }
+    .ctx-badge[data-size="72k"]  { background:#E8EAF6; color:#283593; }
+    .ctx-badge[data-size="96k"]  { background:#FFF8E1; color:#F57F17; }
+    .ctx-badge[data-size="108k"] { background:#E0F2F1; color:#00695C; }
+    .ctx-badge[data-size="112k"] { background:#FBE9E7; color:#D84315; }
+    .ctx-badge[data-size="128k"] { background:#EDEDDA; color:#827717; }
+    .ctx-badge[data-size="144k"] { background:#E8EAF6; color:#303F9F; }
+    .ctx-badge[data-size="180k"] { background:#F3E5F5; color:#8E24AA; }
+    .ctx-badge[data-size="224k"] { background:#E1F5FE; color:#0277BD; }
+    .ctx-badge[data-size="256k"] { background:#FFF9C4; color:#F9A825; }
+    .ctx-badge[data-size="384k"] { background:#C8E6C9; color:#2E7D32; }
+    .ctx-badge[data-size="512k"] { background:#FFE0B2; color:#EF6C00; }
+    .ctx-badge[data-size="640k"] { background:#D1C4E9; color:#5E35B1; }
+    .ctx-badge[data-size="768k"] { background:#B2EBF2; color:#00ACC1; }
+    .ctx-badge[data-size="1024k"]{ background:#FFCCBC; color:#D84315; }
     /* Statistique des tailles de contexte : camembert + tableau côte à côte (repli en colonne). */
     .ctx-stat { display:flex; gap:1.25rem; align-items:flex-start; flex-wrap:wrap; }
     .ctx-stat .donut-wrap { flex:0 0 auto; }

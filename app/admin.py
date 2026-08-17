@@ -352,7 +352,8 @@ async def create_key(request: Request):
     if not turl or turl == targets.PLACEHOLDER_URL:
         turl = config.PUBLIC_BASE_URL or turl
     request.session["created_key"] = {
-        "label": rec.label, "secret": secret, "target_url": turl}
+        "label": rec.label, "secret": secret, "target_url": turl,
+        "models": rec.models, "image_models": rec.image_models}
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -367,6 +368,43 @@ def _ctx_color(i: int) -> str:
 def _series_label(bucket: str) -> str:
     """Libellé d'axe X court : 'YYYY-MM-DD' → 'MM-DD' ; 'YYYY-MM-DD HH:00' → 'HH:00'."""
     return bucket[11:] if len(bucket) > 10 else bucket[5:]
+
+
+# --- Temps réel : données JSON pour le viewer dashboard ----------------------------------------
+
+@app.get("/admin/realtime", response_class=JSONResponse)
+async def realtime_data(request: Request):
+    """Données temps réel des dernières 2 h par clé × modèle (histogrammes empilés)."""
+    if (r := _guard(request)):
+        return r
+    conn = db.connect()
+    try:
+        data = usage.realtime_2h(conn)
+    finally:
+        conn.close()
+    # Enrichir avec les labels de clés
+    keys_map = {k.id: k.label for k in keys.list_keys(conn)}
+    for bucket in data:
+        for entry in bucket["keys"]:
+            entry["label"] = keys_map.get(entry["key_id"], f"key-{entry['key_id']}")
+    return JSONResponse(data)
+
+
+@app.get("/admin/realtime-models", response_class=JSONResponse)
+async def realtime_models(request: Request):
+    """Liste des modèles utilisés récemment (pour le filtre)."""
+    if (r := _guard(request)):
+        return r
+    conn = db.connect()
+    try:
+        rows = conn.execute(
+            "SELECT DISTINCT model FROM usage_events "
+            "WHERE ts >= datetime('now', '-2 hours') AND model <> '' "
+            "ORDER BY model"
+        ).fetchall()
+        return JSONResponse([r["model"] for r in rows])
+    finally:
+        conn.close()
 
 
 @app.get("/admin/keys/{key_id}", response_class=HTMLResponse)

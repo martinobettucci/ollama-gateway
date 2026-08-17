@@ -70,6 +70,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (endpoint personnalisé)
     no_public_url: '`PUBLIC_BASE_URL` n''est pas configurée côté passerelle : remplacez le placeholder par l''URL publique réelle avant usage.'
     copy_btn: Copier les variables
     copied: Copié !

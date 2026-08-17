@@ -20,7 +20,11 @@
     <h2>{{ tg.name }}</h2>
   </div>
   <div class="server-meta">
-    <span class="mono">{{ tg.base_url }}</span>
+    <span class="mono" id="tgt-url-{{ tg.id }}">{{ tg.base_url }}</span>
+    <button type="button" class="btn-sm btn-secondary" data-copy="{{ tg.base_url }}"
+            data-copied="{{ t('common.copied') }}" data-failed="{{ t('dash.env.copy_fail') }}"
+            data-target-url="tgt-url-{{ tg.id }}" title="{{ t('tgt.copy') }}">
+      {{ icon('copy', 14) }} {{ t('tgt.copy') }}</button>
     {% if tg.is_default %}<span class="badge accent">{{ t('common.default') }}</span>{% endif %}
     <span class="badge neutral">{{ t('tgt.keys_count', count=keys_by_target[tg.id]) }}</span>
   </div>
@@ -68,4 +72,31 @@
   </form>
 </div>
 </div>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      var text = this.dataset.copy;
+      if (!text) {
+        var el = document.getElementById(this.dataset.targeturl);
+        text = el ? el.textContent : '';
+      }
+      var ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+      if (!ok) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly','');
+        ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+        document.body.append(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+        try { ok = document.execCommand('copy'); } catch (e) {} ta.remove();
+      }
+      var lbl = btn.querySelector('.btn-label') || btn;
+      lbl.textContent = ok ? this.dataset.copied : this.dataset.failed;
+      setTimeout(function () { lbl.innerHTML = '{{ icon("copy", 14) }} {{ t("tgt.copy") }}'; }, 2000);
+    });
+  });
+})();
+</script>
+
 {% endblock %}

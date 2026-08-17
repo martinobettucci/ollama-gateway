@@ -31,6 +31,9 @@
       <label><input type="checkbox" id="env-api-openai"> {{ t('dash.env.api_openai') }}</label>
       <label><input type="checkbox" id="env-api-anthropic"> {{ t('dash.env.api_anthropic') }}</label>
     </div>
+    <div class="checks">
+      <label><input type="checkbox" id="env-vscode"> {{ t('dash.env.vscode') }}</label>
+    </div>
     <pre class="env-output" id="env-output" data-testid="env-output"></pre>
     {% if not public_base_url %}
     <p class="hint">{{ t('dash.env.no_public_url') }}</p>
@@ -58,11 +61,40 @@
   };
   const apis = ['ollama', 'openai', 'anthropic'];
   function render() {
-    out.textContent = apis
-      .filter(a => document.getElementById('env-api-' + a).checked)
-      .flatMap(a => gen[a]).join('\n');
+    const envChecked = document.getElementById('env-vscode').checked;
+    if (envChecked) {
+      // VS Code custom endpoint JSON — champs validés contre les valeurs réelles
+      const models = {{ key_models|default([])|tojson }};
+      const imageModels = {{ key_image_models|default([])|tojson }};
+      const allModels = models.concat(imageModels);
+      const modelList = allModels.length > 0
+        ? allModels.map(function (m) {
+            return '            {\n'
+              + '                "id": "' + m + '",\n'
+              + '                "name": "' + m + '",\n'
+              + '                "url": "' + base + '/v1",\n'
+              + '                "toolCalling": true,\n'
+              + '                "vision": false\n'
+              + '            }';
+          }).join(',\n')
+        : '';
+      const json = '[\n    {\n'
+        + '        "name": "' + {{ created.label|tojson }} + ' — passerelle locale",\n'
+        + '        "vendor": "customendpoint",\n'
+        + '        "apiKey": "${input:chat.lm.secret.-4ca619c6}",\n'
+        + '        "apiType": "responses",\n'
+        + '        "models": [\n' + modelList + '\n'
+        + '        ]\n'
+        + '    }\n]';
+      out.textContent = json;
+    } else {
+      out.textContent = apis
+        .filter(a => document.getElementById('env-api-' + a).checked)
+        .flatMap(a => gen[a]).join('\n');
+    }
   }
   apis.forEach(a => document.getElementById('env-api-' + a).addEventListener('change', render));
+  document.getElementById('env-vscode').addEventListener('change', render);
   const copyBtn = document.getElementById('env-copy');
   copyBtn.addEventListener('click', async () => {
     let ok = false;
@@ -302,4 +334,169 @@
   </form>
 </div>
 </div>
+
+{# ── Temps réel : dernières 2 h par clé × modèle (histogrammes empilés) ─────────────── #}
+<div class="card cat-brand" style="margin-top:1.2rem">
+  <div class="card-head">
+    <span class="chip-ic brand">{{ icon('activity', 18) }}</span>
+    <h2>{{ t('dash.realtime.title') }}</h2>
+  </div>
+  <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem">
+    <button type="button" id="rt-refresh" class="btn-sm btn-secondary" data-testid="rt-refresh">
+      {{ icon('refresh-cw', 14) }} {{ t('dash.realtime.refresh') }}</button>
+    <span class="muted" id="rt-last-update">{{ t('dash.realtime.loading') }}</span>
+    <select id="rt-filter-key" data-testid="rt-filter-key" aria-label="{{ t('dash.realtime.filter_key_aria') }}">
+      <option value="">{{ t('dash.realtime.all_keys') }}</option>
+      {% for k in keys %}<option value="{{ k.id }}">{{ k.label }}</option>{% endfor %}
+    </select>
+    <select id="rt-filter-model" data-testid="rt-filter-model" aria-label="{{ t('dash.realtime.filter_model_aria') }}">
+      <option value="">{{ t('dash.realtime.all_models') }}</option>
+    </select>
+  </div>
+  <div class="chart-wrap" data-testid="rt-chart">
+    <svg id="rt-svg" width="100%" style="display:block"></svg>
+    <p class="muted" id="rt-empty" hidden>{{ t('dash.realtime.no_data') }}</p>
+  </div>
+  <ul class="legend" id="rt-legend" data-testid="rt-legend" style="list-style:none;padding:0;margin:.4rem 0;display:flex;flex-wrap:wrap;gap:.5rem .9rem;font-size:12.5px"></ul>
+</div>
+
+<script>
+(function () {
+  const svg = document.getElementById('rt-svg');
+  const legend = document.getElementById('rt-legend');
+  const emptyMsg = document.getElementById('rt-empty');
+  const lastUpdate = document.getElementById('rt-last-update');
+  const filterKey = document.getElementById('rt-filter-key');
+  const filterModel = document.getElementById('rt-filter-model');
+  let rtData = [];
+  let rtModels = [];
+
+  // Couleurs par type de modèle (distinctes et différenciables)
+  const MODEL_COLORS = { text: '#23468C', image: '#238C33', vision: '#D9CF4A' };
+
+  function fetchRealtime() {
+    fetch('/admin/realtime').then(r => r.json()).then(data => { rtData = data; render(); });
+    fetch('/admin/realtime-models').then(r => r.json()).then(models => {
+      rtModels = models;
+      // Peupler le filtre modèles si vide
+      if (filterModel.options.length <= 1) {
+        models.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m; opt.textContent = m;
+          filterModel.appendChild(opt);
+        });
+      }
+    });
+  }
+
+  function render() {
+    if (!rtData || rtData.length === 0) {
+      svg.innerHTML = '';
+      emptyMsg.hidden = false;
+      legend.innerHTML = '';
+      return;
+    }
+    emptyMsg.hidden = true;
+
+    const fKey = filterKey.value;
+    const fModel = filterModel.value;
+    const W = Math.max(600, rtData.length * 80);
+    const H = 220;
+    const padL = 50, padR = 12, padT = 10, padB = 30;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    // Filtrer les données
+    let filtered = rtData.map(b => {
+      let keys = b.keys.filter(k => !fKey || k.key_id == fKey);
+      if (fModel) keys = keys.map(k => ({
+        ...k, models: k.models.filter(m => m.type === fModel)
+      })).filter(k => k.models.length > 0);
+      return { ...b, keys };
+    }).filter(b => b.keys.length > 0);
+
+    // Calculer le max par bucket (somme empilée)
+    let maxVal = 0;
+    filtered.forEach(b => {
+      let sum = b.keys.reduce((s, k) => s + k.models.reduce((ss, m) => ss + m.count, 0), 0);
+      if (sum > maxVal) maxVal = sum;
+    });
+    if (maxVal <= 0) maxVal = 1;
+
+    // Construire le SVG
+    const n = filtered.length;
+    const barW = Math.max(20, Math.min(60, plotW / n - 4));
+    const gap = 4;
+
+    let parts = [
+      `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Temps réel — dernières 2 h" class="chart">`,
+      // Axe Y
+      ...[0, 0.25, 0.5, 0.75, 1].map(frac => {
+        const y = padT + plotH - frac * plotH;
+        const val = Math.round(maxVal * frac);
+        return `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#E5E7EB" stroke-width="1"/>` +
+               `<text x="${padL - 6}" y="${y + 3.5}" text-anchor="end" font-size="10" fill="#8A94A6">${val}</text>`;
+      }),
+      // Barres empilées par bucket
+    ];
+
+    let allTypes = new Set();
+    filtered.forEach(b => b.keys.forEach(k => k.models.forEach(m => allTypes.add(m.type))));
+    const typeOrder = ['text', 'image', 'vision'];
+    const visibleTypes = typeOrder.filter(t => allTypes.has(t));
+
+    filtered.forEach((b, bi) => {
+      const x = padL + (bi / Math.max(n - 1, 1)) * plotW;
+      let yOffset = 0;
+      b.keys.forEach(k => {
+        k.models.sort((a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type));
+        k.models.forEach(m => {
+          const barH = (m.count / maxVal) * plotH;
+          const color = MODEL_COLORS[m.type] || '#8A94A6';
+          parts.push(
+            `<rect x="${x}" y="${padT + plotH - yOffset - barH}" width="${barW}" height="${barH}" fill="${color}" rx="2">` +
+            `<title>${k.label}: ${m.type} = ${m.count}</title></rect>`
+          );
+          yOffset += barH;
+        });
+      });
+      // Label X (tranche de 15 min)
+      const label = b.ts.split(' ')[1] || b.ts.split('T')[1] || '';
+      parts.push(`<text x="${x + barW / 2}" y="${H - 6}" text-anchor="middle" font-size="9" fill="#8A94A6">${label}</text>`);
+    });
+
+    // Légende par type de modèle
+    let legendHtml = visibleTypes.map(t =>
+      `<li><span class="dot" style="background:${MODEL_COLORS[t]}"></span>${t}</li>`
+    ).join('');
+    // Légende par clé (max 10)
+    let keySet = new Set();
+    filtered.forEach(b => b.keys.forEach(k => keySet.add(k.key_id)));
+    Array.from(keySet).slice(0, 10).forEach(kid => {
+      const klabel = filtered[0].keys.find(k => k.key_id == kid)?.label || `key-${kid}`;
+      // Couleur dérivée du hash de la clé
+      let hash = 0;
+      for (let i = 0; i < klabel.length; i++) hash = klabel.charCodeAt(i) + ((hash << 5) - hash);
+      const hue = Math.abs(hash) % 360;
+      legendHtml += `<li><span class="dot" style="background:hsl(${hue},60%,55%)"></span>${klabel}</li>`;
+    });
+
+    parts.push('</svg>');
+    svg.innerHTML = parts.join('');
+    legend.innerHTML = legendHtml;
+
+    // Horodatage
+    lastUpdate.textContent = '{{ t("dash.realtime.updated") }} ' + new Date().toLocaleTimeString();
+  }
+
+  document.getElementById('rt-refresh').addEventListener('click', fetchRealtime);
+  filterKey.addEventListener('change', render);
+  filterModel.addEventListener('change', render);
+
+  // Rafraîchissement auto toutes les 30 s
+  fetchRealtime();
+  setInterval(fetchRealtime, 30000);
+})();
+</script>
+
 {% endblock %}
