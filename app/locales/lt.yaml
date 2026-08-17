@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama API
     api_openai: OpenAI API
     api_anthropic: Anthropic API
+    vscode: VS Code (pasirinktinis galinis taškas)
     no_public_url: '`PUBLIC_BASE_URL` nesukonfigūruotas sietuve: prieš naudodami pakeiskite vietos rezervavimo ženklą tikruoju viešuoju URL.'
     copy_btn: Kopijuoti kintamuosius
     copied: Nukopijuota!

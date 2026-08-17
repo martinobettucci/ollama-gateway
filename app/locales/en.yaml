@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama API
     api_openai: OpenAI API
     api_anthropic: Anthropic API
+    vscode: VS Code (custom endpoint)
     no_public_url: '`PUBLIC_BASE_URL` is not configured on the gateway: replace the placeholder with the real public URL before use.'
     copy_btn: Copy the variables
     copied: Copied!

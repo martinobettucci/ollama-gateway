@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (endpoint personalizzat)
     no_public_url: '`PUBLIC_BASE_URL` mhux ikkonfigurat fuq il-gateway: issostitwixxi l-placeholder bl-URL pubbliku reali qabel l-użu.'
     copy_btn: Ikkopja l-varjabbli
     copied: Ikkupjat!

@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (vlastný koncový bod)
     no_public_url: '`PUBLIC_BASE_URL` nie je na bráne nakonfigurovaná: pred použitím nahraďte zástupný symbol skutočnou verejnou URL.'
     copy_btn: Skopírovať premenné
     copied: Skopírované!

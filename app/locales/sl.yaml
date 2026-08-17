@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (namenska končna točka)
     no_public_url: '`PUBLIC_BASE_URL` na prehodu ni konfiguriran: pred uporabo zamenjajte označbo mesta z dejanskim javnim URL-jem.'
     copy_btn: Kopiraj spremenljivke
     copied: Kopirano!

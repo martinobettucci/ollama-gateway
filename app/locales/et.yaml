@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama API
     api_openai: OpenAI API
     api_anthropic: Anthropic API
+    vscode: VS Code (kohandatud lõpp-punkt)
     no_public_url: '`PUBLIC_BASE_URL` ei ole lüüsis seadistatud: asendage kohatäide enne kasutamist tegeliku avaliku URL-iga.'
     copy_btn: Kopeeri muutujad
     copied: Kopeeritud!

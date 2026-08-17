@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama-API
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
+    vscode: VS Code (anpassad slutpunkt)
     no_public_url: '`PUBLIC_BASE_URL` är inte konfigurerad på gatewayen: ersätt platshållaren med den riktiga offentliga URL:en före användning.'
     copy_btn: Kopiera variablerna
     copied: Kopierat!

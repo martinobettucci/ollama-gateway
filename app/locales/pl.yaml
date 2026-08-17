@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (niestandardowy punkt końcowy)
     no_public_url: '`PUBLIC_BASE_URL` nie jest skonfigurowana po stronie bramy: przed użyciem zastąp symbol zastępczy rzeczywistym publicznym adresem URL.'
     copy_btn: Skopiuj zmienne
     copied: Skopiowano!

@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama-API
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
+    vscode: VS Code (mukautettu päätepiste)
     no_public_url: '`PUBLIC_BASE_URL` ei ole määritetty yhdyskäytävässä: korvaa paikkamerkki todellisella julkisella URL-osoitteella ennen käyttöä.'
     copy_btn: Kopioi muuttujat
     copied: Kopioitu!

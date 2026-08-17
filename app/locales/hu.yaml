@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama API
     api_openai: OpenAI API
     api_anthropic: Anthropic API
+    vscode: VS Code (egyéni végpont)
     no_public_url: 'A `PUBLIC_BASE_URL` nincs beállítva az átjárón: használat előtt cserélje ki a helyőrzőt a valódi nyilvános URL-re.'
     copy_btn: Változók másolása
     copied: Másolva!

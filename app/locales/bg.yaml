@@ -68,6 +68,7 @@ dash:
     api_ollama: API на Ollama
     api_openai: API на OpenAI
     api_anthropic: API на Anthropic
+    vscode: VS Code (персонализирана крайна точка)
     no_public_url: '`PUBLIC_BASE_URL` не е конфигуриран на шлюза: заменете контейнера за заместване с реалния публичен URL адрес преди употреба.'
     copy_btn: Копирай променливите
     copied: Копирано!

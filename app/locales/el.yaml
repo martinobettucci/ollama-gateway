@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (προσαρμοσμένο τελικό σημείο)
     no_public_url: 'Η `PUBLIC_BASE_URL` δεν έχει διαμορφωθεί στην πύλη: αντικαταστήστε το σύμβολο κράτησης θέσης με την πραγματική δημόσια URL πριν από τη χρήση.'
     copy_btn: Αντιγραφή των μεταβλητών
     copied: Αντιγράφηκε!

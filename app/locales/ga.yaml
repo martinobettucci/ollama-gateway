@@ -68,6 +68,7 @@ dash:
     api_ollama: API Ollama
     api_openai: API OpenAI
     api_anthropic: API Anthropic
+    vscode: VS Code (críochphointe saincheaptha)
     no_public_url: 'Níl `PUBLIC_BASE_URL` cumraithe ar an ngeata: cuir an fíor-URL poiblí in ionad an tsealbhóra áite roimh úsáid.'
     copy_btn: Cóipeáil na hathróga
     copied: Cóipeáilte!

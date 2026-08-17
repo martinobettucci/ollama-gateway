@@ -68,6 +68,7 @@ dash:
     api_ollama: Ollama-API
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
+    vscode: VS Code (aangepast eindpunt)
     no_public_url: '`PUBLIC_BASE_URL` is niet geconfigureerd op de gateway: vervang de placeholder door de echte openbare URL vóór gebruik.'
     copy_btn: Variabelen kopiëren
     copied: Gekopieerd!
