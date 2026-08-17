@@ -3,6 +3,38 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-08-17 — Déploiement prod : le balayage se fait sur DEV, et la DNS de BuildKit est cassée
+
+- **Où tourne le balayage (rappel qui a coûté du temps).** Le balayage de sécurité est un gate
+  **pré-déploiement** : il tourne sur la machine de **développement**, et on ne déploie que s'il est
+  vert. L'hôte de production n'a donc **pas** de `.venv` ni d'outillage de sécurité — c'est normal,
+  pas une anomalie à « réparer ». Lancer `./runProd` *sur la prod* ré-exécute le gate là où il n'a
+  pas sa place et le fait échouer faute d'outils. Sur la prod, l'étape de déploiement est la
+  reconstruction/recréation des services, pas le balayage. (Ne pas confondre `.venv` — virtualenv
+  Python de l'outillage — avec `.env.prod`, le fichier de variables d'environnement : le second est
+  bien présent en prod, l'application n'a jamais eu besoin du premier puisqu'elle tourne en Docker.)
+- **Découvertes réelles remontées par le gate (et corrigées avant de déployer).** (1) CVE sur
+  `cryptography` (avis PYSEC-2026-3552) → montée de version, aller-retour Fernet revérifié ;
+  (2) `test_i18n` au rouge : la fonctionnalité « endpoint VS Code » avait ajouté son libellé au seul
+  `fr.yaml`, laissant 23 locales incomplètes. Les deux étaient **antérieurs** à la session et
+  auraient été déployés en silence si le gate avait été contourné — c'est exactement son intérêt.
+- **La DNS de BuildKit est inutilisable sur cet hôte (piège à documenter).** Toute reconstruction
+  d'image échouait sur « name resolution » (pip) / « network is unreachable » (xcaddy) alors que
+  l'hôte, lui, résout parfaitement. Diagnostic : les conteneurs d'**exécution** résolvent (y compris
+  en réseau hôte), seuls les conteneurs de **build** échouent — le bac à sable de BuildKit reçoit un
+  résolveur IPv6 qu'il ne peut pas joindre. **Contournement retenu** : construire l'image applicative
+  avec `docker build --network=host -t ollama-gateway:prod .`, puis laisser `docker compose up -d`
+  consommer l'image (sans `--build`). Rien n'est modifié durablement : ni `daemon.json`, ni le dépôt,
+  le réseau hôte n'est utilisé qu'au moment du build.
+- **L'edge TLS n'a pas été reconstruit, volontairement.** Ses sources n'ont pas changé depuis la
+  construction de son image ; le rebuild global échouait pourtant sur *lui* (xcaddy sans réseau).
+  Ne reconstruire que `proxy` + `admin` évite un échec sans rapport avec le changement livré — et
+  évite d'interrompre l'edge.
+- **Coupure assumée de quelques secondes.** La recréation de `proxy` a produit des `502` à l'edge le
+  temps du redémarrage (un client réel a tapé pendant la fenêtre). Vérifié ensuite : plus aucune
+  erreur, sondes de bout en bout à `200`. Un déploiement sans coupure demanderait un basculement
+  progressif, non mis en place à ce stade.
+
 ## 2026-07-28 — Fiabilisation d'un test E2E intermittent (reconcile, base partagée)
 
 - **Ce qui a été observé.** Un échec unique de `reconcile.spec` (« clé importée … visible au

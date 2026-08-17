@@ -6,6 +6,45 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+_Rien à publier pour le moment…_
+
+## [Publié]
+
+### Déployé en production — 2026-08-17 (migrations ≤ 0013)
+
+Déploiement effectué et vérifié en production : `git pull` sur le clone, reconstruction de l'image
+applicative (proxy + admin) et recréation des deux services ; l'edge TLS n'était pas concerné par ces
+changements et n'a pas été reconstruit. Données préservées (clés/serveurs/cibles intactes, clé maître
+inchangée), aucune migration à appliquer (base déjà à jour). Balayage de sécurité pré-déploiement
+**vert** sur l'environnement de développement (secrets, CVE des dépendances, SAST, suite de tests).
+Preuves live : proxy `ok`, admin `303` (redirection de connexion), TLS public `200`, requête
+d'inférence non authentifiée refusée `401`, et versions attendues constatées **dans le conteneur en
+cours d'exécution**.
+
+- **Sécurité — mise à jour de `cryptography` (CVE).** La version épinglée était affectée par une
+  vulnérabilité connue (avis PYSEC-2026-3552) ; passage à la version corrigée. Le chiffrement au
+  repos des jetons de serveurs distants (Fernet) a été revérifié après la montée de version
+  (aller-retour chiffrement/déchiffrement, suite de tests complète verte). Aucune rupture d'API.
+
+- **Correction — libellé « VS Code » manquant dans 23 langues.** La case à cocher « VS Code » de la
+  modale de génération de clé n'existait qu'en français : les 23 autres langues de l'UE affichaient
+  le texte français par repli. Traduction ajoutée partout, la règle de complétude clé-à-clé des
+  catalogues est de nouveau respectée.
+
+- **Point de terminaison « VS Code » à la création d'une clé.** La modale de configuration client
+  propose une case **VS Code** qui génère un bloc de configuration prêt à coller, valorisé avec les
+  vraies données de la clé (modèles autorisés, URL de la cible, libellé).
+
+- **Bouton « copier » sur chaque URL de cible.** Chaque cible publique gagne une copie
+  presse-papier directe, avec retour visuel.
+
+- **Pastilles de taille de contexte distinctes.** Les 22 paliers de contexte ont désormais chacun
+  leur couleur, au lieu d'une teinte unique : la taille se lit d'un coup d'œil dans les tableaux.
+
+- **Vue temps réel au tableau de bord.** Nouveau visuel des **2 dernières heures** par tranches de
+  15 minutes : histogramme empilé par clé et par **type de modèle** (texte / image / vision),
+  filtres par clé et par modèle, rafraîchissement automatique.
+
 - **Correction — navigation inutilisable sur mobile.** Avec sept entrées, la barre de navigation
   mesurait ~850 px et **forçait la page entière à déborder** (875 px de large sur un écran de
   360 px) : **quatre entrées — Logs, Manuel, Exporter et Déconnexion — étaient hors écran, donc
@@ -63,8 +102,6 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   le repli `execCommand` échouait car sa zone de texte temporaire était ajoutée **hors** de la
   fenêtre modale, rendue **inerte** par `showModal()`. La zone est désormais insérée **dans** la
   modale (calque supérieur) → la copie fonctionne aussi en HTTP.
-
-## [Publié]
 
 ### Déployé en production — 2026-07-20 (migrations ≤ 0011)
 
