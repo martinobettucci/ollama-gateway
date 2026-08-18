@@ -6,6 +6,16 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Entrée LAN en clair, optionnelle (désactivée par défaut).** Il est désormais possible de servir
+  le trafic **local** directement, sans le faire ressortir par l'entrée publique — l'aller-retour
+  par l'extérieur est inutile, dépend du DNS public et échoue souvent (le retour « en épingle »
+  n'est pas toujours supporté). L'écoute se fait sur une **adresse de réseau local explicite** ;
+  sans configuration, elle retombe sur une écoute locale inerte. Même surface que l'entrée
+  publique (mêmes chemins servis, même borne de taille), l'entrée publique restant chiffrée.
+  ⚠ Cette entrée est **en clair** : la clé API circule non chiffrée sur le réseau local — à
+  réserver à un réseau de confiance, de préférence avec une restriction d'origine sur la clé.
+  Comme il s'agit d'une **passerelle distincte**, une clé qui l'emprunte doit avoir sa propre cible.
+
 - **Une clé n'est plus utilisable que par SA passerelle (changement de comportement).** La cible
   rattachée à une clé n'était qu'un libellé documentaire (elle servait à générer les variables
   d'environnement) : n'importe quelle URL menant à la passerelle servait n'importe quelle clé.

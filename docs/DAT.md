@@ -18,6 +18,7 @@ atteignable depuis Internet via un forward NAT du routeur (déploiement adapté 
 | proxy d'inférence | `app/proxy.py` | loopback `127.0.0.1:8787` | via Caddy uniquement |
 | admin web | `app/admin.py` | IP LAN `:8788` | LAN uniquement (jamais forwardé) |
 | TLS/edge | Caddy (`Caddyfile`) | `:${GATEWAY_TLS_PORT}` (cible du forward NAT) | public |
+| entrée LAN en clair (option) | Caddy, même `Caddyfile` | `${GATEWAY_LAN_BIND}:${GATEWAY_LAN_HTTP_PORT}` | LAN uniquement |
 | upstream | Ollama (systemd) | `127.0.0.1:11434` | local uniquement |
 
 Les deux rôles Python partagent une même image (`Dockerfile`) ; le rôle est choisi par
@@ -197,6 +198,29 @@ car Ollama est en loopback natif (hors Docker).
 **Cron de logs** (prod) : planifier `python -m app.reqlog compact` (p. ex. horaire) pour gzip les
 heures passées et purger au-delà de la rétention par clé — via crontab hôte ou un service
 périodique appelant `docker compose exec admin python -m app.reqlog compact`.
+
+### Entrée LAN en clair (optionnelle) & exposition réseau
+
+Le `Caddyfile` porte un **second site**, désactivé par défaut, pour servir le trafic **local** sans
+le faire sortir par le NAT public (aller-retour inutile, dépendance au DNS public, hairpin NAT
+souvent non supporté) : `http://{$GATEWAY_LAN_BIND}:{$GATEWAY_LAN_HTTP_PORT}`. Sans ces variables,
+l'écoute retombe sur la **loopback** (inerte). Même surface que l'entrée publique (`/api/*`,
+`/v1/*`, `/_proxy_health`, borne de corps) ; **pas de HSTS** (en-tête réservé aux origines TLS).
+Le `Caddyfile` est **monté en volume** (pas embarqué dans l'image) : le modifier ne demande
+**aucune reconstruction**, un redémarrage du service `caddy` suffit.
+
+**Règle de bind (importante).** Toujours une **IP IPv4 de LAN explicite**, jamais `:port` ni
+`0.0.0.0` : le socket n'existe alors que sur cette interface. Un bind « toutes interfaces »
+s'expose aussi en **IPv6**, or **IPv6 n'a pas de NAT** — la seule protection y est le pare-feu
+entrant de la box, pas la redirection de ports. Un hôte muni d'une adresse IPv6 globale et sans
+pare-feu local voit donc tout service en `*:port` / `[::]:port` potentiellement joignable depuis
+Internet, indépendamment des règles NAT IPv4. À vérifier depuis un réseau **extérieur** (les
+sockets locaux ne prouvent rien) et à corriger côté box/pare-feu hôte, pas seulement ici.
+
+**En clair ⇒ la clé API circule non chiffrée sur le LAN.** À réserver à un réseau de confiance,
+de préférence avec une allowlist d'origines sur la clé. Comme l'entrée LAN est une **passerelle
+distincte** (hôte/port/schéma différents), une clé qui l'emprunte doit avoir **sa propre cible**
+(cf. contrôle de cible contraignante).
 
 ## 5. Lancement
 

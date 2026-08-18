@@ -53,3 +53,45 @@
 		respond 404
 	}
 }
+
+# ── Entrée LAN en CLAIR (facultative) ─────────────────────────────────────────────────────────
+# Sert le trafic strictement local sans le faire sortir par le NAT public (aller-retour inutile,
+# dépendance au DNS public, hairpin souvent non supporté).
+#
+# SÉCURITÉ — le bind est EXPLICITE sur une adresse IPv4 de LAN, jamais `:port` ni `0.0.0.0` :
+#   1. le socket n'existe QUE sur cette interface — ni sur l'interface publique, ni en IPv6
+#      (rappel : IPv6 n'a PAS de NAT ; un `*:port` s'y expose directement, à la merci du seul
+#      pare-feu de la box) ;
+#   2. il reste injoignable depuis Internet tant qu'aucune règle de redirection de port ne le
+#      vise (contrairement au NAT, une DNAT vers cette IP le rendrait joignable : ne pas en créer,
+#      et laisser UPnP désactivé).
+# EN CLAIR ⇒ la clé API circule NON CHIFFRÉE sur le LAN : à réserver à un réseau de confiance,
+# idéalement avec une allowlist d'origines sur la clé. Le chemin public reste en TLS.
+#
+# Désactivé par défaut : sans `GATEWAY_LAN_BIND`, l'écoute retombe sur la loopback (inerte).
+# L'activer = poser GATEWAY_LAN_BIND (IP LAN de l'hôte) et GATEWAY_LAN_HTTP_PORT dans .env.prod.
+http://{$GATEWAY_LAN_BIND:127.0.0.1}:{$GATEWAY_LAN_HTTP_PORT:8790} {
+	# Pas de HSTS ici : cet en-tête n'a de sens que sur une origine TLS.
+	header {
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# Même surface que l'entrée publique : seuls les chemins d'inférence, tout le reste → 404.
+	@infer path /api/* /v1/* /_proxy_health
+	handle @infer {
+		request_body {
+			max_size 100MB
+		}
+		reverse_proxy 127.0.0.1:8787 {
+			flush_interval -1
+			transport http {
+				read_timeout 3600s
+				write_timeout 3600s
+			}
+		}
+	}
+	handle {
+		respond 404
+	}
+}
