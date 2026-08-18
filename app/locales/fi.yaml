@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Kuvien luonti</strong> (erillinen ominaisuus). Ota haluttu reitti käyttöön ja anna <strong>kuvamallit</strong> (<span class="mono">x/…</span>) alla.
 mdl:
   probing: Tutkitaan palvelinta…
+  spec_tools: 'työkalut'
+  spec_vision: 'näkö'
   extra_ph: lisämalleja, yksi riviä kohti
   hint: Rastitetut ruudut + vapaa syöttö = avaimen sallittujen luettelo. Kaikkialla tyhjä = kaikki palvelimen (teksti)mallit sallittu.
   img_label: Sallitut kuvamallit (<span class="mono">x/…</span>)

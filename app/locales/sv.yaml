@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Bildgenerering</strong> (separat funktion). Aktivera önskad väg och ange <strong>bildmodellerna</strong> (<span class="mono">x/…</span>) nedan.
 mdl:
   probing: Undersöker servern…
+  spec_tools: 'verktyg'
+  spec_vision: 'syn'
   extra_ph: ytterligare modeller, en per rad
   hint: Ikryssade rutor + fri inmatning = nyckelns tillåtelselista. Tomt överallt = alla (text)modeller på servern tillåtna.
   img_label: Tillåtna bildmodeller (<span class="mono">x/…</span>)

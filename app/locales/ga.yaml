@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Giniúint íomhánna</strong> (cumas ar leithligh). Cumasaigh an chonair atá uait agus líon isteach na <strong>múnlaí íomhá</strong> (<span class="mono">x/…</span>) thíos.
 mdl:
   probing: Ag tástáil an fhreastalaí…
+  spec_tools: 'uirlisí'
+  spec_vision: 'fís'
   extra_ph: múnlaí breise, ceann in aghaidh na líne
   hint: Boscaí ticeáilte + iontráil shaor = liosta ceadaithe na heochrach. Folamh gach áit = gach múnla (téacs) ar an bhfreastalaí ceadaithe.
   img_label: Múnlaí íomhá ceadaithe (<span class="mono">x/…</span>)

@@ -43,7 +43,11 @@ def reset_models() -> None:
 @app.get("/api/tags")
 async def tags() -> JSONResponse:
     # Modèles texte + un modèle d'IMAGE (préfixe x/) → teste le filtrage et la séparation image.
-    return JSONResponse({"models": [{"name": m, "model": m} for m in MODELS]})
+    # `capabilities` par entrée : c'est ce que joint ollama.cpp (`list_model_entry`), et c'est la
+    # seule source pour un modèle que `/api/show` ne connaît pas encore (fraîchement tiré).
+    return JSONResponse({"models": [
+        {"name": m, "model": m, **({"capabilities": _TAG_CAPS[m]} if m in _TAG_CAPS else {})}
+        for m in MODELS]})
 
 
 @app.post("/api/pull")
@@ -74,6 +78,13 @@ async def delete(request: Request) -> JSONResponse:
 # différentes (outils oui/non, vision oui/non, contextes distincts) plutôt que sur une constante.
 # `demo:latest` publie `capabilities` (Ollama ≥ 0.6) ; `autre:latest` ne le fait PAS et doit être
 # déduit du gabarit `.Tools` et des familles — c'est le chemin de repli du panel.
+# Capacités jointes aux entrées de `/api/tags` — comportement d'ollama.cpp. `pulled:1b` n'existe
+# QUE par cette voie (aucune fiche `/api/show`) : il couvre le repli sur le catalogue.
+_TAG_CAPS: dict[str, list[str]] = {
+    "demo:latest": ["completion", "tools", "vision"],
+    "pulled:1b": ["completion", "tools"],
+}
+
 _SHOW: dict[str, dict] = {
     "demo:latest": {
         "details": {"family": "llama", "families": ["llama"], "parameter_size": "8.0B"},
@@ -103,17 +114,24 @@ async def show(request: Request) -> JSONResponse:
     # alors retomber sur des capacités prudentes, pas inventer des valeurs.
     body = await request.json()
     model = (body.get("model") or body.get("name") or "").strip()
-    if model not in MODELS:
+    if model not in _SHOW:
+        # Pas de fiche : 404, comme un amont interrogé sur un modèle qu'il ne détaille pas (ex.
+        # fraîchement tiré). Le lecteur doit alors se rabattre sur l'entrée de `/api/tags`.
         return JSONResponse({"error": "model not found"}, status_code=404)
-    return JSONResponse(_SHOW.get(model, {"details": {"families": []}, "model_info": {}}))
+    return JSONResponse(_SHOW[model])
 
 
 @app.get("/v1/models")
 async def openai_models() -> JSONResponse:
-    # Forme OpenAI/Anthropic : {"object":"list","data":[{"id":…}]}.
+    # Forme OpenAI/Anthropic : {"object":"list","data":[{"id":…}]}. `openai-only:latest` n'est PAS
+    # au catalogue Ollama (`/api/tags`) et `/api/show` le refuse : il n'existe que par cette voie,
+    # comme sur un amont seulement OpenAI-compatible → couvre le repli de lecture des paramètres.
     return JSONResponse({"object": "list", "data": [
         {"id": "demo:latest", "object": "model"},
         {"id": "autre:latest", "object": "model"},
+        {"id": "openai-only:latest", "object": "model",
+         "max_model_len": 32768, "max_output_tokens": 4096,
+         "capabilities": ["completion", "tools"]},
     ]})
 
 

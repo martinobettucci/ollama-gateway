@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Attēlu ģenerēšana</strong> (atsevišķa iespēja). Iespējojiet vēlamo ceļu un norādiet <strong>attēlu modeļus</strong> (<span class="mono">x/…</span>) zemāk.
 mdl:
   probing: Servera sondēšana…
+  spec_tools: 'rīki'
+  spec_vision: 'redze'
   extra_ph: papildu modeļi, viens rindā
   hint: Atzīmētās izvēles rūtiņas + brīva ievade = atslēgas atļauto saraksts. Visur tukšs = visi servera (teksta) modeļi atļauti.
   img_label: Atļautie attēlu modeļi (<span class="mono">x/…</span>)

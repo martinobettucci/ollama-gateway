@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Generiranje slika</strong> (zasebna mogućnost). Omogućite željeni put i unesite <strong>modele slika</strong> (<span class="mono">x/…</span>) u nastavku.
 mdl:
   probing: Ispitivanje poslužitelja…
+  spec_tools: 'alati'
+  spec_vision: 'vid'
   extra_ph: dodatni modeli, jedan po retku
   hint: Označeni okviri + slobodan unos = popis dopuštenih ključa. Svugdje prazno = svi (tekstualni) modeli poslužitelja dopušteni.
   img_label: Dopušteni modeli slika (<span class="mono">x/…</span>)

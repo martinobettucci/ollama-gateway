@@ -299,6 +299,8 @@ api:
   img_hint: <strong>Génération d'images</strong> (capacité séparée). Activez la voie voulue et renseignez les <strong>modèles d'image</strong> (<span class="mono">x/…</span>) ci-dessous.
 mdl:
   probing: Sonde du serveur…
+  spec_tools: 'outils'
+  spec_vision: 'vision'
   extra_ph: modèles supplémentaires, un par ligne
   hint: Cases cochées + saisie libre = allowlist de la clé. Vide partout = tous les modèles (texte) du serveur autorisés.
   img_label: Modèles d'image autorisés (<span class="mono">x/…</span>)

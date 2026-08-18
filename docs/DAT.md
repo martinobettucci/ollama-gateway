@@ -46,22 +46,30 @@ car Ollama est en loopback natif (hors Docker).
   **Gestion du catalogue LAN-only** : `pull_model` / `delete_model` frappent l'amont en direct
   (`/api/pull`, `DELETE /api/delete`) avec le jeton distant déchiffré côté serveur — piloté depuis
   la console (`POST /admin/servers/{id}/models/{pull,delete}`), **jamais** via le proxy public.
-  **Capacités par modèle** : `model_capabilities` interroge `POST {base}/api/show` (un appel par
-  modèle, en parallèle) et en tire l'appel d'outils, la vision et la fenêtre de contexte. La
-  fenêtre est lue dans `model_info` sous la clé **préfixée par l'architecture** du GGUF
-  (`<arch>.context_length`) ; les capacités viennent du champ `capabilities` (Ollama ≥ 0.6) avec
-  repli sur les indices qu'Ollama utilise lui-même (`.Tools` dans le gabarit, projecteur
-  multimodal dans les familles) pour les amonts plus anciens. Un modèle dont `/api/show` ne
-  répond pas ressort `known=False` avec des capacités **prudentes** (ni outils ni vision) :
-  on n'invente jamais une capacité amont. `_read_limits` remonte en plus les **bornes déclarées**
-  par l'amont, dans l'ordre : bornes explicites `max_input_tokens`/`max_output_tokens` (racine ou
-  `model_info`, amonts OpenAI-compatibles) → paramètres du Modelfile (`num_predict` = sortie,
-  `num_ctx` = fenêtre réellement servie, qui **prime** sur `<arch>.context_length` puisque la voie
-  OpenAI-compat ne reçoit pas d'injection `num_ctx`) → à défaut la fenêtre du GGUF. Les sentinelles
-  `≤ 0` (`num_predict: -1`/`-2`) ne sont pas des bornes et sont écartées. Consommé par
-  `GET /admin/keys/{id}/vscode-models` (LAN-only), qui alimente le gabarit VS Code de la modale
-  de création/réémission de clé — **sans jamais reservir le secret**, qui ne transite que par le
-  flash de session affiché une seule fois.
+  **Paramètres par modèle** : `model_specs(server_id, models)` décrit chaque modèle quel que soit
+  le type d'amont. Il lit **deux catalogues** en parallèle (`GET /api/tags` — Ollama et
+  **ollama.cpp** ; `GET /v1/models` — amonts **OpenAI-compatibles**) puis la fiche détaillée de
+  chaque modèle (`POST /api/show`, un appel par modèle en parallèle). Pour chaque modèle, la
+  PREMIÈRE source qui répond fait foi : fiche détaillée → entrée `/api/tags` → entrée `/v1/models`.
+  L'entrée `/api/tags` compte : **ollama.cpp y joint `capabilities`**
+  (`api/ollama_serialize.py::list_model_entry`, branche `claude/ollama-cpp-middleware-po79fi`), et
+  y liste indifféremment les modèles venus de son **registre privé** ou d'ailleurs — un modèle
+  installé y figure quelle que soit sa source, et un modèle fraîchement tiré, encore sans fiche,
+  reste décrit. `record_probe` persiste l'état en ligne + le catalogue (même trace que la sonde).
+  **Limite connue** : ollama.cpp configure la fenêtre **par modèle** (`runtime.context` du
+  manifest) mais ne la publie pas dans `/api/show` (qui ne porte que le `model_info` du GGUF) —
+  c'est donc la fenêtre native qui est annoncée ; le plafond de la clé s'applique par-dessus.
+  `read_specs(fiche)` normalise n'importe laquelle de ces formes en
+  `{toolCalling, vision, contextLength, maxOutput}` : outils/vision depuis `capabilities`
+  (Ollama ≥ 0.6) avec repli sur `.Tools` dans le gabarit + famille multimodale ; fenêtre et sortie
+  cherchées dans `_WINDOW_FIELDS`/`_OUTPUT_FIELDS` sur un aplatissement du JSON (les amonts
+  imbriquent `meta`/`model_info` et préfixent `<arch>.` chacun à leur façon), les paramètres du
+  **Modelfile** primant (`num_ctx` = fenêtre réellement servie, `num_predict` = sortie), les
+  sentinelles `≤ 0` écartées. Modèle muet sur les deux voies ⇒ `known=False`, ni outils ni vision :
+  on n'invente jamais une capacité amont. Consommé par `GET /admin/servers/{id}/models` (sonde du
+  sélecteur de modèles du formulaire de clé) et `GET /admin/keys/{id}/vscode-models` (gabarit VS
+  Code), tous deux LAN-only — **sans jamais reservir le secret**, qui ne transite que par le flash
+  de session affiché une seule fois.
 - `crypto.py` — **chiffrement réversible au repos** (Fernet, clé dérivée de `$P2E_MASTER_KEY`)
   du jeton Bearer d'un serveur distant. Réversible (à réémettre vers l'amont), contrairement aux
   hachages one-way de `auth.py`.
@@ -111,16 +119,14 @@ car Ollama est en loopback natif (hors Docker).
   n'ont pas d'équivalent par requête → refus d'entrée seul. **Hors-ligne** : le fichier BPE est mis
   en cache **dans l'image au build** (`TIKTOKEN_CACHE_DIR`, cf. Dockerfile) ; si l'encodage est
   indisponible, repli sur une estimation (≈ 4 o/token) — jamais d'échec du proxy.
-  `io_budget(fenêtre_amont, plafond_clé, entrée_déclarée, sortie_déclarée)` traduit ces contraintes
-  en **deux bornes annonçables** à un client qui en exige deux (VS Code). **Une borne déclarée par
-  l'amont prime** ; le calcul n'est qu'un **repli** pour les amonts qui ne publient qu'une fenêtre
-  totale. Repli : fenêtre effective = `min(fenêtre du modèle, plafond de la clé)` (au-delà,
-  `num_ctx` bornerait de toute façon), moins une **réserve de sortie** d'un quart bornée à
-  `OUTPUT_MIN`…`OUTPUT_MAX` (1k…32k) car entrée et sortie partagent `num_ctx`. **Dans les deux
-  cas**, l'entrée est ensuite plafonnée par la fenêtre effective ET par `plafond / MARGIN`, pour
-  qu'un prompt qui remplit ce qui est annoncé **passe** le refus 413 (qui compare une estimation
-  majorée) : une borne déclarée trop large est redescendue plutôt qu'annoncée en mentant. Fenêtre
-  amont inconnue → on s'en tient au plafond de la clé.
+  `io_budget(fenêtre_modèle, sortie_déclarée, plafond_clé)` traduit tout cela en **deux bornes
+  annonçables** à un client qui en exige deux (VS Code), avec **une seule règle** : fenêtre =
+  `min(fenêtre du modèle, plafond de la clé)` (fenêtre inconnue ⇒ plafond) ; **entrée** = cette
+  fenêtre, d'un cran plus bas quand c'est le plafond qui borne (`plafond / MARGIN`, sans quoi le
+  garde-fou 413 refuserait un prompt qu'on venait d'autoriser) ; **sortie** = celle que l'amont
+  déclare, sinon `OUTPUT_DEFAULT` (16k), jamais plus que la fenêtre. Le plafond de la clé part
+  aussi dans les variables d'environnement (`OLLAMA_CONTEXT_LENGTH`) — seule variable standard
+  portant un paramètre de modèle, OpenAI/Anthropic n'ayant pas d'équivalent.
 - `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
   (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
   `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).

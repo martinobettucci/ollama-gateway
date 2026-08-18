@@ -353,7 +353,8 @@ async def create_key(request: Request):
         turl = config.PUBLIC_BASE_URL or turl
     request.session["created_key"] = {
         "id": rec.id, "label": rec.label, "secret": secret, "target_url": turl,
-        "models": rec.models, "image_models": rec.image_models}
+        "models": rec.models, "image_models": rec.image_models,
+        "max_context_tokens": rec.max_context_tokens}
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -565,13 +566,13 @@ async def key_vscode_models(request: Request, key_id: int):
     if rec is None:
         return JSONResponse({"error": "clé introuvable", "online": False, "models": []},
                             status_code=404)
-    online, caps, err = await servers.model_capabilities(
+    online, specs, err = await servers.model_specs(
         rec.server_id, list(rec.models) + list(rec.image_models))
     out = []
-    for cap in caps:
-        max_in, max_out = context.io_budget(cap["contextLength"], rec.max_context_tokens,
-                                            cap["maxInput"], cap["maxOutput"])
-        out.append({**cap, "maxInputTokens": max_in, "maxOutputTokens": max_out})
+    for spec in specs:
+        max_in, max_out = context.io_budget(
+            spec["contextLength"], spec["maxOutput"], rec.max_context_tokens)
+        out.append({**spec, "maxInputTokens": max_in, "maxOutputTokens": max_out})
     return JSONResponse({"online": online, "error": err, "models": out})
 
 
@@ -590,7 +591,8 @@ async def key_reissue(request: Request, key_id: int):
         turl = config.PUBLIC_BASE_URL or turl
     request.session["created_key"] = {
         "id": rec.id, "label": rec.label, "secret": secret, "target_url": turl,
-        "models": rec.models, "image_models": rec.image_models}
+        "models": rec.models, "image_models": rec.image_models,
+        "max_context_tokens": rec.max_context_tokens}
     return RedirectResponse("/admin", status_code=303)
 
 
@@ -752,13 +754,17 @@ async def server_update(request: Request, server_id: int):
 
 @app.get("/admin/servers/{server_id}/models")
 async def server_models(request: Request, server_id: int):
-    """Sonde LIVE du serveur (spec « rattachement ») : appelée au rendu des formulaires de clé et
-    à chaque changement de serveur, pour peupler les cases à cocher des modèles réellement
-    disponibles. Persiste aussi le résultat (en ligne/hors ligne + modèles)."""
+    """Sonde LIVE du serveur : appelée au rendu des formulaires de clé et à chaque changement de
+    serveur, pour peupler les cases à cocher des modèles réellement disponibles.
+
+    Renvoie aussi les **paramètres** de chaque modèle (outils, vision, fenêtre de contexte, sortie
+    maximale) tels que l'amont les annonce, afin que le choix des modèles se fasse en connaissance
+    de cause plutôt qu'au nom. Persiste l'état en ligne/hors ligne + le catalogue."""
     if (r := _guard(request)):
         return r
-    online, models, err = await servers.test_server(server_id)
-    return JSONResponse({"online": online, "models": models, "error": err})
+    online, specs, err = await servers.model_specs(server_id)
+    return JSONResponse({"online": online, "models": [s["id"] for s in specs],
+                         "specs": specs, "error": err})
 
 
 @app.post("/admin/servers/{server_id}/test")

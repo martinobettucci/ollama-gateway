@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Ustvarjanje slik</strong> (ločena zmožnost). Omogočite želeno pot in vnesite <strong>slikovne modele</strong> (<span class="mono">x/…</span>) spodaj.
 mdl:
   probing: Poizvedovanje strežnika…
+  spec_tools: 'orodja'
+  spec_vision: 'vid'
   extra_ph: dodatni modeli, en na vrstico
   hint: Označena polja + prosti vnos = seznam dovoljenih ključa. Povsod prazno = vsi (besedilni) modeli strežnika dovoljeni.
   img_label: Dovoljeni slikovni modeli (<span class="mono">x/…</span>)

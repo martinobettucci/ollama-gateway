@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Bildgenerierung</strong> (separate Fähigkeit). Aktivieren Sie den gewünschten Weg und tragen Sie die <strong>Bildmodelle</strong> (<span class="mono">x/…</span>) unten ein.
 mdl:
   probing: Server wird abgefragt…
+  spec_tools: 'Werkzeuge'
+  spec_vision: 'Vision'
   extra_ph: zusätzliche Modelle, eines pro Zeile
   hint: Angekreuzte Kästchen + Freitext = Allowlist des Schlüssels. Überall leer = alle (Text-)Modelle des Servers erlaubt.
   img_label: Erlaubte Bildmodelle (<span class="mono">x/…</span>)

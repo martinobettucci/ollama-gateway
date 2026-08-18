@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Image generation</strong> (separate capability). Enable the desired path and fill in the <strong>image models</strong> (<span class="mono">x/…</span>) below.
 mdl:
   probing: Probing the server…
+  spec_tools: 'tools'
+  spec_vision: 'vision'
   extra_ph: additional models, one per line
   hint: Checked boxes + free input = the key's allowlist. Empty everywhere = all (text) models of the server allowed.
   img_label: Allowed image models (<span class="mono">x/…</span>)

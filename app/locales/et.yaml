@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Piltide genereerimine</strong> (eraldi võimalus). Lubage soovitud tee ja sisestage <strong>pildimudelid</strong> (<span class="mono">x/…</span>) allpool.
 mdl:
   probing: Serveri sondeerimine…
+  spec_tools: 'tööriistad'
+  spec_vision: 'nägemine'
   extra_ph: lisamudelid, üks rea kohta
   hint: Märgitud ruudud + vaba sisestus = võtme lubatute loend. Kõikjal tühi = kõik serveri (teksti)mudelid lubatud.
   img_label: Lubatud pildimudelid (<span class="mono">x/…</span>)

@@ -53,8 +53,11 @@ test('gabarit VS Code : secret réel et capacités lues sur le serveur d\'exécu
   await expect(hint).toBeVisible();
   await expect(hint).toHaveText(/Capacités lues sur le serveur d'exécution/);
 
-  // Bloc SÉPARÉ : les variables d'environnement restent affichées à côté, intactes.
-  await expect(page.locator('[data-testid=env-output]')).toContainText(`OLLAMA_API_KEY=${secret}`);
+  // Bloc SÉPARÉ : les variables d'environnement restent affichées à côté, intactes — et elles
+  // portent désormais le plafond de contexte de la clé (seule variable standard qui existe).
+  const env = page.locator('[data-testid=env-output]');
+  await expect(env).toContainText(`OLLAMA_API_KEY=${secret}`);
+  await expect(env).toContainText('OLLAMA_CONTEXT_LENGTH=');
 
   const raw = await page.locator('[data-testid=env-vscode-output]').textContent();
   const conf = JSON.parse(raw);
@@ -69,19 +72,18 @@ test('gabarit VS Code : secret réel et capacités lues sur le serveur d\'exécu
   const byId = Object.fromEntries(conf[0].models.map((m) => [m.id, m]));
   expect(Object.keys(byId).sort()).toEqual(['autre:latest', 'demo:latest']);
 
-  // demo:latest publie `capabilities: [tools, vision]`, fenêtre 8k → 6144 / 2048.
+  // demo:latest publie `capabilities: [tools, vision]` et une fenêtre de 8k : c'est elle
+  // qui est annoncée, plafond de la clé (112k) n'étant pas le facteur limitant.
   expect(byId['demo:latest'].toolCalling).toBe(true);
   expect(byId['demo:latest'].vision).toBe(true);
-  expect(byId['demo:latest'].maxInputTokens).toBe(6144);
-  expect(byId['demo:latest'].maxOutputTokens).toBe(2048);
+  expect(byId['demo:latest'].maxInputTokens).toBe(8192);
 
   // autre:latest ne publie pas `capabilities` : outils déduits du gabarit `.Tools`, pas de vision.
-  // Sa fenêtre (256k) dépasse le plafond de contexte de la clé → c'est le plafond qui borne.
+  // Sa fenêtre (256k) dépasse le plafond de la clé → c'est le plafond qui borne.
   expect(byId['autre:latest'].toolCalling).toBe(true);
   expect(byId['autre:latest'].vision).toBe(false);
-  const total = byId['autre:latest'].maxInputTokens + byId['autre:latest'].maxOutputTokens;
-  expect(total).toBeLessThan(262144);
-  expect(total % 1024).toBe(0);
+  expect(byId['autre:latest'].maxInputTokens).toBeLessThan(112 * 1024);
+  expect(byId['autre:latest'].maxInputTokens).toBeGreaterThan(80 * 1024);
 
   // Captures du MANUEL, toutes deux en viewport (une capture d'ÉLÉMENT déborderait de la modale
   // et laisserait apparaître la page du dessous). (1) Haut de la modale : les deux zones copiables
@@ -120,11 +122,11 @@ test('gabarit VS Code : sans allowlist, tout le catalogue du serveur est décrit
     expect(m.url).toMatch(/\/v1$/);
   }
 
-  // Bornes DÉCLARÉES par l'amont (Modelfile `num_ctx 2048` / `num_predict 512`) : elles priment
-  // sur le calcul de repli, qui aurait donné 1024/1024 (plancher de sortie).
+  // Fenêtre et sortie DÉCLARÉES par l'amont (Modelfile `num_ctx 2048` / `num_predict 512`) :
+  // ni le maximum du GGUF (4096), ni la sortie par défaut (16k).
   const declared = conf[0].models.find((m) => m.id === 'x/fakeflux:1b');
+  expect(declared.maxInputTokens).toBe(2048);
   expect(declared.maxOutputTokens).toBe(512);
-  expect(declared.maxInputTokens).toBe(1536);
   await page.locator('#env-done').click();
 });
 
@@ -147,4 +149,17 @@ test('gabarit VS Code : les deux blocs sont indépendants', async ({ page }) => 
   await expect(block).toBeHidden();
   await expect(env).toContainText(`OLLAMA_API_KEY=${secret}`);
   await page.locator('#env-done').click();
+});
+
+test('sélecteur de modèles : les paramètres annoncés par l\'amont sont affichés', async ({ page }) => {
+  await login(page);
+  // La sonde part au rendu du formulaire de création : chaque case porte ses paramètres.
+  const demo = page.locator('[data-testid=model-checks] label', { hasText: 'demo:latest' });
+  await expect(demo.locator('[data-testid=model-spec]')).toHaveText(/outils · vision · 8k/);
+  const autre = page.locator('[data-testid=model-checks] label', { hasText: 'autre:latest' });
+  await expect(autre.locator('[data-testid=model-spec]')).toHaveText(/outils · 256k/);
+  await expect(autre.locator('[data-testid=model-spec]')).not.toHaveText(/vision/);
+  // Capture du MANUEL : cadrer le sélecteur lui-même, pas le haut du tableau de bord.
+  await page.locator('[data-testid=model-checks]').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${OUT}/42-model-specs.jpg`, type: 'jpeg' });
 });

@@ -213,6 +213,9 @@
     /* Taille FIXE (pas de padding hérité d'input) : sinon la case grossit au focus et la ligne
        bouge pendant le clic (flaky en E2E, désagréable à l'usage). */
     .checks input[type=checkbox] { width:16px; height:16px; min-height:0; padding:0; flex:none; }
+    /* Paramètres annoncés par l'amont, accolés au nom du modèle : information secondaire, elle ne
+       doit jamais concurrencer le nom (plus petit, teinte discrète). */
+    .model-spec { font-size:12px; white-space:nowrap; }
     .badge.neutral { background:#F3F4F6; color:var(--text-2); }
     .badge.neutral::before { background:var(--text-3); }
     .badge.accent { background:var(--color-accent-soft); color:var(--color-ink); }

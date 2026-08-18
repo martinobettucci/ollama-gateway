@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Generowanie obrazów</strong> (osobna funkcja). Włącz żądaną ścieżkę i podaj <strong>modele obrazów</strong> (<span class="mono">x/…</span>) poniżej.
 mdl:
   probing: Sondowanie serwera…
+  spec_tools: 'narzędzia'
+  spec_vision: 'wizja'
   extra_ph: dodatkowe modele, jeden na wiersz
   hint: Zaznaczone pola + wolny wpis = lista dozwolonych klucza. Puste wszędzie = wszystkie (tekstowe) modele serwera dozwolone.
   img_label: Dozwolone modele obrazów (<span class="mono">x/…</span>)

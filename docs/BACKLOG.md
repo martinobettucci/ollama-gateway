@@ -367,56 +367,77 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   depuis le menu ; 1280 px : rangée conservée, bouton masqué) ; **vision faite** (captures
   36-nav-mobile-closed, 37-nav-mobile-open).*
 
-## Phase 18 — Gabarit VS Code : secret réel & capacités lues sur l'amont (2026-08-18)
+## Phase 18 — Paramètres réels des modèles : sonde, sélecteur, gabarit VS Code (2026-08-18)
 
-- [x] **Le gabarit VS Code porte le secret RÉEL et les capacités RÉELLES des modèles.** Le bloc
-  « point de terminaison personnalisé » proposé par la modale de création/réémission renvoyait vers
-  une invite de saisie de l'éditeur (`${input:…}`) pour la clé, annonçait `toolCalling: true` /
-  `vision: false` **en dur pour tous les modèles**, et n'exposait aucune borne d'entrée/sortie.
-  Le gabarit était en outre affiché **à la place** des variables d'environnement (même `<pre>`,
-  même bouton) : il devient un **bloc séparé** (`#env-vscode-block`) avec sa propre zone copiable
-  (`env-vscode-output`) et son propre bouton (`env-vscode-copy`, i18n `dash.env.vscode_copy`), la
-  logique de copie étant factorisée en `wireCopy(bouton, libellé, source)` ; `apiType` aligné sur
-  `chat-completions` (voie OpenAI-compat réellement empruntée par l'éditeur).
-  Trois défauts corrigés d'un bloc : (1) `apiKey` = **secret réel** de la clé, échappé via
-  `JSON.stringify` ; (2) **la liste de modèles était toujours VIDE** — le gabarit lisait
-  `key_models`/`key_image_models`, que `admin.dashboard` n'a **jamais** fournis (vérifié sur tout
-  l'historique depuis `e26fe13`) ; la modale part désormais de l'id de clé posé dans le flash de
-  session et interroge l'amont ; (3) capacités **lues sur le serveur d'exécution** par
-  `servers.model_capabilities` (`POST {base}/api/show`, un appel par modèle en parallèle) : outils
-  et vision depuis `capabilities` (Ollama ≥ 0.6) avec repli sur `.Tools` dans le gabarit + famille
-  multimodale, fenêtre depuis `<arch>.context_length` sans liste d'architectures codée en dur.
-  Ajout de `maxInputTokens`/`maxOutputTokens` : **les bornes DÉCLARÉES par l'amont priment**
-  (`_read_limits` : `max_input_tokens`/`max_output_tokens` explicites → `num_predict`/`num_ctx` du
-  Modelfile, `num_ctx` primant sur `<arch>.context_length` puisque la voie OpenAI-compat ne reçoit
-  pas d'injection ; sentinelles `≤ 0` écartées) ; `context.io_budget` ne **calcule** qu'en repli
-  (min(fenêtre modèle, plafond clé) − réserve de sortie ¼ bornée 1k…32k). Dans les deux cas
-  l'entrée est replafonnée par la fenêtre effective et par `plafond / MARGIN` (garde-fou 413), pour
-  que la fenêtre annoncée **passe réellement** — une borne déclarée trop large est redescendue. Amont muet ⇒ `known=False`, valeurs prudentes et
-  message explicite dans la modale ; **aucun secret** dans la réponse de
-  `GET /admin/keys/{id}/vscode-models` (LAN-only, guard admin). Clé sans allowlist ⇒ catalogue du
-  serveur. `/api/show` implémenté dans le faux Ollama avec des fiches **volontairement
-  hétérogènes** (un modèle publiant `capabilities`, un autre forçant le repli, un troisième
-  déclarant `num_ctx`/`num_predict` dans ses paramètres ; fenêtres 8k/256k/2k) pour que le chemin
-  de repli ET le chemin déclaré soient couverts, jamais simulés. Clés i18n `dash.env.vscode_probing`
-  /`_ready`/`_offline`/`_copy` sur les **24 locales**. — *tests : `tests/test_vscode_models.py` (27 :
-  `io_budget` — réserve de sortie, bornage par le plafond de clé, bornes 1k/32k, marge 413,
-  fenêtre amont inconnue, **précédence du déclaré** (les deux bornes, la sortie seule, redescente
-  d'un déclaré trop large, sentinelles ignorées) ; `_read_limits` — Modelfile > architecture,
-  champs explicites > `num_predict`, sentinelles et absence ; lecture `_context_length`/`_read_capabilities` déclarée et par repli ;
-  `model_capabilities` — valeurs distinctes par modèle, bornes déclarées remontées, catalogue sans
-  allowlist, modèle absent prudent, serveur désactivé ; endpoint — capacités composées, plafond de
-  clé respecté, bornes déclarées honorées, guard +
-  404, absence de secret ; gabarit rendu — plus de `${input:…}`, `apiType` attendu, id de clé
-  présent à la création ET à la réémission, présence des DEUX zones copiables) ; E2E
-  `e2e/tests/vscode_template.spec.ts` (3 : JSON parsé — `apiKey` == secret réel, capacités
-  différenciées entre `demo:latest` et `autre:latest`, bornes 6144/2048 et bornage par le plafond,
-  variables d'environnement toujours affichées à côté, bouton de copie propre au bloc ; sans
-  allowlist tout le catalogue décrit avec les 4 champs, bornes déclarées 512/1536 vérifiées contre
-  le repli 1024/1024 ; indépendance des deux blocs dans les deux
-  sens) ; **vision faite** (captures 40-vscode-template, 41-vscode-blocks). Docs : `docs/manual.md`
-  § « Gabarit VS Code » (tableau champ → origine de la valeur + 2 captures synchronisées),
-  `docs/DAT.md` (`servers.model_capabilities`, `context.io_budget`), JOURNAL.*
+- [x] **Les paramètres des modèles sont LUS sur l'amont et exposés partout où ils ont un sens.**
+  Le gabarit « point de terminaison personnalisé » renvoyait vers une invite de saisie de l'éditeur
+  (`${input:…}`) pour la clé, annonçait `toolCalling: true` / `vision: false` **en dur pour tous les
+  modèles**, n'exposait aucune borne d'entrée/sortie, et sortait **toujours sans aucun modèle** :
+  il lisait `key_models`/`key_image_models` que `admin.dashboard` n'a **jamais** fournis (vérifié
+  sur tout l'historique depuis `e26fe13`) — livré sans aucun test.
+
+  **Sonde unique, trois familles d'amont.** `servers.model_specs` lit deux catalogues en parallèle
+  (`GET /api/tags` — Ollama et **ollama.cpp** ; `GET /v1/models` — **OpenAI-compatible**) puis la
+  fiche détaillée de chaque modèle (`POST /api/show`). Première source qui répond : fiche →
+  `/api/tags` → `/v1/models`. Vérifié contre l'implémentation réelle d'ollama.cpp (branche
+  `claude/ollama-cpp-middleware-po79fi`) : elle joint `capabilities` à chaque entrée de `/api/tags`
+  (`list_model_entry`), expose `model_info` = KV du GGUF (`gguf.public_model_info`) et
+  `parameters` au format Modelfile (`parameters_block`), et liste dans `/api/tags` les modèles
+  issus de son **registre privé** comme les autres. `servers.read_specs` normalise n'importe laquelle de ces formes
+  en `{toolCalling, vision, contextLength, maxOutput}` : `capabilities` (Ollama ≥ 0.6) avec repli
+  `.Tools` + famille multimodale ; fenêtre/sortie cherchées sur un **aplatissement** du JSON
+  (`_WINDOW_FIELDS`/`_OUTPUT_FIELDS` : `num_ctx`, `<arch>.context_length`, `max_model_len`,
+  `n_ctx_train`, `num_predict`, `max_output_tokens`…), les paramètres du **Modelfile** primant, les
+  sentinelles `≤ 0` écartées. Muet sur les deux voies ⇒ `known=False`, ni outils ni vision.
+
+  **Exposition.** (1) `GET /admin/keys/{id}/vscode-models` (LAN-only) alimente le gabarit :
+  `apiKey` = secret réel échappé, `apiType` = `chat-completions`, un bloc SÉPARÉ
+  (`#env-vscode-block`, zone `env-vscode-output`, bouton `env-vscode-copy`, copie factorisée en
+  `wireCopy`) au lieu d'écraser les variables d'environnement. (2) `GET /admin/servers/{id}/models`
+  remonte désormais `specs` en plus des noms : le **sélecteur de modèles du formulaire de clé**
+  affiche `outils · vision · 128k` à côté de chaque case (`.model-spec`, libellés i18n
+  `mdl.spec_tools`/`mdl.spec_vision`). (3) Les variables d'environnement portent
+  `OLLAMA_CONTEXT_LENGTH` = plafond de la clé — seule variable standard existante, rien d'inventé
+  pour OpenAI/Anthropic.
+
+  **Une seule règle de bornes** (simplification demandée) : `context.io_budget(fenêtre, sortie,
+  plafond)` = fenêtre du modèle ramenée au plafond de la clé pour l'entrée (d'un cran plus bas
+  quand le plafond borne, `plafond / MARGIN`, pour passer le garde-fou 413) ; sortie = celle que
+  l'amont déclare, sinon `OUTPUT_DEFAULT` (16k), jamais plus que la fenêtre. Supprimés : réserve
+  d'un quart, bornes 1k/32k, notion de borne d'entrée déclarée séparée.
+
+  Faux Ollama : `/api/show` avec des fiches **volontairement hétérogènes** (un modèle publiant
+  `capabilities`, un autre forçant le repli `.Tools`, un troisième déclarant `num_ctx`/`num_predict`)
+  et un `openai-only:latest` présent **seulement** dans `/v1/models` (avec `max_model_len` /
+  `max_output_tokens`) → le repli OpenAI-compatible est couvert, jamais simulé. Clés i18n
+  `dash.env.vscode_probing`/`_ready`/`_offline`/`_copy` et `mdl.spec_tools`/`_vision` sur les **24
+  locales**. — *tests : `tests/test_vscode_models.py` (27 : `io_budget` — fenêtre du modèle
+  annoncée, bornage par le plafond + marge 413, sortie déclarée / défaut / sentinelle, sortie
+  jamais > fenêtre, fenêtre inconnue ; `read_specs` — fiche Ollama, repli gabarit/familles,
+  Modelfile prioritaire, fiche OpenAI-compatible (`max_model_len`, `meta.n_ctx_train`), sentinelles ;
+  `model_specs` — valeurs distinctes par modèle, bornes du Modelfile, **repli `/v1/models`**,
+  **repli sur l'entrée `/api/tags`** (modèle sans fiche, capacités jointes au catalogue à la façon
+  d'ollama.cpp), catalogue sans allowlist, modèle inconnu prudent, serveur désactivé ; endpoints — gabarit composé,
+  plafond respecté, bornes déclarées honorées, `specs` du sélecteur, guard + 404, absence de secret ;
+  rendu — plus de `${input:…}`, `apiType`, id de clé à la création ET à la réémission, deux zones
+  copiables, `OLLAMA_CONTEXT_LENGTH`, libellés du sélecteur) ; E2E
+  `e2e/tests/vscode_template.spec.ts` (4 : JSON parsé — `apiKey` == secret réel, capacités
+  différenciées, fenêtre 8k annoncée, bornage par le plafond, bornes du Modelfile 2048/512,
+  variables d'environnement toujours affichées à côté avec le plafond, bouton de copie propre ;
+  sans allowlist tout le catalogue décrit ; indépendance des deux blocs ; **sélecteur affichant
+  `outils · vision · 8k`**) ; **vision faite** (captures 40-vscode-template, 41-vscode-blocks,
+  42-model-specs). Docs : `docs/manual.md` (§ Gabarit VS Code réécrit en une règle + § « D'où
+  viennent les paramètres des modèles » avec le tableau des 3 types de serveur, 3 captures
+  synchronisées), `docs/DAT.md` (`servers.model_specs`/`read_specs`, `context.io_budget`), JOURNAL.*
+
+  **Limite connue.** `ollama.cpp` configure la fenêtre **par modèle** (`runtime.context` du
+  manifest, sa raison d'être) mais ne la publie pas dans `/api/show` : seule la fenêtre native du
+  GGUF y figure, et c'est donc elle qui est annoncée (le plafond de la clé s'applique par-dessus).
+  La valeur effective n'apparaît que dans `/api/ps`, pour les seuls modèles **résidents** —
+  l'y lire donnerait un affichage qui change selon qu'un modèle est chargé ou non, incohérence
+  jugée pire que d'annoncer la fenêtre native. À revoir si `/api/show` publie un jour la fenêtre
+  configurée. Son dépôt porte aussi `tests/test_conformance_gateway.py`, qui rejoue la logique de
+  cette passerelle contre lui.
 
 ## Fiabilité des tests
 

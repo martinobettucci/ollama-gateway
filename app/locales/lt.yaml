@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Vaizdų generavimas</strong> (atskira galimybė). Įjunkite norimą kelią ir nurodykite <strong>vaizdų modelius</strong> (<span class="mono">x/…</span>) žemiau.
 mdl:
   probing: Serverio zondavimas…
+  spec_tools: 'įrankiai'
+  spec_vision: 'regėjimas'
   extra_ph: papildomi modeliai, po vieną eilutėje
   hint: Pažymėti langeliai + laisvas įvedimas = rakto leidžiamų sąrašas. Visur tuščia = visi serverio (teksto) modeliai leidžiami.
   img_label: Leidžiami vaizdų modeliai (<span class="mono">x/…</span>)

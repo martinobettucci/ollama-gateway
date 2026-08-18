@@ -26,26 +26,48 @@ Journal chronologique des décisions (le plus récent en premier). Complète `CH
   pas du tout, le modèle ressort **prudent** (ni outils ni vision) et la modale **le dit** : un
   éditeur bridé se corrige en deux clics, un éditeur qui promet une capacité absente échoue à
   l'usage sans que l'utilisateur comprenne pourquoi.
-- **Les deux bornes annoncées sont calculées pour PASSER, pas pour flatter.** VS Code veut une
+- **Simplification demandée : une seule règle, pas quatre.** La première version empilait quatre
+  notions (réserve d'un quart, planchers 1k/32k, précédence du déclaré sur l'entrée ET la sortie,
+  marge du tokenizer) — illisible pour qui n'a pas le code sous les yeux. Ramené à : *on annonce la
+  fenêtre du modèle, sans jamais dépasser ce que la clé autorise*. La sortie reste celle que
+  l'amont déclare, sinon 16k. La seule subtilité conservée est la marge du garde-fou 413, parce
+  qu'elle évite un refus sur un prompt qu'on venait d'autoriser — elle ne se voit pas dans la règle,
+  seulement dans le dernier millier de tokens.
+- **Une sonde, trois familles d'amont.** Le gateway peut viser Ollama, ollama.cpp ou un serveur
+  seulement OpenAI-compatible. Plutôt que de typer les serveurs (champ à saisir, à maintenir, à se
+  tromper), on essaie la fiche native puis on retombe sur la liste des modèles : le type se déduit
+  de ce qui répond. Les noms de champs varient beaucoup d'une implémentation à l'autre
+  (`num_ctx`, `<arch>.context_length`, `max_model_len`, `meta.n_ctx_train`…) — d'où un
+  aplatissement du JSON et une liste ouverte de noms, plutôt qu'un parseur par implémentation.
+  **Vérifié sur pièces** : l'implémentation d'ollama.cpp (branche `claude/ollama-cpp-middleware-po79fi`,
+  la branche `main` n'ayant que des docs) joint `capabilities` à chaque entrée de `/api/tags`,
+  expose le KV du GGUF en `model_info` et les paramètres au format Modelfile — nos trois lectures
+  y tombent juste. D'où un ajout : l'entrée de catalogue devient une **source à part entière**,
+  entre la fiche détaillée et la liste OpenAI. Elle sauve le cas du modèle fraîchement tiré, que
+  la fiche ne décrit pas encore.
+- **Ce que ollama.cpp ne dit PAS, et qu'on n'ira pas chercher.** Sa raison d'être est la fenêtre
+  configurée **par modèle** (`runtime.context`), mais `/api/show` ne la publie pas : seule la
+  fenêtre native du GGUF y figure. La valeur effective n'existe que dans `/api/ps`, et seulement
+  pour les modèles **résidents** — la lire donnerait un affichage qui change selon qu'un modèle
+  est chargé ou non. Une valeur stable et honnête vaut mieux qu'une valeur exacte par intermittence.
+  Le plafond de la clé, lui, s'applique dans tous les cas.
+- **Le registre privé n'est pas un cas particulier.** Il sert à *tirer* un modèle ; une fois
+  installé, celui-ci figure dans `/api/tags` comme les autres. Rien de spécifique à coder côté
+  passerelle : lire le catalogue suffit à le couvrir.
+- **Sonder aussi au choix du serveur, dans le formulaire de clé.** Choisir les modèles autorisés
+  par leur seul nom revient à choisir à l'aveugle. Le sélecteur affiche désormais ce que le serveur
+  dit de chaque modèle ; c'est la même sonde, donc aucune source de vérité supplémentaire.
+- **Les bornes annoncées sont calculées pour PASSER, pas pour flatter.** VS Code veut une
   entrée max et une sortie max ; Ollama ne publie qu'une fenêtre totale, et la passerelle impose en
   plus le plafond de contexte de la clé. Trois contraintes, donc, composées dans `context.io_budget`
   — dont la moins évidente : le garde-fou d'entrée compare une estimation **majorée de 15 %** au
   plafond (tiktoken n'est pas le tokenizer des modèles servis). Annoncer le plafond brut en entrée
   aurait produit des refus 413 sur des prompts que la passerelle disait accepter. L'entrée annoncée
   est donc redescendue à `plafond / marge`.
-- **Ce que l'amont déclare prime ; le calcul n'est qu'un repli.** Première version : les deux
-  bornes étaient toujours calculées depuis la fenêtre du modèle. C'est faux dès que l'amont dit
-  lui-même ce qu'il accepte — un Modelfile qui fixe `num_ctx`/`num_predict`, un amont
-  OpenAI-compatible qui publie `max_input_tokens`/`max_output_tokens`. Ces valeurs sont
-  maintenant reprises telles quelles, le calcul ne servant qu'aux amonts qui ne publient qu'une
-  fenêtre totale (Ollama nu). Détail qui compte : `num_ctx` du Modelfile prime sur
-  `<arch>.context_length`, parce que la voie visée par le gabarit est OpenAI-compatible et que la
-  passerelle n'y injecte **pas** `num_ctx` — c'est donc la valeur du Modelfile qui s'applique
-  réellement, pas le maximum de l'architecture. Les sentinelles `num_predict: -1`/`-2` (illimité,
-  remplir le contexte) ne sont pas des bornes et sont écartées.
-- **Une seule contrainte reste non négociable : le plafond de la clé.** Même déclarée par l'amont,
-  une entrée plus large que `plafond / marge` est redescendue — sinon on annoncerait une fenêtre
-  que la passerelle refuse en 413. Annoncer large n'aide personne : le client échoue à l'usage.
+- **Ce que l'amont déclare prime sur ce qu'on déduirait.** `num_ctx` du Modelfile prime sur
+  `<arch>.context_length` : la voie visée par le gabarit est OpenAI-compatible, la passerelle n'y
+  injecte **pas** `num_ctx`, c'est donc la valeur du Modelfile qui s'applique réellement, pas le
+  maximum de l'architecture. Les sentinelles `num_predict: -1`/`-2` ne sont pas des bornes.
 - **Le gabarit ne remplace plus les variables d'environnement, il s'y ajoute.** Cocher « VS Code »
   écrasait la zone de sortie commune : on ne pouvait pas voir — ni copier — les deux à la fois,
   alors qu'ils servent deux usages simultanés (un shell côté machine cliente, les réglages de

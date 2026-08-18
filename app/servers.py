@@ -296,53 +296,48 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
     return online, models, err
 
 
-# --- Capacités réelles des modèles (POST /api/show) -------------------------------------------
+# --- Paramètres réels des modèles ---------------------------------------------------------------
+#
+# Trois familles d'amont, un seul résultat. Deux catalogues sont lus (une requête chacun), puis la
+# fiche détaillée de chaque modèle :
+#
+# - `GET /api/tags` — Ollama et **ollama.cpp**. Le second y joint déjà `capabilities` par entrée
+#   (`api/ollama_serialize.py::list_model_entry`), et y liste indifféremment les modèles venus de
+#   son **registre privé** ou d'ailleurs : un modèle installé y figure, quelle que soit sa source.
+# - `GET /v1/models` — amonts seulement OpenAI-compatibles, dont les entrées portent la fenêtre
+#   sous des noms variés (`max_model_len`, `meta.n_ctx_train`…).
+# - `POST /api/show` — la fiche détaillée quand elle existe (Ollama, ollama.cpp), la plus riche.
+#
+# Pour chaque modèle on retient la première source qui répond, dans cet ordre : fiche détaillée,
+# entrée du catalogue Ollama, entrée du catalogue OpenAI. Muet partout ⇒ `known=False`, sans outils
+# ni vision : on n'invente jamais une capacité amont.
+#
+# Limite connue : ollama.cpp configure le contexte **par modèle** (`runtime.context` du manifest),
+# mais ne le publie pas dans `/api/show` — seule la fenêtre native du GGUF y figure. C'est donc
+# elle qui est annoncée. Le plafond de la clé reste appliqué par-dessus, dans tous les cas.
 
-# Capacités qu'Ollama publie dans `capabilities` (`/api/show`) et que le panel exploite.
 CAP_TOOLS = "tools"
 CAP_VISION = "vision"
-CAP_THINKING = "thinking"
 
-# Repli quand l'amont ne publie PAS `capabilities` (Ollama < 0.6) : on relit les mêmes indices
-# qu'Ollama utilise lui-même — le gabarit référence `.Tools` pour l'appel d'outils, et un
-# projecteur multimodal apparaît dans les familles du modèle.
+# Repli quand l'amont ne publie pas `capabilities` (Ollama < 0.6) : les mêmes indices qu'Ollama
+# utilise lui-même — le gabarit référence `.Tools`, un projecteur multimodal apparaît dans les
+# familles du modèle.
 _TOOLS_MARKER = ".Tools"
 _VISION_FAMILIES = ("clip", "mllama", "vision")
 
-
-def _context_length(info) -> int | None:
-    """Fenêtre de contexte annoncée dans `model_info`, ou None.
-
-    Ollama préfixe la clé par l'ARCHITECTURE du GGUF (`llama.context_length`,
-    `qwen3.context_length`, `gemma3.context_length`…). On lit d'abord la clé de l'architecture
-    déclarée, puis on retombe sur n'importe quelle clé `*.context_length` : de nouvelles
-    architectures apparaissent en continu, coder la liste en dur la périmerait aussitôt.
-    """
-    if not isinstance(info, dict):
-        return None
-    arch = info.get("general.architecture")
-    names = []
-    if isinstance(arch, str) and arch:
-        names.append(f"{arch}.context_length")
-    names += sorted(k for k in info if isinstance(k, str) and k.endswith(".context_length"))
-    for name in names:
-        val = info.get(name)
-        if isinstance(val, (int, float)) and not isinstance(val, bool) and val > 0:
-            return int(val)
-    return None
-
-
-# Champs par lesquels un amont DÉCLARE lui-même ses bornes d'entrée/sortie. Présents, ils
-# PRÉVALENT sur tout calcul : l'amont sait mieux que nous ce qu'il accepte réellement.
-_MAX_INPUT_FIELDS = ("max_input_tokens", "maxInputTokens")
-_MAX_OUTPUT_FIELDS = ("max_output_tokens", "maxOutputTokens")
+# Noms sous lesquels un amont publie la FENÊTRE de contexte, puis la SORTIE maximale. Listes
+# ouvertes : `<arch>.context_length` (GGUF), `num_ctx` (Modelfile), `max_model_len` (vLLM),
+# `n_ctx_train` (llama-server), `context_length`/`max_input_tokens` (OpenAI-compatibles).
+_WINDOW_FIELDS = ("num_ctx", "context_length", "max_context_length", "max_model_len",
+                  "n_ctx_train", "max_input_tokens", "maxInputTokens")
+_OUTPUT_FIELDS = ("num_predict", "max_output_tokens", "maxOutputTokens", "max_tokens")
 
 
 def _positive_int(value) -> int | None:
     """`value` en entier strictement positif, sinon None.
 
-    Les sentinelles ≤ 0 d'Ollama sont écartées : `num_predict: -1` (illimité) et `-2` (remplir le
-    contexte) ne sont pas des bornes, les annoncer comme telles n'aurait aucun sens.
+    Écarte les sentinelles ≤ 0 d'Ollama (`num_predict: -1` illimité, `-2` remplir le contexte) :
+    ce ne sont pas des bornes.
     """
     if isinstance(value, bool):
         return None
@@ -357,16 +352,24 @@ def _positive_int(value) -> int | None:
     return None
 
 
-def _show_params(payload: dict) -> dict:
-    """Paramètres du Modelfile tels que `/api/show` les renvoie : un texte `nom  valeur` par ligne.
+def _flatten(node, out: dict, depth: int = 0) -> None:
+    """Aplatit un JSON en {dernier_segment_de_clé: valeur} — les amonts imbriquent (`meta`,
+    `model_info`…) et préfixent (`llama.context_length`) chacun à leur façon."""
+    if depth > 4 or not isinstance(node, dict):
+        return
+    for key, val in node.items():
+        if isinstance(val, dict):
+            _flatten(val, out, depth + 1)
+        elif isinstance(key, str):
+            out.setdefault(key.rsplit(".", 1)[-1], val)
 
-    Un nom peut se répéter (`stop`) : on garde la PREMIÈRE occurrence, suffisant pour les scalaires
-    qui nous intéressent (`num_ctx`, `num_predict`).
-    """
+
+def _modelfile_params(payload: dict) -> dict:
+    """Paramètres du Modelfile que `/api/show` renvoie en texte (`nom  valeur` par ligne)."""
     text = payload.get("parameters")
     if not isinstance(text, str):
         return {}
-    out: dict[str, str] = {}
+    out: dict = {}
     for line in text.splitlines():
         name, _, value = line.strip().partition(" ")
         value = value.strip().strip('"')
@@ -375,86 +378,82 @@ def _show_params(payload: dict) -> dict:
     return out
 
 
-def _read_limits(payload: dict) -> dict:
-    """Fenêtre de contexte et bornes d'entrée/sortie **déclarées** par l'amont (None si absentes).
+def read_specs(payload: dict) -> dict:
+    """Paramètres d'un modèle à partir d'une fiche amont, quelle qu'en soit la forme.
 
-    Ordre de priorité — ce que l'amont DIT l'emporte toujours sur ce qu'on saurait calculer :
-
-    1. bornes explicites `max_input_tokens`/`max_output_tokens` (racine ou `model_info`), que
-       publient certains amonts OpenAI-compatibles ;
-    2. paramètres du Modelfile : `num_predict` = sortie maximale, `num_ctx` = fenêtre RÉELLEMENT
-       servie. Sur la voie OpenAI-compatible — celle que vise le gabarit VS Code — la passerelle
-       n'injecte pas `num_ctx` (cf. `context.supports_num_ctx`) : c'est donc cette valeur-là qui
-       s'applique, et non le maximum de l'architecture ;
-    3. à défaut seulement, la fenêtre du GGUF (`<arch>.context_length`), base du calcul de repli.
+    Renvoie `{toolCalling, vision, contextLength, maxOutput}` — `None` pour ce que l'amont ne dit
+    pas. Les paramètres du Modelfile priment sur le reste : `num_ctx` est la fenêtre RÉELLEMENT
+    servie, là où `<arch>.context_length` n'est que le maximum théorique de l'architecture.
     """
-    info = payload.get("model_info")
-    info = info if isinstance(info, dict) else {}
-    params = _show_params(payload)
+    fields = dict(_modelfile_params(payload))
+    _flatten(payload, fields)
 
-    def _declared(fields):
-        for source in (payload, info):
-            for field_name in fields:
-                got = _positive_int(source.get(field_name))
-                if got is not None:
-                    return got
-        return None
-
-    max_output = _declared(_MAX_OUTPUT_FIELDS)
-    if max_output is None:
-        max_output = _positive_int(params.get("num_predict"))
-    return {
-        "contextLength": _positive_int(params.get("num_ctx")) or _context_length(info),
-        "maxInput": _declared(_MAX_INPUT_FIELDS),
-        "maxOutput": max_output,
-    }
-
-
-def _read_capabilities(payload: dict) -> dict:
-    """Capacités d'un modèle à partir de la réponse `/api/show` (dict brut décodé)."""
     caps = payload.get("capabilities")
     if isinstance(caps, list):
         declared = {c for c in caps if isinstance(c, str)}
-        return {"tools": CAP_TOOLS in declared, "vision": CAP_VISION in declared,
-                "thinking": CAP_THINKING in declared}
-    template = payload.get("template")
-    details = payload.get("details")
-    families = details.get("families") if isinstance(details, dict) else None
-    families = [f.lower() for f in (families or []) if isinstance(f, str)]
-    return {
-        "tools": isinstance(template, str) and _TOOLS_MARKER in template,
-        "vision": any(any(v in f for v in _VISION_FAMILIES) for f in families),
-        "thinking": False,
-    }
+        tools, vision = CAP_TOOLS in declared, CAP_VISION in declared
+    else:
+        template = payload.get("template")
+        families = fields.get("families")
+        families = [f.lower() for f in families if isinstance(f, str)] if isinstance(families, list) else []
+        tools = isinstance(template, str) and _TOOLS_MARKER in template
+        vision = any(any(v in f for v in _VISION_FAMILIES) for f in families)
+
+    def _first(names):
+        for name in names:
+            got = _positive_int(fields.get(name))
+            if got is not None:
+                return got
+        return None
+
+    return {"toolCalling": tools, "vision": vision,
+            "contextLength": _first(_WINDOW_FIELDS), "maxOutput": _first(_OUTPUT_FIELDS)}
 
 
-async def _show_one(client: httpx.AsyncClient, base: str, headers: dict, model: str) -> dict:
-    """Interroge `POST {base}/api/show` pour UN modèle. `known=False` si l'amont n'a rien dit."""
-    unknown = {"id": model, "known": False, "toolCalling": False, "vision": False,
-               "thinking": False, "contextLength": None, "maxInput": None, "maxOutput": None}
+_UNKNOWN_SPEC = {"known": False, "toolCalling": False, "vision": False,
+                 "contextLength": None, "maxOutput": None}
+
+
+async def _get_json(client: httpx.AsyncClient, url: str, headers: dict, body=None):
+    """Réponse JSON d'un endpoint amont, ou None (indisponible, non-200, corps illisible)."""
     try:
-        r = await client.post(base.rstrip("/") + "/api/show",
-                              json={"model": model}, headers=headers)
-        if r.status_code != 200:
-            return unknown
-        payload = r.json()
+        r = (await client.post(url, json=body, headers=headers) if body is not None
+             else await client.get(url, headers=headers))
+        return r.json() if r.status_code == 200 else None
     except (httpx.HTTPError, ValueError):
-        return unknown
-    if not isinstance(payload, dict):
-        return unknown
-    caps = _read_capabilities(payload)
-    return {"id": model, "known": True, "toolCalling": caps["tools"], "vision": caps["vision"],
-            "thinking": caps["thinking"], **_read_limits(payload)}
+        return None
 
 
-async def model_capabilities(server_id: int | None,
-                             models: list[str] | None) -> tuple[bool, list[dict], str]:
-    """Capacités RÉELLES des modèles d'un serveur d'exécution — (en_ligne, capacités, erreur).
+def _index(rows, *keys) -> dict:
+    """Indexe des entrées de catalogue par la première clé d'identité présente."""
+    out: dict = {}
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
+        for key in keys:
+            name = row.get(key)
+            if isinstance(name, str) and name:
+                out.setdefault(name, row)
+                break
+    return out
 
-    `models` vide/None = « aucune allowlist » côté clé : on interroge alors le CATALOGUE du serveur
-    (`/api/tags`), qui est bien l'ensemble réellement utilisable. Un modèle dont `/api/show` ne
-    répond pas ressort avec `known=False` et des capacités prudentes (ni outils ni vision) : mieux
-    vaut un gabarit client bridé qu'un gabarit qui promet ce que l'amont ne sait pas faire.
+
+async def _catalogs(client: httpx.AsyncClient, base: str, headers: dict) -> tuple[dict, dict]:
+    """(catalogue Ollama, catalogue OpenAI) indexés par nom de modèle — chacun peut être vide."""
+    base = base.rstrip("/")
+    tags, openai = await asyncio.gather(
+        _get_json(client, base + "/api/tags", headers),
+        _get_json(client, base + "/v1/models", headers))
+    return (_index(tags.get("models") if isinstance(tags, dict) else None, "name", "model"),
+            _index(openai.get("data") if isinstance(openai, dict) else None, "id"))
+
+
+async def model_specs(server_id: int | None,
+                      models: list[str] | None = None) -> tuple[bool, list[dict], str]:
+    """Paramètres réels des modèles d'un serveur d'exécution — (en_ligne, fiches, erreur).
+
+    `models` vide/None = pas d'allowlist : on décrit tout le CATALOGUE du serveur (`/api/tags`,
+    complété par `/v1/models` pour un amont qui ne sert que la voie OpenAI-compatible).
     """
     if server_id is None:
         return False, [], "serveur introuvable"
@@ -464,16 +463,28 @@ async def model_capabilities(server_id: int | None,
     base, headers, enabled = info
     if not enabled:
         return False, [], "serveur désactivé"
+
     wanted = [m for m in (models or []) if isinstance(m, str) and m.strip()]
-    online, catalogue, err = await test_server(server_id)   # persiste aussi l'état en ligne
-    if not wanted:
-        if not online:
-            return False, [], err
-        wanted = catalogue
     timeout = httpx.Timeout(config.SERVER_PROBE_TIMEOUT_S, connect=15.0)
     async with httpx.AsyncClient(timeout=timeout) as client:
-        caps = await asyncio.gather(*(_show_one(client, base, headers, m) for m in wanted))
-    return online, list(caps), err
+        ollama, openai = await _catalogs(client, base, headers)
+        catalog = sorted(ollama) or sorted(openai)
+        if not wanted:
+            wanted = catalog
+        shown = await asyncio.gather(*(
+            _get_json(client, base.rstrip("/") + "/api/show", headers, {"model": m})
+            for m in wanted))
+
+    online = bool(catalog)
+    record_probe(server_id, online, catalog)                 # même trace que la sonde du panel
+    specs = []
+    for model, payload in zip(wanted, shown):
+        # Première source qui répond : fiche détaillée, puis catalogue Ollama, puis OpenAI.
+        source = next((c for c in (payload, ollama.get(model), openai.get(model))
+                       if isinstance(c, dict)), None)
+        specs.append({"id": model, **({"known": True, **read_specs(source)}
+                                      if source is not None else _UNKNOWN_SPEC)})
+    return online, specs, "" if online else "serveur injoignable"
 
 
 # --- Test de compatibilité d'API (matrice stockée) --------------------------------------------

@@ -1,10 +1,12 @@
 {# Sélecteur de modèles autorisés : sonde le serveur (GET /admin/servers/{id}/models) et affiche
-   les modèles en cases. Modèles d'IMAGE (préfixe `x/…`) dans une liste séparée. Repli saisie libre
-   hors ligne. Importer avec `with context` pour disposer de `t()`. Libellés JS via data-*. #}
+   les modèles en cases, AVEC les paramètres annoncés par l'amont (outils · vision · fenêtre) pour
+   choisir en connaissance de cause. Modèles d'IMAGE (préfixe `x/…`) dans une liste séparée. Repli
+   saisie libre hors ligne. Importer avec `with context` pour disposer de `t()`. #}
 {% macro model_picker(selected, image_selected=None, select_id='server_id') -%}
 <div class="checks" id="model-checks" data-testid="model-checks"></div>
 <p class="hint" id="model-status" role="status"
-   data-probing="{{ t('mdl.probing') }}" data-offline="{{ t('mdl.offline') }}">{{ t('mdl.probing') }}</p>
+   data-probing="{{ t('mdl.probing') }}" data-offline="{{ t('mdl.offline') }}"
+   data-tools="{{ t('mdl.spec_tools') }}" data-vision="{{ t('mdl.spec_vision') }}">{{ t('mdl.probing') }}</p>
 <textarea id="models" name="models"
   placeholder="{{ t('mdl.extra_ph') }}">{{ selected|join('\n') }}</textarea>
 <p class="hint">{{ t('mdl.hint') }}</p>
@@ -25,6 +27,19 @@
   const IMG = 'x/';
   const listOf = t => t.value.split('\n').map(s => s.trim()).filter(Boolean);
   const checkedOf = b => Array.from(b.querySelectorAll('input:checked')).map(i => i.value);
+  const specLabels = { tools: status.dataset.tools, vision: status.dataset.vision };
+  let specs = {};                                   // paramètres par modèle, remplis par la sonde
+
+  // Paramètres annoncés par l'amont, en une ligne lisible : « outils · vision · 128k ».
+  // Rien d'annoncé ⇒ rien d'affiché, plutôt qu'une valeur inventée.
+  function specText(spec) {
+    if (!spec || !spec.known) return '';
+    const bits = [];
+    if (spec.toolCalling) bits.push(specLabels.tools);
+    if (spec.vision) bits.push(specLabels.vision);
+    if (spec.contextLength) bits.push(Math.round(spec.contextLength / 1024) + 'k');
+    return bits.join(' · ');
+  }
 
   function render(container, models, current, name) {
     container.innerHTML = '';
@@ -36,6 +51,14 @@
       const span = document.createElement('span');
       span.className = 'mono'; span.textContent = m;
       label.append(c, ' ', span);
+      const text = specText(specs[m]);
+      if (text) {
+        const badge = document.createElement('span');
+        badge.className = 'muted model-spec';
+        badge.dataset.testid = 'model-spec';
+        badge.textContent = ' ' + text;
+        label.append(badge);
+      }
       container.append(label);
     }
   }
@@ -49,13 +72,15 @@
     box.innerHTML = ''; imgBox.innerHTML = '';
     ta.value = curText.join('\n'); imgTa.value = curImg.join('\n');
     status.hidden = false; status.textContent = status.dataset.probing;
-    let data = { online: false, models: [] };
+    let data = { online: false, models: [], specs: [] };
     try {
       const r = await fetch('/admin/servers/' + target + '/models');
       if (sel.value !== target) return;               // sélection changée → réponse périmée
       if (r.ok) data = await r.json();
       if (sel.value !== target) return;
     } catch (e) { if (sel.value !== target) return; }  // réseau : repli saisie libre
+    specs = {};
+    for (const sp of (data.specs || [])) specs[sp.id] = sp;
     if (!data.online || !Array.isArray(data.models) || !data.models.length) {
       status.textContent = status.dataset.offline;
       return;

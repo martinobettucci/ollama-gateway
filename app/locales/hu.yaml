@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Képgenerálás</strong> (külön képesség). Engedélyezze a kívánt utat, és adja meg a <strong>képmodelleket</strong> (<span class="mono">x/…</span>) alább.
 mdl:
   probing: Kiszolgáló szondázása…
+  spec_tools: 'eszközök'
+  spec_vision: 'látás'
   extra_ph: további modellek, soronként egy
   hint: Bejelölt jelölőnégyzetek + szabad bevitel = a kulcs engedélyezési listája. Mindenhol üres = a kiszolgáló összes (szöveges) modellje engedélyezett.
   img_label: Engedélyezett képmodellek (<span class="mono">x/…</span>)

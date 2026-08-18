@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Geração de imagens</strong> (capacidade separada). Ative a via pretendida e indique os <strong>modelos de imagem</strong> (<span class="mono">x/…</span>) abaixo.
 mdl:
   probing: A sondar o servidor…
+  spec_tools: 'ferramentas'
+  spec_vision: 'visão'
   extra_ph: modelos adicionais, um por linha
   hint: Caixas marcadas + entrada livre = lista de permitidos da chave. Vazio em tudo = todos os modelos (de texto) do servidor permitidos.
   img_label: Modelos de imagem permitidos (<span class="mono">x/…</span>)

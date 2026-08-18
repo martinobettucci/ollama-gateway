@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Ġenerazzjoni ta' immaġni</strong> (kapaċità separata). Attiva l-mogħdija mixtieqa u imla l-<strong>mudelli tal-immaġni</strong> (<span class="mono">x/…</span>) hawn taħt.
 mdl:
   probing: Qed jiġi sondat is-server…
+  spec_tools: 'għodod'
+  spec_vision: 'viżjoni'
   extra_ph: mudelli addizzjonali, wieħed kull linja
   hint: Kaxxi mmarkati + input ħieles = lista permessa taċ-ċavetta. Vojt kullimkien = il-mudelli (tat-test) kollha tas-server permessi.
   img_label: Mudelli tal-immaġni permessi (<span class="mono">x/…</span>)

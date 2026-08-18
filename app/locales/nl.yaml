@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Beeldgeneratie</strong> (afzonderlijke functie). Schakel de gewenste route in en vul de <strong>beeldmodellen</strong> (<span class="mono">x/…</span>) hieronder in.
 mdl:
   probing: Server wordt bevraagd…
+  spec_tools: 'tools'
+  spec_vision: 'visie'
   extra_ph: extra modellen, één per regel
   hint: Aangevinkte vakjes + vrije invoer = allowlist van de sleutel. Overal leeg = alle (tekst)modellen van de server toegestaan.
   img_label: Toegestane beeldmodellen (<span class="mono">x/…</span>)

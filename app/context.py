@@ -125,63 +125,36 @@ def choices() -> list[int]:
     return list(CONTEXT_SIZES)
 
 
-# --- Budget entrée/sortie annonçable à un client --------------------------------------------
+# --- Bornes annonçables à un client (VS Code…) -------------------------------------------------
 
-# Part de la fenêtre réservée à la SORTIE quand l'amont n'annonce qu'un contexte TOTAL (cas
-# d'Ollama : `/api/show` ne publie que `<arch>.context_length`). Bornée : au moins 1k (une réponse
-# utile reste possible), au plus 32k (au-delà, réserver davantage amputerait le prompt pour rien).
-OUTPUT_SHARE = 4
-OUTPUT_MIN = 1024
-OUTPUT_MAX = 32 * 1024
+# Sortie annoncée quand le serveur d'exécution n'en déclare aucune. Valeur de confort : elle ne
+# contraint rien à l'amont (le proxy ne borne que l'ENTRÉE), elle dit juste au client de ne pas
+# espérer une réponse illimitée.
+OUTPUT_DEFAULT = 16 * 1024
 
 
-def _declared(value) -> int | None:
-    """Borne déclarée par l'amont, en entier strictement positif — sinon None (= non déclarée)."""
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        return None
-    return int(value) if value > 0 else None
+def io_budget(context_length: int | None, max_output: int | None,
+              key_limit: int) -> tuple[int, int]:
+    """(max_entrée, max_sortie) en tokens à annoncer pour un modèle, sur une clé donnée.
 
+    Une seule règle :
 
-def io_budget(total_context: int | None, key_limit: int,
-              declared_input: int | None = None,
-              declared_output: int | None = None) -> tuple[int, int]:
-    """(max_entrée, max_sortie) en tokens à annoncer pour un modèle donné, sur une clé donnée.
-
-    Un client type VS Code veut DEUX bornes. **Si l'amont les déclare, elles priment** : lui seul
-    sait ce qu'il accepte réellement (`num_predict` du Modelfile, `max_input_tokens`/
-    `max_output_tokens` d'un amont OpenAI-compatible…). Le calcul ci-dessous n'est qu'un **repli**
-    pour les amonts qui ne publient qu'une fenêtre totale — le cas d'Ollama nu.
-
-    Trois contraintes, dans cet ordre :
-
-    1. **Fenêtre effective** = min(fenêtre du modèle, plafond de la clé). `num_ctx` étant borné au
-       plafond (`inject_num_ctx`), servir au-delà est impossible même si le modèle sait faire plus.
-       Fenêtre amont inconnue (`None`) ⇒ on s'en tient au plafond de la clé.
-    2. **Sortie** — déclarée si l'amont la donne, sinon un quart de la fenêtre (borné
-       `OUTPUT_MIN`…`OUTPUT_MAX`) : entrée et sortie partagent la même fenêtre, tout annoncer en
-       entrée ne laisserait rien à générer. Dans les deux cas elle reste dans la fenêtre.
-    3. **Entrée** — déclarée si l'amont la donne, sinon le reste de la fenêtre. Elle est ensuite
-       **plafonnée quoi qu'il arrive** : par la fenêtre effective, et par `plafond / MARGIN` — le
-       garde-fou d'entrée compare une estimation MAJORÉE de `MARGIN` au plafond (cf. `exceeds`),
-       donc un prompt de `plafond` tokens réels serait refusé en 413. Une borne déclarée plus large
-       que ce que la passerelle laissera passer serait un mensonge : on la redescend.
+    - **fenêtre** = la fenêtre du modèle, ramenée au plafond de contexte de la clé (fenêtre
+      inconnue ⇒ le plafond de la clé) ;
+    - **entrée** = cette fenêtre. Un cran plus bas quand le plafond de la clé est ce qui borne :
+      le garde-fou d'entrée compare une estimation MAJORÉE de `MARGIN` au plafond (cf. `exceeds`),
+      donc annoncer le plafond brut ferait refuser en 413 un prompt qu'on venait d'autoriser ;
+    - **sortie** = celle que le serveur déclare, sinon `OUTPUT_DEFAULT`, jamais plus que la fenêtre.
     """
     limit = key_limit if isinstance(key_limit, int) and not isinstance(key_limit, bool) else 0
     limit = max(limit, CONTEXT_MIN)
-    total = limit
-    if (window := _declared(total_context)) is not None:
-        total = min(limit, window)
-
-    out = _declared(declared_output)
-    if out is None:
-        out = max(OUTPUT_MIN, min(OUTPUT_MAX, total // OUTPUT_SHARE))
-    out = min(out, total - 1)                  # toujours laisser de la place à l'entrée
-
-    inp = _declared(declared_input)
-    if inp is None:
-        inp = total - out
-    inp = min(inp, total, int(limit / MARGIN))
-    return max(1, inp), max(1, out)
+    window = limit
+    if isinstance(context_length, int) and not isinstance(context_length, bool) and context_length > 0:
+        window = min(limit, context_length)
+    max_in = min(window, int(limit / MARGIN))
+    declared = max_output if isinstance(max_output, int) and not isinstance(max_output, bool) else 0
+    max_out = min(declared if declared > 0 else OUTPUT_DEFAULT, window)
+    return max(1, max_in), max(1, max_out)
 
 
 # --- Comptage de tokens -----------------------------------------------------------------------

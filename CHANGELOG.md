@@ -7,37 +7,42 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 ## [Non publié]
 
 - **Le gabarit VS Code contient enfin la clé et les vraies caractéristiques des modèles.** Le bloc
-  de configuration proposé à la création (ou à la réémission) d'une clé demandait jusqu'ici de
-  ressaisir la clé à la main, via un renvoi vers une invite de l'éditeur : il porte désormais le
-  **secret réel**, complet et prêt à coller — c'est le seul moment où il est affiché.
-  Deux défauts allaient avec, corrigés en même temps :
+  de configuration proposé à la création (ou à la réémission) d'une clé demandait de ressaisir la
+  clé à la main, via un renvoi vers une invite de l'éditeur : il porte désormais le **secret réel**,
+  complet et prêt à coller — c'est le seul moment où il est affiché. Deux défauts allaient avec :
 
   - **La liste de modèles était systématiquement vide.** Le gabarit annonçait être valorisé avec
-    les modèles autorisés de la clé, mais la page ne les lui transmettait jamais : le bloc sortait
-    donc toujours sans aucun modèle, inutilisable tel quel.
+    les modèles autorisés de la clé, mais la page ne les lui transmettait jamais.
   - **Les caractéristiques étaient inventées.** L'appel d'outils était annoncé comme toujours
     disponible et l'entrée image comme jamais disponible, pour tous les modèles sans distinction.
-    Elles sont maintenant **demandées au serveur d'exécution** modèle par modèle : appel d'outils,
-    entrée image et fenêtre de contexte réels. Deux modèles de la même passerelle donnent donc des
-    lignes différentes.
 
-  Le gabarit devient par ailleurs un **bloc à part**, avec sa **propre zone copiable** et son
-  **propre bouton de copie** : les variables d'environnement ne disparaissent plus quand on
-  l'affiche, et chacun des deux se copie séparément — l'un est un jeu de variables pour un shell,
-  l'autre un JSON à coller dans les réglages de l'éditeur. Le type d'API annoncé est aligné sur la
-  voie que l'éditeur emprunte réellement.
+  Le gabarit devient par ailleurs un **bloc à part**, avec sa propre zone copiable et son propre
+  bouton : les variables d'environnement ne disparaissent plus quand on l'affiche, et chacun des
+  deux se copie séparément.
 
-  Le gabarit gagne aussi les **tailles maximales d'entrée et de sortie**, absentes jusqu'ici.
-  Ce sont **celles que le serveur déclare** quand il les déclare — lui seul sait ce qu'il accepte ;
-  le calcul (fenêtre du modèle moins une part réservée à la réponse) n'intervient qu'en **repli**,
-  pour les serveurs qui ne publient qu'une fenêtre totale. Dans les deux cas, l'entrée annoncée
-  reste ramenée au plafond de contexte de la clé, marge de sécurité comprise : un client qui
-  remplit la fenêtre annoncée ne se fera pas refuser sa requête. Si le serveur d'exécution est
-  injoignable ou n'annonce rien, la modale le **dit** et produit des valeurs prudentes (ni outils,
-  ni entrée image) plutôt que des valeurs inventées.
-  Le secret n'est jamais reservi par une adresse interrogeable : il ne transite que par l'affichage
-  unique de la modale. Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais
-  trente (vingt-sept automatisés, trois de bout en bout), plus le manuel et ses captures.
+- **Les paramètres des modèles sont lus sur le serveur, quel qu'il soit.** La passerelle demande au
+  serveur d'exécution ce que chaque modèle sait faire — appel d'outils, entrée image, fenêtre de
+  contexte, longueur de réponse — au lieu de le supposer. Elle sait le demander à un serveur
+  **Ollama**, à **ollama.cpp** (même interface, y compris pour les modèles venus de son registre
+  privé) et à un serveur seulement **OpenAI-compatible** : pour chaque modèle elle retient la
+  première source qui répond — la fiche détaillée, sinon l'entrée du catalogue, sinon la liste des
+  modèles. Un modèle tout juste téléchargé, que la fiche ne décrit pas encore, est donc quand même
+  correctement présenté. Ce que le serveur ne dit pas n'est pas inventé : le modèle est décrit
+  prudemment et l'écran le signale.
+
+  Ces paramètres sont exposés partout où ils ont un sens : dans le gabarit VS Code, dans les
+  variables d'environnement (`OLLAMA_CONTEXT_LENGTH` porte la limite de contexte de la clé — seule
+  variable standard qui existe pour cela, aucune n'est inventée pour OpenAI ni Anthropic), et
+  **dès le formulaire de création de clé**, où chaque modèle proposé affiche à côté de son nom ce
+  que le serveur en dit (`outils · vision · 128k`) : on choisit les modèles autorisés en
+  connaissance de cause, avant même que la clé existe.
+
+  La règle des tailles annoncées tient en une phrase : **on annonce la fenêtre du modèle, sans
+  jamais dépasser ce que la clé autorise**. Un client qui remplit la fenêtre annoncée ne se fera
+  donc pas refuser sa requête.
+
+  Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais trente et un (vingt-sept
+  automatisés, quatre de bout en bout), plus le manuel et ses trois captures.
 
 ## [Publié]
 

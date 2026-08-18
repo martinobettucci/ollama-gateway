@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Generování obrázků</strong> (samostatná funkce). Povolte požadovanou cestu a zadejte <strong>modely obrázků</strong> (<span class="mono">x/…</span>) níže.
 mdl:
   probing: Sondování serveru…
+  spec_tools: 'nástroje'
+  spec_vision: 'vidění'
   extra_ph: další modely, jeden na řádek
   hint: Zaškrtnutá políčka + volný vstup = seznam povolených klíče. Všude prázdné = všechny (textové) modely serveru povoleny.
   img_label: Povolené modely obrázků (<span class="mono">x/…</span>)

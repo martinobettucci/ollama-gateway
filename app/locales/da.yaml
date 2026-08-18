@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Billedgenerering</strong> (separat funktion). Aktivér den ønskede vej og angiv <strong>billedmodellerne</strong> (<span class="mono">x/…</span>) nedenfor.
 mdl:
   probing: Undersøger serveren…
+  spec_tools: 'værktøjer'
+  spec_vision: 'syn'
   extra_ph: flere modeller, én pr. linje
   hint: Afkrydsede felter + fri indtastning = nøglens tilladelsesliste. Tom overalt = alle (tekst)modeller på serveren tilladt.
   img_label: Tilladte billedmodeller (<span class="mono">x/…</span>)

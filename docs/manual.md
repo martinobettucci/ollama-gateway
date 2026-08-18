@@ -422,9 +422,13 @@ API cochées :
 
 | API cochée | Variables générées |
 |---|---|
-| Ollama | `OLLAMA_HOST`, `OLLAMA_API_KEY` |
+| Ollama | `OLLAMA_HOST`, `OLLAMA_API_KEY`, `OLLAMA_CONTEXT_LENGTH` |
 | OpenAI | `OPENAI_BASE_URL` (suffixe `/v1`), `OPENAI_API_KEY` |
 | Anthropic | `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY` |
+
+`OLLAMA_CONTEXT_LENGTH` porte la **limite de contexte de la clé**. C'est la seule variable
+d'environnement standard qui transporte un paramètre de modèle : OpenAI et Anthropic n'ont pas
+d'équivalent, aucune n'est donc inventée pour eux — leurs paramètres passent par le gabarit VS Code.
 
 Le bouton **Copier les variables** met le bloc dans le presse-papiers en un clic. L'URL de
 base provient de la variable d'env `PUBLIC_BASE_URL` de la passerelle (si absente, un
@@ -446,14 +450,12 @@ variables pour un shell, l'autre un JSON à coller dans les réglages de l'édit
 
 ![Les deux zones copiables de la modale, côte à côte](../app/static/manual/41-vscode-blocks.jpg)
 
-Deux choses y sont **valorisées, jamais laissées à remplir** :
+Rien n'y est laissé à remplir, et rien n'y est deviné :
 
-- **La clé** — le champ `apiKey` contient le **secret réel** de la clé qui vient d'être créée
-  (ou réémise), pas un renvoi vers une invite de saisie de l'éditeur. Comme le secret n'est
-  affiché qu'une seule fois, c'est le seul moment où ce bloc est complet : il faut le copier
-  maintenant.
-- **Les modèles** — chaque modèle autorisé par la clé est décrit avec ses **capacités réelles**,
-  demandées au serveur d'exécution au moment où la case est cochée. Rien n'est deviné.
+- **La clé** — `apiKey` contient le **secret réel** de la clé qui vient d'être créée ou réémise.
+  Comme le secret n'est affiché qu'une seule fois, c'est le seul moment où ce bloc est complet.
+- **Les modèles** — chaque modèle autorisé par la clé est décrit avec les paramètres **que le
+  serveur d'exécution annonce**, demandés au moment où la case est cochée.
 
 | Champ du gabarit | D'où vient la valeur |
 |---|---|
@@ -461,30 +463,49 @@ Deux choses y sont **valorisées, jamais laissées à remplir** :
 | `url` | URL de la cible publique rattachée à la clé, suffixée `/v1` |
 | `apiType` | `chat-completions` — la voie OpenAI-compatible réellement empruntée par l'éditeur |
 | `apiKey` | le secret de la clé, affiché une seule fois |
-| `toolCalling` | le serveur d'exécution déclare-t-il l'**appel d'outils** pour ce modèle |
-| `vision` | le serveur d'exécution déclare-t-il l'entrée **image** pour ce modèle |
-| `maxInputTokens` | **la borne déclarée par le serveur** si elle existe ; sinon la fenêtre du modèle moins la part réservée à la réponse |
-| `maxOutputTokens` | **la borne déclarée par le serveur** si elle existe ; sinon un quart de la fenêtre, entre 1k et 32k |
+| `toolCalling` | le serveur annonce-t-il l'**appel d'outils** pour ce modèle |
+| `vision` | le serveur annonce-t-il l'entrée **image** pour ce modèle |
+| `maxInputTokens` | la **fenêtre** du modèle, ramenée à la limite de contexte de la clé |
+| `maxOutputTokens` | la **longueur de réponse** annoncée par le serveur, sinon 16k — jamais plus que la fenêtre |
 
-Deux modèles servis par la même passerelle donnent donc des lignes **différentes** : un modèle
-multimodal à petite fenêtre et un modèle texte à très grande fenêtre ne s'annoncent pas pareil.
+La règle des deux dernières lignes tient en une phrase : **on annonce la fenêtre du modèle, sans
+jamais dépasser ce que la clé autorise.** Si la clé est plafonnée à 112k et le modèle à 8k, on
+annonce 8k ; si le modèle fait 256k et la clé 112k, on annonce 112k (à un cheveu près, pour que le
+prompt annoncé passe vraiment le contrôle de contexte plutôt que d'être refusé au dernier token).
 
-**Les bornes d'entrée/sortie sont d'abord celles que le serveur déclare.** Un modèle dont la
-fiche fixe une fenêtre servie et une longueur de réponse maximale voit ces valeurs reprises telles
-quelles — c'est le serveur qui sait ce qu'il accepte. Le calcul (fenêtre du modèle, moins un quart
-réservé à la réponse) n'intervient qu'en **repli**, pour les serveurs qui ne publient qu'une
-fenêtre totale.
+Deux modèles de la même passerelle donnent donc des lignes **différentes** : un petit modèle
+multimodal et un gros modèle texte ne s'annoncent pas pareil.
 
-Dans tous les cas, l'entrée annoncée reste **plafonnée par la limite de contexte de la clé**, marge
-de sécurité comprise : une borne déclarée plus large que ce que la passerelle laisse passer serait
-un mensonge, un client qui la remplirait verrait sa requête refusée (cf. « Limite de contexte »).
-Elle est donc redescendue.
-
-Si le serveur d'exécution est injoignable ou n'annonce aucune capacité, la modale le dit et
-produit des valeurs **prudentes** (ni outils, ni vision) plutôt que des valeurs inventées : mieux
-vaut un éditeur bridé qu'un éditeur qui promet ce que le serveur ne sait pas faire.
+Si le serveur est injoignable ou n'annonce rien pour un modèle, la modale le dit et écrit des
+valeurs **prudentes** (ni outils, ni vision) plutôt que des valeurs inventées : mieux vaut un
+éditeur bridé qu'un éditeur qui promet ce que le serveur ne sait pas faire.
 
 ![Gabarit VS Code — capacités lues sur le serveur d'exécution](../app/static/manual/40-vscode-template.jpg)
+
+#### D'où viennent les paramètres des modèles
+
+La passerelle interroge le serveur d'exécution, quel qu'il soit :
+
+| Type de serveur | Ce que la passerelle y trouve |
+|---|---|
+| Ollama | le catalogue des modèles, puis la fiche détaillée de chacun |
+| ollama.cpp | idem — même interface qu'Ollama ; son catalogue liste aussi ce qui vient de son **registre privé**, et il joint déjà les capacités à chaque entrée |
+| OpenAI-compatible | la liste des modèles, dont les entrées portent la fenêtre et la longueur de réponse |
+
+Pour chaque modèle, la passerelle retient **la première source qui répond** : la fiche détaillée,
+sinon l'entrée du catalogue, sinon la liste OpenAI. Un modèle muet sur toutes les voies est décrit
+**prudemment**, jamais inventé. Un modèle tout juste téléchargé, que la fiche détaillée ne décrit
+pas encore, est donc quand même correctement présenté grâce au catalogue.
+
+À noter : `ollama.cpp` permet de configurer la fenêtre **par modèle**, mais ne publie pas cette
+valeur dans la fiche du modèle — c'est la fenêtre native du modèle qui est alors annoncée. La
+limite de contexte de la clé reste appliquée par-dessus dans tous les cas.
+
+Ces mêmes paramètres apparaissent dès le **formulaire de création de clé** : chaque modèle
+proposé porte, à côté de son nom, ce que le serveur en dit (`outils · vision · 128k`). Le choix des
+modèles autorisés se fait donc en connaissance de cause, avant même que la clé existe.
+
+![Sélecteur de modèles — paramètres annoncés par le serveur](../app/static/manual/42-model-specs.jpg)
 
 ### Détail et édition d'une clé
 

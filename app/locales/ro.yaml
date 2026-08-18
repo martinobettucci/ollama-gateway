@@ -297,6 +297,8 @@ api:
   img_hint: <strong>Generare de imagini</strong> (capacitate separată). Activați calea dorită și completați <strong>modelele de imagine</strong> (<span class="mono">x/…</span>) mai jos.
 mdl:
   probing: Sondare a serverului…
+  spec_tools: 'instrumente'
+  spec_vision: 'viziune'
   extra_ph: modele suplimentare, unul pe linie
   hint: Căsuțe bifate + introducere liberă = lista de permise a cheii. Gol peste tot = toate modelele (text) ale serverului permise.
   img_label: Modele de imagine permise (<span class="mono">x/…</span>)

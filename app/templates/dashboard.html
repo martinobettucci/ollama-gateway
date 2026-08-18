@@ -74,8 +74,13 @@
   const out = document.getElementById('env-output');
   const base = {{ (created.target_url or public_base_url or '')|tojson }} || 'https://PASSERELLE-A-REMPLACER';
   const secret = {{ created.secret|tojson }};
+  // `OLLAMA_CONTEXT_LENGTH` = plafond de contexte de la clé. Seule variable d'environnement
+  // STANDARD portant un paramètre de modèle : OpenAI et Anthropic n'ont pas d'équivalent, on
+  // n'en invente donc pas pour eux (leurs paramètres ne passent que par le gabarit VS Code).
+  const ctx = {{ (created.max_context_tokens or 0)|tojson }};
   const gen = {
-    ollama:    ['OLLAMA_HOST=' + base, 'OLLAMA_API_KEY=' + secret],
+    ollama:    ['OLLAMA_HOST=' + base, 'OLLAMA_API_KEY=' + secret]
+                 .concat(ctx ? ['OLLAMA_CONTEXT_LENGTH=' + ctx] : []),
     openai:    ['OPENAI_BASE_URL=' + base + '/v1', 'OPENAI_API_KEY=' + secret],
     anthropic: ['ANTHROPIC_BASE_URL=' + base, 'ANTHROPIC_API_KEY=' + secret],
   };
