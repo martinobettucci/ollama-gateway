@@ -119,6 +119,12 @@ test('gabarit VS Code : sans allowlist, tout le catalogue du serveur est décrit
     expect(m.maxOutputTokens).toBeGreaterThan(0);
     expect(m.url).toMatch(/\/v1$/);
   }
+
+  // Bornes DÉCLARÉES par l'amont (Modelfile `num_ctx 2048` / `num_predict 512`) : elles priment
+  // sur le calcul de repli, qui aurait donné 1024/1024 (plancher de sortie).
+  const declared = conf[0].models.find((m) => m.id === 'x/fakeflux:1b');
+  expect(declared.maxOutputTokens).toBe(512);
+  expect(declared.maxInputTokens).toBe(1536);
   await page.locator('#env-done').click();
 });
 

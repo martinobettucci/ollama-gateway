@@ -332,6 +332,84 @@ def _context_length(info) -> int | None:
     return None
 
 
+# Champs par lesquels un amont DÉCLARE lui-même ses bornes d'entrée/sortie. Présents, ils
+# PRÉVALENT sur tout calcul : l'amont sait mieux que nous ce qu'il accepte réellement.
+_MAX_INPUT_FIELDS = ("max_input_tokens", "maxInputTokens")
+_MAX_OUTPUT_FIELDS = ("max_output_tokens", "maxOutputTokens")
+
+
+def _positive_int(value) -> int | None:
+    """`value` en entier strictement positif, sinon None.
+
+    Les sentinelles ≤ 0 d'Ollama sont écartées : `num_predict: -1` (illimité) et `-2` (remplir le
+    contexte) ne sont pas des bornes, les annoncer comme telles n'aurait aucun sens.
+    """
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(value) if value > 0 else None
+    if isinstance(value, str):
+        try:
+            num = int(float(value.strip()))
+        except ValueError:
+            return None
+        return num if num > 0 else None
+    return None
+
+
+def _show_params(payload: dict) -> dict:
+    """Paramètres du Modelfile tels que `/api/show` les renvoie : un texte `nom  valeur` par ligne.
+
+    Un nom peut se répéter (`stop`) : on garde la PREMIÈRE occurrence, suffisant pour les scalaires
+    qui nous intéressent (`num_ctx`, `num_predict`).
+    """
+    text = payload.get("parameters")
+    if not isinstance(text, str):
+        return {}
+    out: dict[str, str] = {}
+    for line in text.splitlines():
+        name, _, value = line.strip().partition(" ")
+        value = value.strip().strip('"')
+        if name and value:
+            out.setdefault(name, value)
+    return out
+
+
+def _read_limits(payload: dict) -> dict:
+    """Fenêtre de contexte et bornes d'entrée/sortie **déclarées** par l'amont (None si absentes).
+
+    Ordre de priorité — ce que l'amont DIT l'emporte toujours sur ce qu'on saurait calculer :
+
+    1. bornes explicites `max_input_tokens`/`max_output_tokens` (racine ou `model_info`), que
+       publient certains amonts OpenAI-compatibles ;
+    2. paramètres du Modelfile : `num_predict` = sortie maximale, `num_ctx` = fenêtre RÉELLEMENT
+       servie. Sur la voie OpenAI-compatible — celle que vise le gabarit VS Code — la passerelle
+       n'injecte pas `num_ctx` (cf. `context.supports_num_ctx`) : c'est donc cette valeur-là qui
+       s'applique, et non le maximum de l'architecture ;
+    3. à défaut seulement, la fenêtre du GGUF (`<arch>.context_length`), base du calcul de repli.
+    """
+    info = payload.get("model_info")
+    info = info if isinstance(info, dict) else {}
+    params = _show_params(payload)
+
+    def _declared(fields):
+        for source in (payload, info):
+            for field_name in fields:
+                got = _positive_int(source.get(field_name))
+                if got is not None:
+                    return got
+        return None
+
+    max_output = _declared(_MAX_OUTPUT_FIELDS)
+    if max_output is None:
+        max_output = _positive_int(params.get("num_predict"))
+    return {
+        "contextLength": _positive_int(params.get("num_ctx")) or _context_length(info),
+        "maxInput": _declared(_MAX_INPUT_FIELDS),
+        "maxOutput": max_output,
+    }
+
+
 def _read_capabilities(payload: dict) -> dict:
     """Capacités d'un modèle à partir de la réponse `/api/show` (dict brut décodé)."""
     caps = payload.get("capabilities")
@@ -353,7 +431,7 @@ def _read_capabilities(payload: dict) -> dict:
 async def _show_one(client: httpx.AsyncClient, base: str, headers: dict, model: str) -> dict:
     """Interroge `POST {base}/api/show` pour UN modèle. `known=False` si l'amont n'a rien dit."""
     unknown = {"id": model, "known": False, "toolCalling": False, "vision": False,
-               "thinking": False, "contextLength": None}
+               "thinking": False, "contextLength": None, "maxInput": None, "maxOutput": None}
     try:
         r = await client.post(base.rstrip("/") + "/api/show",
                               json={"model": model}, headers=headers)
@@ -366,7 +444,7 @@ async def _show_one(client: httpx.AsyncClient, base: str, headers: dict, model: 
         return unknown
     caps = _read_capabilities(payload)
     return {"id": model, "known": True, "toolCalling": caps["tools"], "vision": caps["vision"],
-            "thinking": caps["thinking"], "contextLength": _context_length(payload.get("model_info"))}
+            "thinking": caps["thinking"], **_read_limits(payload)}
 
 
 async def model_capabilities(server_id: int | None,

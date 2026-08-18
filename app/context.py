@@ -135,30 +135,52 @@ OUTPUT_MIN = 1024
 OUTPUT_MAX = 32 * 1024
 
 
-def io_budget(total_context: int | None, key_limit: int) -> tuple[int, int]:
+def _declared(value) -> int | None:
+    """Borne déclarée par l'amont, en entier strictement positif — sinon None (= non déclarée)."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return int(value) if value > 0 else None
+
+
+def io_budget(total_context: int | None, key_limit: int,
+              declared_input: int | None = None,
+              declared_output: int | None = None) -> tuple[int, int]:
     """(max_entrée, max_sortie) en tokens à annoncer pour un modèle donné, sur une clé donnée.
 
-    Un client type VS Code veut DEUX bornes ; Ollama n'en publie qu'UNE (la fenêtre totale) et la
-    passerelle en impose une seconde (le plafond de la clé). On compose donc trois contraintes :
+    Un client type VS Code veut DEUX bornes. **Si l'amont les déclare, elles priment** : lui seul
+    sait ce qu'il accepte réellement (`num_predict` du Modelfile, `max_input_tokens`/
+    `max_output_tokens` d'un amont OpenAI-compatible…). Le calcul ci-dessous n'est qu'un **repli**
+    pour les amonts qui ne publient qu'une fenêtre totale — le cas d'Ollama nu.
+
+    Trois contraintes, dans cet ordre :
 
     1. **Fenêtre effective** = min(fenêtre du modèle, plafond de la clé). `num_ctx` étant borné au
        plafond (`inject_num_ctx`), servir au-delà est impossible même si le modèle sait faire plus.
        Fenêtre amont inconnue (`None`) ⇒ on s'en tient au plafond de la clé.
-    2. **Réserve de sortie** — entrée et sortie partagent le même `num_ctx` : annoncer toute la
-       fenêtre en entrée ne laisserait rien à générer.
-    3. **Marge du tokenizer** — le garde-fou d'entrée compare une estimation MAJORÉE de `MARGIN` au
-       plafond (cf. `exceeds`). Un prompt de `plafond` tokens réels serait donc refusé en 413 :
-       on redescend l'entrée annoncée à `plafond / MARGIN`, pour que ce qui est annoncé passe.
+    2. **Sortie** — déclarée si l'amont la donne, sinon un quart de la fenêtre (borné
+       `OUTPUT_MIN`…`OUTPUT_MAX`) : entrée et sortie partagent la même fenêtre, tout annoncer en
+       entrée ne laisserait rien à générer. Dans les deux cas elle reste dans la fenêtre.
+    3. **Entrée** — déclarée si l'amont la donne, sinon le reste de la fenêtre. Elle est ensuite
+       **plafonnée quoi qu'il arrive** : par la fenêtre effective, et par `plafond / MARGIN` — le
+       garde-fou d'entrée compare une estimation MAJORÉE de `MARGIN` au plafond (cf. `exceeds`),
+       donc un prompt de `plafond` tokens réels serait refusé en 413. Une borne déclarée plus large
+       que ce que la passerelle laissera passer serait un mensonge : on la redescend.
     """
     limit = key_limit if isinstance(key_limit, int) and not isinstance(key_limit, bool) else 0
     limit = max(limit, CONTEXT_MIN)
     total = limit
-    if (isinstance(total_context, (int, float)) and not isinstance(total_context, bool)
-            and total_context > 0):
-        total = min(limit, int(total_context))
-    out = max(OUTPUT_MIN, min(OUTPUT_MAX, total // OUTPUT_SHARE))
+    if (window := _declared(total_context)) is not None:
+        total = min(limit, window)
+
+    out = _declared(declared_output)
+    if out is None:
+        out = max(OUTPUT_MIN, min(OUTPUT_MAX, total // OUTPUT_SHARE))
     out = min(out, total - 1)                  # toujours laisser de la place à l'entrée
-    inp = min(total - out, int(limit / MARGIN))
+
+    inp = _declared(declared_input)
+    if inp is None:
+        inp = total - out
+    inp = min(inp, total, int(limit / MARGIN))
     return max(1, inp), max(1, out)
 
 

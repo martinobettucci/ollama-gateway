@@ -53,7 +53,12 @@ car Ollama est en loopback natif (hors Docker).
   repli sur les indices qu'Ollama utilise lui-même (`.Tools` dans le gabarit, projecteur
   multimodal dans les familles) pour les amonts plus anciens. Un modèle dont `/api/show` ne
   répond pas ressort `known=False` avec des capacités **prudentes** (ni outils ni vision) :
-  on n'invente jamais une capacité amont. Consommé par
+  on n'invente jamais une capacité amont. `_read_limits` remonte en plus les **bornes déclarées**
+  par l'amont, dans l'ordre : bornes explicites `max_input_tokens`/`max_output_tokens` (racine ou
+  `model_info`, amonts OpenAI-compatibles) → paramètres du Modelfile (`num_predict` = sortie,
+  `num_ctx` = fenêtre réellement servie, qui **prime** sur `<arch>.context_length` puisque la voie
+  OpenAI-compat ne reçoit pas d'injection `num_ctx`) → à défaut la fenêtre du GGUF. Les sentinelles
+  `≤ 0` (`num_predict: -1`/`-2`) ne sont pas des bornes et sont écartées. Consommé par
   `GET /admin/keys/{id}/vscode-models` (LAN-only), qui alimente le gabarit VS Code de la modale
   de création/réémission de clé — **sans jamais reservir le secret**, qui ne transite que par le
   flash de session affiché une seule fois.
@@ -106,13 +111,16 @@ car Ollama est en loopback natif (hors Docker).
   n'ont pas d'équivalent par requête → refus d'entrée seul. **Hors-ligne** : le fichier BPE est mis
   en cache **dans l'image au build** (`TIKTOKEN_CACHE_DIR`, cf. Dockerfile) ; si l'encodage est
   indisponible, repli sur une estimation (≈ 4 o/token) — jamais d'échec du proxy.
-  `io_budget(fenêtre_amont, plafond_clé)` traduit ces contraintes en **deux bornes annonçables** à
-  un client qui en exige deux (VS Code) là où Ollama n'en publie qu'une : fenêtre effective =
-  `min(fenêtre du modèle, plafond de la clé)` (au-delà, `num_ctx` bornerait de toute façon), moins
-  une **réserve de sortie** d'un quart bornée à `OUTPUT_MIN`…`OUTPUT_MAX` (1k…32k) car entrée et
-  sortie partagent `num_ctx` ; l'entrée annoncée est enfin redescendue à `plafond / MARGIN` pour
+  `io_budget(fenêtre_amont, plafond_clé, entrée_déclarée, sortie_déclarée)` traduit ces contraintes
+  en **deux bornes annonçables** à un client qui en exige deux (VS Code). **Une borne déclarée par
+  l'amont prime** ; le calcul n'est qu'un **repli** pour les amonts qui ne publient qu'une fenêtre
+  totale. Repli : fenêtre effective = `min(fenêtre du modèle, plafond de la clé)` (au-delà,
+  `num_ctx` bornerait de toute façon), moins une **réserve de sortie** d'un quart bornée à
+  `OUTPUT_MIN`…`OUTPUT_MAX` (1k…32k) car entrée et sortie partagent `num_ctx`. **Dans les deux
+  cas**, l'entrée est ensuite plafonnée par la fenêtre effective ET par `plafond / MARGIN`, pour
   qu'un prompt qui remplit ce qui est annoncé **passe** le refus 413 (qui compare une estimation
-  majorée). Fenêtre amont inconnue → on s'en tient au plafond de la clé.
+  majorée) : une borne déclarée trop large est redescendue plutôt qu'annoncée en mentant. Fenêtre
+  amont inconnue → on s'en tient au plafond de la clé.
 - `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
   (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
   `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).

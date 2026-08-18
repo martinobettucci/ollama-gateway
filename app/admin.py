@@ -569,7 +569,8 @@ async def key_vscode_models(request: Request, key_id: int):
         rec.server_id, list(rec.models) + list(rec.image_models))
     out = []
     for cap in caps:
-        max_in, max_out = context.io_budget(cap["contextLength"], rec.max_context_tokens)
+        max_in, max_out = context.io_budget(cap["contextLength"], rec.max_context_tokens,
+                                            cap["maxInput"], cap["maxOutput"])
         out.append({**cap, "maxInputTokens": max_in, "maxOutputTokens": max_out})
     return JSONResponse({"online": online, "error": err, "models": out})
 

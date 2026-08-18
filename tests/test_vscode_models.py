@@ -61,6 +61,34 @@ def test_io_budget_without_upstream_window_falls_back_to_key_cap():
     assert max_in + max_out == 8 * 1024
 
 
+def test_io_budget_declared_bounds_prevail_over_computation():
+    """Bornes DÉCLARÉES par l'amont ⇒ elles priment ; le calcul n'est qu'un repli."""
+    # Sans déclaration : répartition calculée (sortie = un quart, ramenée au plafond de 32k).
+    assert context.io_budget(262144, 1024 * 1024) == (229376, 32768)
+    # Avec déclaration : les valeurs de l'amont passent telles quelles (cf. gabarit de référence).
+    assert context.io_budget(262144, 1024 * 1024, 256000, 16384) == (256000, 16384)
+
+
+def test_io_budget_declared_output_alone_leaves_the_rest_to_input():
+    """Sortie déclarée seule : l'entrée reprend tout le reste de la fenêtre, sans quart imposé."""
+    assert context.io_budget(8192, 112 * 1024, None, 512) == (7680, 512)
+
+
+def test_io_budget_declared_input_still_capped_by_the_key():
+    """Une borne déclarée PLUS LARGE que ce que la passerelle laisse passer est redescendue.
+
+    Annoncer 256k d'entrée sur une clé plafonnée à 8k produirait des 413 : l'amont a beau le
+    déclarer, c'est la passerelle qui refuse."""
+    max_in, max_out = context.io_budget(262144, 8192, 256000, 16384)
+    assert max_in <= 8192 and max_out < 8192
+
+
+def test_io_budget_ignores_non_bound_sentinels():
+    """`num_predict: -1`/`-2` (illimité / remplir le contexte) ne sont pas des bornes."""
+    assert context.io_budget(8192, 112 * 1024, None, -1) == context.io_budget(8192, 112 * 1024)
+    assert context.io_budget(8192, 112 * 1024, 0, 0) == context.io_budget(8192, 112 * 1024)
+
+
 # --- Lecture des capacités sur l'amont ---------------------------------------------------------
 
 def test_context_length_read_from_declared_architecture():
@@ -74,6 +102,32 @@ def test_context_length_falls_back_to_any_architecture_prefix():
     assert servers._context_length({"inconnue42.context_length": 4096}) == 4096
     assert servers._context_length({"general.parameter_count": 8_000_000_000}) is None
     assert servers._context_length(None) is None
+
+
+def test_read_limits_prefers_modelfile_parameters_over_architecture_window():
+    """`num_ctx` du Modelfile = fenêtre RÉELLEMENT servie ⇒ prime sur `<arch>.context_length`."""
+    limits = servers._read_limits({
+        "parameters": 'stop  "<|end|>"\nnum_ctx    2048\nnum_predict   512',
+        "model_info": {"general.architecture": "flux", "flux.context_length": 4096}})
+    assert limits == {"contextLength": 2048, "maxInput": None, "maxOutput": 512}
+
+
+def test_read_limits_uses_explicit_max_fields_first():
+    """Bornes explicites d'un amont OpenAI-compatible : elles priment sur `num_predict`."""
+    limits = servers._read_limits({
+        "parameters": "num_predict 512",
+        "max_input_tokens": 256000, "max_output_tokens": 16384,
+        "model_info": {"llama.context_length": 262144}})
+    assert limits == {"contextLength": 262144, "maxInput": 256000, "maxOutput": 16384}
+    # Variante camelCase, et lecture depuis `model_info` quand la racine ne porte rien.
+    assert servers._read_limits(
+        {"model_info": {"maxOutputTokens": 4096}})["maxOutput"] == 4096
+
+
+def test_read_limits_ignores_sentinels_and_absent_fields():
+    """`num_predict: -1` (illimité) n'est pas une borne ; sans rien, tout est None."""
+    assert servers._read_limits({"parameters": "num_predict -1"})["maxOutput"] is None
+    assert servers._read_limits({}) == {"contextLength": None, "maxInput": None, "maxOutput": None}
 
 
 def test_capabilities_read_from_declared_list():
@@ -98,10 +152,12 @@ async def test_model_capabilities_reads_real_values_per_model(probe_via_fake):
     by_id = {c["id"]: c for c in caps}
     # demo:latest publie `capabilities` (outils + vision), contexte 8k.
     assert by_id["demo:latest"] == {"id": "demo:latest", "known": True, "toolCalling": True,
-                                    "vision": True, "thinking": False, "contextLength": 8192}
+                                    "vision": True, "thinking": False, "contextLength": 8192,
+                                    "maxInput": None, "maxOutput": None}
     # autre:latest ne publie PAS `capabilities` → déduit du gabarit `.Tools`, pas de vision, 256k.
     assert by_id["autre:latest"] == {"id": "autre:latest", "known": True, "toolCalling": True,
-                                     "vision": False, "thinking": False, "contextLength": 262144}
+                                     "vision": False, "thinking": False, "contextLength": 262144,
+                                     "maxInput": None, "maxOutput": None}
 
 
 async def test_model_capabilities_without_allowlist_uses_server_catalog(probe_via_fake):
@@ -117,7 +173,16 @@ async def test_model_capabilities_unknown_model_stays_conservative(probe_via_fak
     srv = servers.create_server("s", "http://fake")
     _, caps, _ = await servers.model_capabilities(srv.id, ["jamais-installé:9b"])
     assert caps == [{"id": "jamais-installé:9b", "known": False, "toolCalling": False,
-                     "vision": False, "thinking": False, "contextLength": None}]
+                     "vision": False, "thinking": False, "contextLength": None,
+                     "maxInput": None, "maxOutput": None}]
+
+
+async def test_model_capabilities_carries_declared_bounds(probe_via_fake):
+    """Le modèle qui déclare `num_ctx`/`num_predict` ressort avec ces valeurs, pas celles du GGUF."""
+    srv = servers.create_server("s", "http://fake")
+    _, caps, _ = await servers.model_capabilities(srv.id, ["x/fakeflux:1b"])
+    assert caps[0]["contextLength"] == 2048        # `num_ctx`, pas `flux.context_length` (4096)
+    assert caps[0]["maxOutput"] == 512             # `num_predict`
 
 
 async def test_model_capabilities_disabled_server_reports_error():
@@ -166,6 +231,22 @@ async def test_vscode_models_endpoint_respects_key_context_cap(admin_client, pro
         body = (await c.get(f"/admin/keys/{rec.id}/vscode-models")).json()
     m = body["models"][0]
     assert m["maxInputTokens"] + m["maxOutputTokens"] == 4096
+
+
+async def test_vscode_models_endpoint_honours_declared_bounds(admin_client, probe_via_fake):
+    """La sortie déclarée par l'amont traverse jusqu'au gabarit, sans être recalculée au quart."""
+    srv = servers.create_server("s", "http://fake")
+    rec, _ = keys.create_key(label="declaree", origins=[], monthly_token_cap=None, rpm_limit=None,
+                             server_id=srv.id, image_models=["x/fakeflux:1b"],
+                             max_context_tokens=112 * 1024)
+    async with admin_client as c:
+        await _login(c)
+        body = (await c.get(f"/admin/keys/{rec.id}/vscode-models")).json()
+    m = body["models"][0]
+    # Le repli aurait donné 1024 en sortie (plancher `OUTPUT_MIN`, le quart de 2048 valant 512)
+    # et donc 1024 en entrée : les valeurs ci-dessous ne peuvent venir que de la déclaration.
+    assert m["maxOutputTokens"] == 512             # `num_predict` déclaré
+    assert m["maxInputTokens"] == 1536             # reste de la fenêtre déclarée (2048 − 512)
 
 
 async def test_vscode_models_endpoint_is_guarded_and_404s(admin_client, probe_via_fake):

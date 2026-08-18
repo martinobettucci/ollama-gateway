@@ -85,7 +85,11 @@ _SHOW: dict[str, dict] = {
         "details": {"family": "qwen3", "families": ["qwen3"], "parameter_size": "4.0B"},
         "model_info": {"general.architecture": "qwen3", "qwen3.context_length": 262144},
     },
+    # Ce modèle DÉCLARE ses bornes dans les paramètres du Modelfile (`num_ctx`, `num_predict`) :
+    # elles doivent primer sur `flux.context_length` et sur le calcul de repli.
     "x/fakeflux:1b": {
+        "parameters": 'stop                           "<|end|>"\nnum_ctx                        2048\n'
+                      "num_predict                    512",
         "details": {"family": "flux", "families": ["flux"], "parameter_size": "1.0B"},
         "model_info": {"general.architecture": "flux", "flux.context_length": 4096},
         "capabilities": ["completion"],

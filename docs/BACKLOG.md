@@ -386,25 +386,34 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   `servers.model_capabilities` (`POST {base}/api/show`, un appel par modèle en parallèle) : outils
   et vision depuis `capabilities` (Ollama ≥ 0.6) avec repli sur `.Tools` dans le gabarit + famille
   multimodale, fenêtre depuis `<arch>.context_length` sans liste d'architectures codée en dur.
-  Ajout de `maxInputTokens`/`maxOutputTokens` via `context.io_budget` = min(fenêtre modèle, plafond
-  clé) − réserve de sortie (¼, bornée 1k…32k) − marge du garde-fou 413 (`plafond / MARGIN`), pour
-  que la fenêtre annoncée **passe réellement**. Amont muet ⇒ `known=False`, valeurs prudentes et
+  Ajout de `maxInputTokens`/`maxOutputTokens` : **les bornes DÉCLARÉES par l'amont priment**
+  (`_read_limits` : `max_input_tokens`/`max_output_tokens` explicites → `num_predict`/`num_ctx` du
+  Modelfile, `num_ctx` primant sur `<arch>.context_length` puisque la voie OpenAI-compat ne reçoit
+  pas d'injection ; sentinelles `≤ 0` écartées) ; `context.io_budget` ne **calcule** qu'en repli
+  (min(fenêtre modèle, plafond clé) − réserve de sortie ¼ bornée 1k…32k). Dans les deux cas
+  l'entrée est replafonnée par la fenêtre effective et par `plafond / MARGIN` (garde-fou 413), pour
+  que la fenêtre annoncée **passe réellement** — une borne déclarée trop large est redescendue. Amont muet ⇒ `known=False`, valeurs prudentes et
   message explicite dans la modale ; **aucun secret** dans la réponse de
   `GET /admin/keys/{id}/vscode-models` (LAN-only, guard admin). Clé sans allowlist ⇒ catalogue du
   serveur. `/api/show` implémenté dans le faux Ollama avec des fiches **volontairement
-  hétérogènes** (un modèle publiant `capabilities`, un autre forçant le repli, fenêtres 8k/256k/4k)
-  pour que le chemin de repli soit couvert et non simulé. Clés i18n `dash.env.vscode_probing`
-  /`_ready`/`_offline`/`_copy` sur les **24 locales**. — *tests : `tests/test_vscode_models.py` (19 :
+  hétérogènes** (un modèle publiant `capabilities`, un autre forçant le repli, un troisième
+  déclarant `num_ctx`/`num_predict` dans ses paramètres ; fenêtres 8k/256k/2k) pour que le chemin
+  de repli ET le chemin déclaré soient couverts, jamais simulés. Clés i18n `dash.env.vscode_probing`
+  /`_ready`/`_offline`/`_copy` sur les **24 locales**. — *tests : `tests/test_vscode_models.py` (27 :
   `io_budget` — réserve de sortie, bornage par le plafond de clé, bornes 1k/32k, marge 413,
-  fenêtre amont inconnue ; lecture `_context_length`/`_read_capabilities` déclarée et par repli ;
-  `model_capabilities` — valeurs distinctes par modèle, catalogue sans allowlist, modèle absent
-  prudent, serveur désactivé ; endpoint — capacités composées, plafond de clé respecté, guard +
+  fenêtre amont inconnue, **précédence du déclaré** (les deux bornes, la sortie seule, redescente
+  d'un déclaré trop large, sentinelles ignorées) ; `_read_limits` — Modelfile > architecture,
+  champs explicites > `num_predict`, sentinelles et absence ; lecture `_context_length`/`_read_capabilities` déclarée et par repli ;
+  `model_capabilities` — valeurs distinctes par modèle, bornes déclarées remontées, catalogue sans
+  allowlist, modèle absent prudent, serveur désactivé ; endpoint — capacités composées, plafond de
+  clé respecté, bornes déclarées honorées, guard +
   404, absence de secret ; gabarit rendu — plus de `${input:…}`, `apiType` attendu, id de clé
   présent à la création ET à la réémission, présence des DEUX zones copiables) ; E2E
   `e2e/tests/vscode_template.spec.ts` (3 : JSON parsé — `apiKey` == secret réel, capacités
   différenciées entre `demo:latest` et `autre:latest`, bornes 6144/2048 et bornage par le plafond,
   variables d'environnement toujours affichées à côté, bouton de copie propre au bloc ; sans
-  allowlist tout le catalogue décrit avec les 4 champs ; indépendance des deux blocs dans les deux
+  allowlist tout le catalogue décrit avec les 4 champs, bornes déclarées 512/1536 vérifiées contre
+  le repli 1024/1024 ; indépendance des deux blocs dans les deux
   sens) ; **vision faite** (captures 40-vscode-template, 41-vscode-blocks). Docs : `docs/manual.md`
   § « Gabarit VS Code » (tableau champ → origine de la valeur + 2 captures synchronisées),
   `docs/DAT.md` (`servers.model_capabilities`, `context.io_budget`), JOURNAL.*

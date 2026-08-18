@@ -27,15 +27,17 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   l'autre un JSON à coller dans les réglages de l'éditeur. Le type d'API annoncé est aligné sur la
   voie que l'éditeur emprunte réellement.
 
-  Le gabarit gagne aussi les **tailles maximales d'entrée et de sortie**, absentes jusqu'ici et
-  calculées pour que ce qui est annoncé passe réellement : la fenêtre réelle du modèle est ramenée
-  au plafond de contexte de la clé, une part est réservée à la réponse, et la marge du garde-fou
-  d'entrée est déduite — un client qui remplit la fenêtre annoncée ne se fera pas refuser sa
-  requête. Si le serveur d'exécution est injoignable ou n'annonce rien, la modale le **dit** et
-  produit des valeurs prudentes (ni outils, ni entrée image) plutôt que des valeurs inventées.
+  Le gabarit gagne aussi les **tailles maximales d'entrée et de sortie**, absentes jusqu'ici.
+  Ce sont **celles que le serveur déclare** quand il les déclare — lui seul sait ce qu'il accepte ;
+  le calcul (fenêtre du modèle moins une part réservée à la réponse) n'intervient qu'en **repli**,
+  pour les serveurs qui ne publient qu'une fenêtre totale. Dans les deux cas, l'entrée annoncée
+  reste ramenée au plafond de contexte de la clé, marge de sécurité comprise : un client qui
+  remplit la fenêtre annoncée ne se fera pas refuser sa requête. Si le serveur d'exécution est
+  injoignable ou n'annonce rien, la modale le **dit** et produit des valeurs prudentes (ni outils,
+  ni entrée image) plutôt que des valeurs inventées.
   Le secret n'est jamais reservi par une adresse interrogeable : il ne transite que par l'affichage
   unique de la modale. Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais
-  vingt-deux (dix-neuf automatisés, trois de bout en bout), plus le manuel et ses captures.
+  trente (vingt-sept automatisés, trois de bout en bout), plus le manuel et ses captures.
 
 ## [Publié]
 

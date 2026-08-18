@@ -463,14 +463,22 @@ Deux choses y sont **valorisées, jamais laissées à remplir** :
 | `apiKey` | le secret de la clé, affiché une seule fois |
 | `toolCalling` | le serveur d'exécution déclare-t-il l'**appel d'outils** pour ce modèle |
 | `vision` | le serveur d'exécution déclare-t-il l'entrée **image** pour ce modèle |
-| `maxInputTokens` | fenêtre de contexte réelle du modèle, **ramenée au plafond de contexte de la clé**, moins la part réservée à la réponse et la marge de sécurité du garde-fou d'entrée |
-| `maxOutputTokens` | part de la fenêtre réservée à la réponse (un quart, entre 1k et 32k) |
+| `maxInputTokens` | **la borne déclarée par le serveur** si elle existe ; sinon la fenêtre du modèle moins la part réservée à la réponse |
+| `maxOutputTokens` | **la borne déclarée par le serveur** si elle existe ; sinon un quart de la fenêtre, entre 1k et 32k |
 
 Deux modèles servis par la même passerelle donnent donc des lignes **différentes** : un modèle
 multimodal à petite fenêtre et un modèle texte à très grande fenêtre ne s'annoncent pas pareil.
-Les deux bornes d'entrée/sortie sont calculées pour que ce qui est annoncé **passe réellement** :
-un client qui remplit la fenêtre annoncée ne se fera pas refuser sa requête par la limite de
-contexte de la clé (cf. « Limite de contexte »).
+
+**Les bornes d'entrée/sortie sont d'abord celles que le serveur déclare.** Un modèle dont la
+fiche fixe une fenêtre servie et une longueur de réponse maximale voit ces valeurs reprises telles
+quelles — c'est le serveur qui sait ce qu'il accepte. Le calcul (fenêtre du modèle, moins un quart
+réservé à la réponse) n'intervient qu'en **repli**, pour les serveurs qui ne publient qu'une
+fenêtre totale.
+
+Dans tous les cas, l'entrée annoncée reste **plafonnée par la limite de contexte de la clé**, marge
+de sécurité comprise : une borne déclarée plus large que ce que la passerelle laisse passer serait
+un mensonge, un client qui la remplirait verrait sa requête refusée (cf. « Limite de contexte »).
+Elle est donc redescendue.
 
 Si le serveur d'exécution est injoignable ou n'annonce aucune capacité, la modale le dit et
 produit des valeurs **prudentes** (ni outils, ni vision) plutôt que des valeurs inventées : mieux

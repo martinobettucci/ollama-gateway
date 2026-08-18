@@ -33,6 +33,19 @@ Journal chronologique des décisions (le plus récent en premier). Complète `CH
   plafond (tiktoken n'est pas le tokenizer des modèles servis). Annoncer le plafond brut en entrée
   aurait produit des refus 413 sur des prompts que la passerelle disait accepter. L'entrée annoncée
   est donc redescendue à `plafond / marge`.
+- **Ce que l'amont déclare prime ; le calcul n'est qu'un repli.** Première version : les deux
+  bornes étaient toujours calculées depuis la fenêtre du modèle. C'est faux dès que l'amont dit
+  lui-même ce qu'il accepte — un Modelfile qui fixe `num_ctx`/`num_predict`, un amont
+  OpenAI-compatible qui publie `max_input_tokens`/`max_output_tokens`. Ces valeurs sont
+  maintenant reprises telles quelles, le calcul ne servant qu'aux amonts qui ne publient qu'une
+  fenêtre totale (Ollama nu). Détail qui compte : `num_ctx` du Modelfile prime sur
+  `<arch>.context_length`, parce que la voie visée par le gabarit est OpenAI-compatible et que la
+  passerelle n'y injecte **pas** `num_ctx` — c'est donc la valeur du Modelfile qui s'applique
+  réellement, pas le maximum de l'architecture. Les sentinelles `num_predict: -1`/`-2` (illimité,
+  remplir le contexte) ne sont pas des bornes et sont écartées.
+- **Une seule contrainte reste non négociable : le plafond de la clé.** Même déclarée par l'amont,
+  une entrée plus large que `plafond / marge` est redescendue — sinon on annoncerait une fenêtre
+  que la passerelle refuse en 413. Annoncer large n'aide personne : le client échoue à l'usage.
 - **Le gabarit ne remplace plus les variables d'environnement, il s'y ajoute.** Cocher « VS Code »
   écrasait la zone de sortie commune : on ne pouvait pas voir — ni copier — les deux à la fois,
   alors qu'ils servent deux usages simultanés (un shell côté machine cliente, les réglages de
