@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI API
     api_anthropic: Anthropic API
     vscode: VS Code (kohandatud lõpp-punkt)
+    vscode_probing: 'Mudelite tegelike võimekuste lugemine täitmisserverist…'
+    vscode_ready: 'Täitmisserverist loetud võimekused: tegelik tööriistakutse, nägemine ja kontekstiaken.'
+    vscode_offline: 'Täitmisserver ei teata võimekusi: ettevaatlikud väärtused (ei tööriistu ega nägemist).'
+    vscode_copy: 'Kopeeri VS Code''i seadistus'
     no_public_url: '`PUBLIC_BASE_URL` ei ole lüüsis seadistatud: asendage kohatäide enne kasutamist tegeliku avaliku URL-iga.'
     copy_btn: Kopeeri muutujad
     copied: Kopeeritud!

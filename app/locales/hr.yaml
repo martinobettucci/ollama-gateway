@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (prilagođena krajnja točka)
+    vscode_probing: 'Čitanje stvarnih mogućnosti modela s izvršnog poslužitelja…'
+    vscode_ready: 'Mogućnosti pročitane s izvršnog poslužitelja: stvarni pozivi alata, vid i kontekstni prozor.'
+    vscode_offline: 'Izvršni poslužitelj ne objavljuje mogućnosti: oprezne vrijednosti (bez alata i bez vida).'
+    vscode_copy: 'Kopiraj konfiguraciju VS Codea'
     no_public_url: '`PUBLIC_BASE_URL` nije konfiguriran na pristupniku: prije upotrebe zamijenite rezervirano mjesto stvarnim javnim URL-om.'
     copy_btn: Kopiraj varijable
     copied: Kopirano!

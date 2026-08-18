@@ -437,6 +437,47 @@ Ollama et OpenAI) **et** en en-tête `x-api-key` (comportement du SDK Anthropic 
 
 ![Modale de configuration du client — variables d'environnement](../app/static/manual/09-env-modal.jpg)
 
+#### Gabarit VS Code (point de terminaison personnalisé)
+
+La même modale propose une case **VS Code (endpoint personnalisé)**. Elle ouvre un **bloc
+séparé**, avec sa **propre zone copiable** et son **propre bouton de copie** : les variables
+d'environnement restent affichées à côté, les deux se copient indépendamment — l'un est un jeu de
+variables pour un shell, l'autre un JSON à coller dans les réglages de l'éditeur.
+
+![Les deux zones copiables de la modale, côte à côte](../app/static/manual/41-vscode-blocks.jpg)
+
+Deux choses y sont **valorisées, jamais laissées à remplir** :
+
+- **La clé** — le champ `apiKey` contient le **secret réel** de la clé qui vient d'être créée
+  (ou réémise), pas un renvoi vers une invite de saisie de l'éditeur. Comme le secret n'est
+  affiché qu'une seule fois, c'est le seul moment où ce bloc est complet : il faut le copier
+  maintenant.
+- **Les modèles** — chaque modèle autorisé par la clé est décrit avec ses **capacités réelles**,
+  demandées au serveur d'exécution au moment où la case est cochée. Rien n'est deviné.
+
+| Champ du gabarit | D'où vient la valeur |
+|---|---|
+| `id`, `name` | modèles autorisés de la clé ; si la clé n'a **aucune** restriction, tout le catalogue du serveur |
+| `url` | URL de la cible publique rattachée à la clé, suffixée `/v1` |
+| `apiType` | `chat-completions` — la voie OpenAI-compatible réellement empruntée par l'éditeur |
+| `apiKey` | le secret de la clé, affiché une seule fois |
+| `toolCalling` | le serveur d'exécution déclare-t-il l'**appel d'outils** pour ce modèle |
+| `vision` | le serveur d'exécution déclare-t-il l'entrée **image** pour ce modèle |
+| `maxInputTokens` | fenêtre de contexte réelle du modèle, **ramenée au plafond de contexte de la clé**, moins la part réservée à la réponse et la marge de sécurité du garde-fou d'entrée |
+| `maxOutputTokens` | part de la fenêtre réservée à la réponse (un quart, entre 1k et 32k) |
+
+Deux modèles servis par la même passerelle donnent donc des lignes **différentes** : un modèle
+multimodal à petite fenêtre et un modèle texte à très grande fenêtre ne s'annoncent pas pareil.
+Les deux bornes d'entrée/sortie sont calculées pour que ce qui est annoncé **passe réellement** :
+un client qui remplit la fenêtre annoncée ne se fera pas refuser sa requête par la limite de
+contexte de la clé (cf. « Limite de contexte »).
+
+Si le serveur d'exécution est injoignable ou n'annonce aucune capacité, la modale le dit et
+produit des valeurs **prudentes** (ni outils, ni vision) plutôt que des valeurs inventées : mieux
+vaut un éditeur bridé qu'un éditeur qui promet ce que le serveur ne sait pas faire.
+
+![Gabarit VS Code — capacités lues sur le serveur d'exécution](../app/static/manual/40-vscode-template.jpg)
+
 ### Détail et édition d'une clé
 
 Chaque clé a sa page : statistiques dédiées (requêtes, tokens total et du mois, erreurs),

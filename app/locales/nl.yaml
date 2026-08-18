@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
     vscode: VS Code (aangepast eindpunt)
+    vscode_probing: 'De werkelijke mogelijkheden van de modellen worden van de uitvoeringsserver gelezen…'
+    vscode_ready: 'Mogelijkheden gelezen van de uitvoeringsserver: echte tool-aanroepen, visie en contextvenster.'
+    vscode_offline: 'De uitvoeringsserver meldt geen mogelijkheden: voorzichtige waarden (geen tools, geen visie).'
+    vscode_copy: 'VS Code-configuratie kopiëren'
     no_public_url: '`PUBLIC_BASE_URL` is niet geconfigureerd op de gateway: vervang de placeholder door de echte openbare URL vóór gebruik.'
     copy_btn: Variabelen kopiëren
     copied: Gekopieerd!

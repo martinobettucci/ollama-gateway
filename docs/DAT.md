@@ -46,6 +46,17 @@ car Ollama est en loopback natif (hors Docker).
   **Gestion du catalogue LAN-only** : `pull_model` / `delete_model` frappent l'amont en direct
   (`/api/pull`, `DELETE /api/delete`) avec le jeton distant déchiffré côté serveur — piloté depuis
   la console (`POST /admin/servers/{id}/models/{pull,delete}`), **jamais** via le proxy public.
+  **Capacités par modèle** : `model_capabilities` interroge `POST {base}/api/show` (un appel par
+  modèle, en parallèle) et en tire l'appel d'outils, la vision et la fenêtre de contexte. La
+  fenêtre est lue dans `model_info` sous la clé **préfixée par l'architecture** du GGUF
+  (`<arch>.context_length`) ; les capacités viennent du champ `capabilities` (Ollama ≥ 0.6) avec
+  repli sur les indices qu'Ollama utilise lui-même (`.Tools` dans le gabarit, projecteur
+  multimodal dans les familles) pour les amonts plus anciens. Un modèle dont `/api/show` ne
+  répond pas ressort `known=False` avec des capacités **prudentes** (ni outils ni vision) :
+  on n'invente jamais une capacité amont. Consommé par
+  `GET /admin/keys/{id}/vscode-models` (LAN-only), qui alimente le gabarit VS Code de la modale
+  de création/réémission de clé — **sans jamais reservir le secret**, qui ne transite que par le
+  flash de session affiché une seule fois.
 - `crypto.py` — **chiffrement réversible au repos** (Fernet, clé dérivée de `$P2E_MASTER_KEY`)
   du jeton Bearer d'un serveur distant. Réversible (à réémettre vers l'amont), contrairement aux
   hachages one-way de `auth.py`.
@@ -95,6 +106,13 @@ car Ollama est en loopback natif (hors Docker).
   n'ont pas d'équivalent par requête → refus d'entrée seul. **Hors-ligne** : le fichier BPE est mis
   en cache **dans l'image au build** (`TIKTOKEN_CACHE_DIR`, cf. Dockerfile) ; si l'encodage est
   indisponible, repli sur une estimation (≈ 4 o/token) — jamais d'échec du proxy.
+  `io_budget(fenêtre_amont, plafond_clé)` traduit ces contraintes en **deux bornes annonçables** à
+  un client qui en exige deux (VS Code) là où Ollama n'en publie qu'une : fenêtre effective =
+  `min(fenêtre du modèle, plafond de la clé)` (au-delà, `num_ctx` bornerait de toute façon), moins
+  une **réserve de sortie** d'un quart bornée à `OUTPUT_MIN`…`OUTPUT_MAX` (1k…32k) car entrée et
+  sortie partagent `num_ctx` ; l'entrée annoncée est enfin redescendue à `plafond / MARGIN` pour
+  qu'un prompt qui remplit ce qui est annoncé **passe** le refus 413 (qui compare une estimation
+  majorée). Fenêtre amont inconnue → on s'en tient au plafond de la clé.
 - `deliver.py` — **livraison du secret** d'une clé générée en mode déclaratif : **e-mail**
   (`smtplib`, TLS none/starttls/tls, config SMTP du YAML) et **webhook** (`httpx` POST, presets
   `slack`/`discord`/`generic` ou template libre, jetons `#OllamaKey`/`#OllamaUrl`/`#OllamaLabel`).

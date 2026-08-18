@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (endpoint personalizzat)
+    vscode_probing: 'Qed jinqraw il-kapaċitajiet reali tal-mudelli mis-server tal-eżekuzzjoni…'
+    vscode_ready: 'Kapaċitajiet moqrija mis-server tal-eżekuzzjoni: sejħa ta'' għodod, viżjoni u tieqa tal-kuntest reali.'
+    vscode_offline: 'Is-server tal-eżekuzzjoni ma jħabbar l-ebda kapaċità: valuri prudenti (bla għodod u bla viżjoni).'
+    vscode_copy: 'Ikkopja l-konfigurazzjoni ta'' VS Code'
     no_public_url: '`PUBLIC_BASE_URL` mhux ikkonfigurat fuq il-gateway: issostitwixxi l-placeholder bl-URL pubbliku reali qabel l-użu.'
     copy_btn: Ikkopja l-varjabbli
     copied: Ikkupjat!

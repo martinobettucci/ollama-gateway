@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (vlastní koncový bod)
+    vscode_probing: 'Načítání skutečných schopností modelů z prováděcího serveru…'
+    vscode_ready: 'Schopnosti načtené z prováděcího serveru: skutečné volání nástrojů, vidění a kontextové okno.'
+    vscode_offline: 'Prováděcí server neohlašuje schopnosti: opatrné hodnoty (bez nástrojů i bez vidění).'
+    vscode_copy: 'Kopírovat konfiguraci VS Code'
     no_public_url: '`PUBLIC_BASE_URL` není na bráně nakonfigurována: před použitím nahraďte zástupný symbol skutečnou veřejnou URL.'
     copy_btn: Zkopírovat proměnné
     copied: Zkopírováno!

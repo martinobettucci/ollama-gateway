@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI API
     api_anthropic: Anthropic API
     vscode: VS Code (custom endpoint)
+    vscode_probing: 'Reading the models'' real capabilities from the execution server…'
+    vscode_ready: 'Capabilities read from the execution server: real tool calling, vision and context window.'
+    vscode_offline: 'The execution server announced no capabilities: conservative values (no tools, no vision).'
+    vscode_copy: 'Copy the VS Code configuration'
     no_public_url: '`PUBLIC_BASE_URL` is not configured on the gateway: replace the placeholder with the real public URL before use.'
     copy_btn: Copy the variables
     copied: Copied!

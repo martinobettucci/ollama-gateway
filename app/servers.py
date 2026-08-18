@@ -296,6 +296,108 @@ async def test_server(server_id: int) -> tuple[bool, list[str], str]:
     return online, models, err
 
 
+# --- Capacités réelles des modèles (POST /api/show) -------------------------------------------
+
+# Capacités qu'Ollama publie dans `capabilities` (`/api/show`) et que le panel exploite.
+CAP_TOOLS = "tools"
+CAP_VISION = "vision"
+CAP_THINKING = "thinking"
+
+# Repli quand l'amont ne publie PAS `capabilities` (Ollama < 0.6) : on relit les mêmes indices
+# qu'Ollama utilise lui-même — le gabarit référence `.Tools` pour l'appel d'outils, et un
+# projecteur multimodal apparaît dans les familles du modèle.
+_TOOLS_MARKER = ".Tools"
+_VISION_FAMILIES = ("clip", "mllama", "vision")
+
+
+def _context_length(info) -> int | None:
+    """Fenêtre de contexte annoncée dans `model_info`, ou None.
+
+    Ollama préfixe la clé par l'ARCHITECTURE du GGUF (`llama.context_length`,
+    `qwen3.context_length`, `gemma3.context_length`…). On lit d'abord la clé de l'architecture
+    déclarée, puis on retombe sur n'importe quelle clé `*.context_length` : de nouvelles
+    architectures apparaissent en continu, coder la liste en dur la périmerait aussitôt.
+    """
+    if not isinstance(info, dict):
+        return None
+    arch = info.get("general.architecture")
+    names = []
+    if isinstance(arch, str) and arch:
+        names.append(f"{arch}.context_length")
+    names += sorted(k for k in info if isinstance(k, str) and k.endswith(".context_length"))
+    for name in names:
+        val = info.get(name)
+        if isinstance(val, (int, float)) and not isinstance(val, bool) and val > 0:
+            return int(val)
+    return None
+
+
+def _read_capabilities(payload: dict) -> dict:
+    """Capacités d'un modèle à partir de la réponse `/api/show` (dict brut décodé)."""
+    caps = payload.get("capabilities")
+    if isinstance(caps, list):
+        declared = {c for c in caps if isinstance(c, str)}
+        return {"tools": CAP_TOOLS in declared, "vision": CAP_VISION in declared,
+                "thinking": CAP_THINKING in declared}
+    template = payload.get("template")
+    details = payload.get("details")
+    families = details.get("families") if isinstance(details, dict) else None
+    families = [f.lower() for f in (families or []) if isinstance(f, str)]
+    return {
+        "tools": isinstance(template, str) and _TOOLS_MARKER in template,
+        "vision": any(any(v in f for v in _VISION_FAMILIES) for f in families),
+        "thinking": False,
+    }
+
+
+async def _show_one(client: httpx.AsyncClient, base: str, headers: dict, model: str) -> dict:
+    """Interroge `POST {base}/api/show` pour UN modèle. `known=False` si l'amont n'a rien dit."""
+    unknown = {"id": model, "known": False, "toolCalling": False, "vision": False,
+               "thinking": False, "contextLength": None}
+    try:
+        r = await client.post(base.rstrip("/") + "/api/show",
+                              json={"model": model}, headers=headers)
+        if r.status_code != 200:
+            return unknown
+        payload = r.json()
+    except (httpx.HTTPError, ValueError):
+        return unknown
+    if not isinstance(payload, dict):
+        return unknown
+    caps = _read_capabilities(payload)
+    return {"id": model, "known": True, "toolCalling": caps["tools"], "vision": caps["vision"],
+            "thinking": caps["thinking"], "contextLength": _context_length(payload.get("model_info"))}
+
+
+async def model_capabilities(server_id: int | None,
+                             models: list[str] | None) -> tuple[bool, list[dict], str]:
+    """Capacités RÉELLES des modèles d'un serveur d'exécution — (en_ligne, capacités, erreur).
+
+    `models` vide/None = « aucune allowlist » côté clé : on interroge alors le CATALOGUE du serveur
+    (`/api/tags`), qui est bien l'ensemble réellement utilisable. Un modèle dont `/api/show` ne
+    répond pas ressort avec `known=False` et des capacités prudentes (ni outils ni vision) : mieux
+    vaut un gabarit client bridé qu'un gabarit qui promet ce que l'amont ne sait pas faire.
+    """
+    if server_id is None:
+        return False, [], "serveur introuvable"
+    info = _upstream_info(server_id)
+    if info is None:
+        return False, [], "serveur introuvable"
+    base, headers, enabled = info
+    if not enabled:
+        return False, [], "serveur désactivé"
+    wanted = [m for m in (models or []) if isinstance(m, str) and m.strip()]
+    online, catalogue, err = await test_server(server_id)   # persiste aussi l'état en ligne
+    if not wanted:
+        if not online:
+            return False, [], err
+        wanted = catalogue
+    timeout = httpx.Timeout(config.SERVER_PROBE_TIMEOUT_S, connect=15.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        caps = await asyncio.gather(*(_show_one(client, base, headers, m) for m in wanted))
+    return online, list(caps), err
+
+
 # --- Test de compatibilité d'API (matrice stockée) --------------------------------------------
 
 def _is_served(status_code: int, body: str) -> bool:

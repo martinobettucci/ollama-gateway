@@ -6,7 +6,36 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
-_Rien à publier pour le moment…_
+- **Le gabarit VS Code contient enfin la clé et les vraies caractéristiques des modèles.** Le bloc
+  de configuration proposé à la création (ou à la réémission) d'une clé demandait jusqu'ici de
+  ressaisir la clé à la main, via un renvoi vers une invite de l'éditeur : il porte désormais le
+  **secret réel**, complet et prêt à coller — c'est le seul moment où il est affiché.
+  Deux défauts allaient avec, corrigés en même temps :
+
+  - **La liste de modèles était systématiquement vide.** Le gabarit annonçait être valorisé avec
+    les modèles autorisés de la clé, mais la page ne les lui transmettait jamais : le bloc sortait
+    donc toujours sans aucun modèle, inutilisable tel quel.
+  - **Les caractéristiques étaient inventées.** L'appel d'outils était annoncé comme toujours
+    disponible et l'entrée image comme jamais disponible, pour tous les modèles sans distinction.
+    Elles sont maintenant **demandées au serveur d'exécution** modèle par modèle : appel d'outils,
+    entrée image et fenêtre de contexte réels. Deux modèles de la même passerelle donnent donc des
+    lignes différentes.
+
+  Le gabarit devient par ailleurs un **bloc à part**, avec sa **propre zone copiable** et son
+  **propre bouton de copie** : les variables d'environnement ne disparaissent plus quand on
+  l'affiche, et chacun des deux se copie séparément — l'un est un jeu de variables pour un shell,
+  l'autre un JSON à coller dans les réglages de l'éditeur. Le type d'API annoncé est aligné sur la
+  voie que l'éditeur emprunte réellement.
+
+  Le gabarit gagne aussi les **tailles maximales d'entrée et de sortie**, absentes jusqu'ici et
+  calculées pour que ce qui est annoncé passe réellement : la fenêtre réelle du modèle est ramenée
+  au plafond de contexte de la clé, une part est réservée à la réponse, et la marge du garde-fou
+  d'entrée est déduite — un client qui remplit la fenêtre annoncée ne se fera pas refuser sa
+  requête. Si le serveur d'exécution est injoignable ou n'annonce rien, la modale le **dit** et
+  produit des valeurs prudentes (ni outils, ni entrée image) plutôt que des valeurs inventées.
+  Le secret n'est jamais reservi par une adresse interrogeable : il ne transite que par l'affichage
+  unique de la modale. Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais
+  vingt-deux (dix-neuf automatisés, trois de bout en bout), plus le manuel et ses captures.
 
 ## [Publié]
 

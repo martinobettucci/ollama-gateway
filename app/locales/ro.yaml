@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (punct final personalizat)
+    vscode_probing: 'Se citesc capacitățile reale ale modelelor de pe serverul de execuție…'
+    vscode_ready: 'Capacități citite de pe serverul de execuție: apel de instrumente, viziune și fereastră de context reale.'
+    vscode_offline: 'Serverul de execuție nu anunță capacități: valori prudente (fără instrumente și fără viziune).'
+    vscode_copy: 'Copiază configurația VS Code'
     no_public_url: '`PUBLIC_BASE_URL` nu este configurat pe gateway: înlocuiți substituentul cu URL-ul public real înainte de utilizare.'
     copy_btn: Copiați variabilele
     copied: Copiat!

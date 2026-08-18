@@ -125,6 +125,43 @@ def choices() -> list[int]:
     return list(CONTEXT_SIZES)
 
 
+# --- Budget entrée/sortie annonçable à un client --------------------------------------------
+
+# Part de la fenêtre réservée à la SORTIE quand l'amont n'annonce qu'un contexte TOTAL (cas
+# d'Ollama : `/api/show` ne publie que `<arch>.context_length`). Bornée : au moins 1k (une réponse
+# utile reste possible), au plus 32k (au-delà, réserver davantage amputerait le prompt pour rien).
+OUTPUT_SHARE = 4
+OUTPUT_MIN = 1024
+OUTPUT_MAX = 32 * 1024
+
+
+def io_budget(total_context: int | None, key_limit: int) -> tuple[int, int]:
+    """(max_entrée, max_sortie) en tokens à annoncer pour un modèle donné, sur une clé donnée.
+
+    Un client type VS Code veut DEUX bornes ; Ollama n'en publie qu'UNE (la fenêtre totale) et la
+    passerelle en impose une seconde (le plafond de la clé). On compose donc trois contraintes :
+
+    1. **Fenêtre effective** = min(fenêtre du modèle, plafond de la clé). `num_ctx` étant borné au
+       plafond (`inject_num_ctx`), servir au-delà est impossible même si le modèle sait faire plus.
+       Fenêtre amont inconnue (`None`) ⇒ on s'en tient au plafond de la clé.
+    2. **Réserve de sortie** — entrée et sortie partagent le même `num_ctx` : annoncer toute la
+       fenêtre en entrée ne laisserait rien à générer.
+    3. **Marge du tokenizer** — le garde-fou d'entrée compare une estimation MAJORÉE de `MARGIN` au
+       plafond (cf. `exceeds`). Un prompt de `plafond` tokens réels serait donc refusé en 413 :
+       on redescend l'entrée annoncée à `plafond / MARGIN`, pour que ce qui est annoncé passe.
+    """
+    limit = key_limit if isinstance(key_limit, int) and not isinstance(key_limit, bool) else 0
+    limit = max(limit, CONTEXT_MIN)
+    total = limit
+    if (isinstance(total_context, (int, float)) and not isinstance(total_context, bool)
+            and total_context > 0):
+        total = min(limit, int(total_context))
+    out = max(OUTPUT_MIN, min(OUTPUT_MAX, total // OUTPUT_SHARE))
+    out = min(out, total - 1)                  # toujours laisser de la place à l'entrée
+    inp = min(total - out, int(limit / MARGIN))
+    return max(1, inp), max(1, out)
+
+
 # --- Comptage de tokens -----------------------------------------------------------------------
 
 def _collect_text(node, out: list[str], depth: int = 0) -> None:

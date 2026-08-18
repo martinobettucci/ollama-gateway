@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI API
     api_anthropic: Anthropic API
     vscode: VS Code (pielāgots galapunkts)
+    vscode_probing: 'Modeļu reālo iespēju nolasīšana no izpildes servera…'
+    vscode_ready: 'No izpildes servera nolasītās iespējas: reāli rīku izsaukumi, redze un konteksta logs.'
+    vscode_offline: 'Izpildes serveris nepaziņo iespējas: piesardzīgas vērtības (bez rīkiem un bez redzes).'
+    vscode_copy: 'Kopēt VS Code konfigurāciju'
     no_public_url: '`PUBLIC_BASE_URL` nav konfigurēts vārtejā: pirms lietošanas aizstājiet vietturi ar īsto publisko URL.'
     copy_btn: Kopēt mainīgos
     copied: Nokopēts!

@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
     vscode: VS Code (brugerdefineret slutpunkt)
+    vscode_probing: 'Læser modellernes reelle egenskaber fra udførelsesserveren…'
+    vscode_ready: 'Egenskaber læst fra udførelsesserveren: reelle værktøjskald, syn og kontekstvindue.'
+    vscode_offline: 'Udførelsesserveren oplyser ingen egenskaber: forsigtige værdier (ingen værktøjer, intet syn).'
+    vscode_copy: 'Kopiér VS Code-konfigurationen'
     no_public_url: '`PUBLIC_BASE_URL` er ikke konfigureret på gatewayen: erstat pladsholderen med den rigtige offentlige URL før brug.'
     copy_btn: Kopiér variablerne
     copied: Kopieret!

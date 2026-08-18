@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (críochphointe saincheaptha)
+    vscode_probing: 'Cumais fíora na samhlacha á léamh ón bhfreastalaí forghníomhaithe…'
+    vscode_ready: 'Cumais léite ón bhfreastalaí forghníomhaithe: fíorghlaoch uirlisí, fís agus fuinneog chomhthéacs.'
+    vscode_offline: 'Ní fhógraíonn an freastalaí forghníomhaithe aon chumas: luachanna faichilleacha (gan uirlisí, gan fís).'
+    vscode_copy: 'Cóipeáil cumraíocht VS Code'
     no_public_url: 'Níl `PUBLIC_BASE_URL` cumraithe ar an ngeata: cuir an fíor-URL poiblí in ionad an tsealbhóra áite roimh úsáid.'
     copy_btn: Cóipeáil na hathróga
     copied: Cóipeáilte!

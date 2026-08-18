@@ -69,6 +69,10 @@ dash:
     api_openai: API OpenAI
     api_anthropic: API Anthropic
     vscode: VS Code (niestandardowy punkt końcowy)
+    vscode_probing: 'Odczyt rzeczywistych możliwości modeli z serwera wykonawczego…'
+    vscode_ready: 'Możliwości odczytane z serwera wykonawczego: rzeczywiste wywoływanie narzędzi, wizja i okno kontekstu.'
+    vscode_offline: 'Serwer wykonawczy nie ogłasza możliwości: wartości ostrożne (bez narzędzi i bez wizji).'
+    vscode_copy: 'Kopiuj konfigurację VS Code'
     no_public_url: '`PUBLIC_BASE_URL` nie jest skonfigurowana po stronie bramy: przed użyciem zastąp symbol zastępczy rzeczywistym publicznym adresem URL.'
     copy_btn: Skopiuj zmienne
     copied: Skopiowano!

@@ -3,6 +3,48 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-08-18 — Gabarit VS Code : ne rien deviner, tout demander à l'amont
+
+- **Le point de départ était une demande simple, le fond était plus grave.** La demande portait sur
+  deux points : mettre le vrai secret dans le gabarit VS Code au lieu du renvoi vers une invite de
+  saisie de l'éditeur, et aller chercher les caractéristiques réelles des modèles (outils, vision,
+  entrée/sortie max) auprès du serveur. En ouvrant le gabarit, un troisième défaut est apparu : la
+  page **ne transmettait jamais** au gabarit les modèles de la clé (`key_models` référencé côté
+  gabarit, jamais fourni côté page) — le bloc sortait donc **toujours sans aucun modèle**. La
+  fonctionnalité était annoncée au changelog comme « valorisée avec les vraies données de la clé » ;
+  elle ne l'était pas. Vérifié dans l'historique : la variable n'a jamais été passée depuis sa
+  livraison. C'est la conséquence directe d'une livraison **sans aucun test**.
+- **Pourquoi interroger `/api/show` plutôt que déduire du nom du modèle.** Le nom ne dit rien de
+  fiable : deux `qwen3` peuvent différer sur la vision, et la fenêtre de contexte varie selon la
+  quantification et le GGUF. `POST /api/show` publie `capabilities` et `model_info` — c'est la seule
+  source qui décrit **le modèle réellement installé sur ce serveur-là**. On lit la fenêtre sous
+  `<arch>.context_length` (le préfixe suit l'architecture du GGUF) sans coder la liste des
+  architectures en dur : elle se périmerait à chaque nouvelle famille.
+- **Repli assumé pour les amonts anciens, jamais d'invention.** `capabilities` n'existe que depuis
+  Ollama 0.6. Sur un amont plus ancien on relit les mêmes indices qu'Ollama utilise lui-même
+  (`.Tools` dans le gabarit, projecteur multimodal dans les familles). Si `/api/show` ne répond
+  pas du tout, le modèle ressort **prudent** (ni outils ni vision) et la modale **le dit** : un
+  éditeur bridé se corrige en deux clics, un éditeur qui promet une capacité absente échoue à
+  l'usage sans que l'utilisateur comprenne pourquoi.
+- **Les deux bornes annoncées sont calculées pour PASSER, pas pour flatter.** VS Code veut une
+  entrée max et une sortie max ; Ollama ne publie qu'une fenêtre totale, et la passerelle impose en
+  plus le plafond de contexte de la clé. Trois contraintes, donc, composées dans `context.io_budget`
+  — dont la moins évidente : le garde-fou d'entrée compare une estimation **majorée de 15 %** au
+  plafond (tiktoken n'est pas le tokenizer des modèles servis). Annoncer le plafond brut en entrée
+  aurait produit des refus 413 sur des prompts que la passerelle disait accepter. L'entrée annoncée
+  est donc redescendue à `plafond / marge`.
+- **Le gabarit ne remplace plus les variables d'environnement, il s'y ajoute.** Cocher « VS Code »
+  écrasait la zone de sortie commune : on ne pouvait pas voir — ni copier — les deux à la fois,
+  alors qu'ils servent deux usages simultanés (un shell côté machine cliente, les réglages de
+  l'éditeur). Bloc séparé, zone copiable propre, bouton propre ; la logique de copie (avec son
+  repli `execCommand` pour l'admin servi en http) est factorisée plutôt que dupliquée.
+  `apiType` aligné sur `chat-completions` d'après le gabarit de référence fourni par le
+  responsable : c'est la voie OpenAI-compat que l'éditeur emprunte réellement.
+- **Le secret ne devient pas interrogeable pour autant.** L'adresse ajoutée
+  (`GET /admin/keys/{id}/vscode-models`) ne renvoie que des métadonnées de modèles ; le secret reste
+  strictement dans l'affichage unique de la modale. Un endpoint qui reservirait un secret annulerait
+  la garantie « affiché une seule fois ».
+
 ## 2026-08-17 — Déploiement prod : le balayage se fait sur DEV, et la DNS de BuildKit est cassée
 
 - **Où tourne le balayage (rappel qui a coûté du temps).** Le balayage de sécurité est un gate

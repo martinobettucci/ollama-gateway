@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI-API
     api_anthropic: Anthropic-API
     vscode: VS Code (mukautettu päätepiste)
+    vscode_probing: 'Luetaan mallien todellisia ominaisuuksia suoritinpalvelimelta…'
+    vscode_ready: 'Ominaisuudet luettu suoritinpalvelimelta: todelliset työkalukutsut, näkö ja konteksti-ikkuna.'
+    vscode_offline: 'Suoritinpalvelin ei ilmoita ominaisuuksia: varovaiset arvot (ei työkaluja eikä näköä).'
+    vscode_copy: 'Kopioi VS Code -määritykset'
     no_public_url: '`PUBLIC_BASE_URL` ei ole määritetty yhdyskäytävässä: korvaa paikkamerkki todellisella julkisella URL-osoitteella ennen käyttöä.'
     copy_btn: Kopioi muuttujat
     copied: Kopioitu!

@@ -69,6 +69,41 @@ async def delete(request: Request) -> JSONResponse:
     return JSONResponse({"status": "success"})
 
 
+# Fiches `/api/show` déterministes : capacités et fenêtre de contexte VARIÉES d'un modèle à
+# l'autre, pour que le gabarit VS Code du panel soit testable sur des valeurs réellement
+# différentes (outils oui/non, vision oui/non, contextes distincts) plutôt que sur une constante.
+# `demo:latest` publie `capabilities` (Ollama ≥ 0.6) ; `autre:latest` ne le fait PAS et doit être
+# déduit du gabarit `.Tools` et des familles — c'est le chemin de repli du panel.
+_SHOW: dict[str, dict] = {
+    "demo:latest": {
+        "details": {"family": "llama", "families": ["llama"], "parameter_size": "8.0B"},
+        "model_info": {"general.architecture": "llama", "llama.context_length": 8192},
+        "capabilities": ["completion", "tools", "vision"],
+    },
+    "autre:latest": {
+        "template": "{{ if .Tools }}Outils disponibles{{ end }}{{ .Prompt }}",
+        "details": {"family": "qwen3", "families": ["qwen3"], "parameter_size": "4.0B"},
+        "model_info": {"general.architecture": "qwen3", "qwen3.context_length": 262144},
+    },
+    "x/fakeflux:1b": {
+        "details": {"family": "flux", "families": ["flux"], "parameter_size": "1.0B"},
+        "model_info": {"general.architecture": "flux", "flux.context_length": 4096},
+        "capabilities": ["completion"],
+    },
+}
+
+
+@app.post("/api/show")
+async def show(request: Request) -> JSONResponse:
+    # Fiche d'un modèle. 404 s'il n'est pas au catalogue (comportement Ollama) → le panel doit
+    # alors retomber sur des capacités prudentes, pas inventer des valeurs.
+    body = await request.json()
+    model = (body.get("model") or body.get("name") or "").strip()
+    if model not in MODELS:
+        return JSONResponse({"error": "model not found"}, status_code=404)
+    return JSONResponse(_SHOW.get(model, {"details": {"families": []}, "model_info": {}}))
+
+
 @app.get("/v1/models")
 async def openai_models() -> JSONResponse:
     # Forme OpenAI/Anthropic : {"object":"list","data":[{"id":…}]}.

@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI API
     api_anthropic: Anthropic API
     vscode: VS Code (egyéni végpont)
+    vscode_probing: 'A modellek valós képességeinek beolvasása a végrehajtó kiszolgálóról…'
+    vscode_ready: 'A végrehajtó kiszolgálóról beolvasott képességek: valós eszközhívás, látás és kontextusablak.'
+    vscode_offline: 'A végrehajtó kiszolgáló nem jelent képességeket: óvatos értékek (nincs eszköz, nincs látás).'
+    vscode_copy: 'A VS Code-konfiguráció másolása'
     no_public_url: 'A `PUBLIC_BASE_URL` nincs beállítva az átjárón: használat előtt cserélje ki a helyőrzőt a valódi nyilvános URL-re.'
     copy_btn: Változók másolása
     copied: Másolva!

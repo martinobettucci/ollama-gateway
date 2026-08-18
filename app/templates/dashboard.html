@@ -31,9 +31,6 @@
       <label><input type="checkbox" id="env-api-openai"> {{ t('dash.env.api_openai') }}</label>
       <label><input type="checkbox" id="env-api-anthropic"> {{ t('dash.env.api_anthropic') }}</label>
     </div>
-    <div class="checks">
-      <label><input type="checkbox" id="env-vscode"> {{ t('dash.env.vscode') }}</label>
-    </div>
     <pre class="env-output" id="env-output" data-testid="env-output"></pre>
     {% if not public_base_url %}
     <p class="hint">{{ t('dash.env.no_public_url') }}</p>
@@ -43,6 +40,29 @@
               data-copy="{{ t('dash.env.copy_btn') }}" data-copied="{{ t('dash.env.copied') }}"
               data-failed="{{ t('dash.env.copy_fail') }}">
         {{ icon('copy') }} <span id="env-copy-label">{{ t('dash.env.copy_btn') }}</span></button>
+    </p>
+
+    {# Gabarit VS Code : bloc SÉPARÉ, avec sa propre zone copiable et son propre bouton — c'est un
+       JSON à coller dans les réglages de l'éditeur, pas des variables d'environnement. Il ne
+       remplace donc pas le bloc ci-dessus, il s'y ajoute. #}
+    <div class="checks">
+      <label><input type="checkbox" id="env-vscode"> {{ t('dash.env.vscode') }}</label>
+    </div>
+    <div id="env-vscode-block" data-testid="env-vscode-block" hidden>
+      <pre class="env-output" id="env-vscode-output" data-testid="env-vscode-output"></pre>
+      <p class="hint" id="env-vscode-hint" data-testid="env-vscode-hint" role="status"
+         data-probing="{{ t('dash.env.vscode_probing') }}"
+         data-ready="{{ t('dash.env.vscode_ready') }}"
+         data-offline="{{ t('dash.env.vscode_offline') }}"></p>
+      <p class="actions">
+        <button type="button" id="env-vscode-copy" data-testid="env-vscode-copy"
+                data-copy="{{ t('dash.env.vscode_copy') }}" data-copied="{{ t('dash.env.copied') }}"
+                data-failed="{{ t('dash.env.copy_fail') }}">
+          {{ icon('copy') }} <span id="env-vscode-copy-label">{{ t('dash.env.vscode_copy') }}</span></button>
+      </p>
+    </div>
+
+    <p class="actions">
       <button type="button" class="btn-secondary" id="env-done">{{ t('common.close') }}</button>
     </p>
    </div>
@@ -60,64 +80,105 @@
     anthropic: ['ANTHROPIC_BASE_URL=' + base, 'ANTHROPIC_API_KEY=' + secret],
   };
   const apis = ['ollama', 'openai', 'anthropic'];
-  function render() {
-    const envChecked = document.getElementById('env-vscode').checked;
-    if (envChecked) {
-      // VS Code custom endpoint JSON — champs validés contre les valeurs réelles
-      const models = {{ key_models|default([])|tojson }};
-      const imageModels = {{ key_image_models|default([])|tojson }};
-      const allModels = models.concat(imageModels);
-      const modelList = allModels.length > 0
-        ? allModels.map(function (m) {
-            return '            {\n'
-              + '                "id": "' + m + '",\n'
-              + '                "name": "' + m + '",\n'
-              + '                "url": "' + base + '/v1",\n'
-              + '                "toolCalling": true,\n'
-              + '                "vision": false\n'
-              + '            }';
-          }).join(',\n')
-        : '';
-      const json = '[\n    {\n'
-        + '        "name": "' + {{ created.label|tojson }} + ' — passerelle locale",\n'
-        + '        "vendor": "customendpoint",\n'
-        + '        "apiKey": "${input:chat.lm.secret.-4ca619c6}",\n'
-        + '        "apiType": "responses",\n'
-        + '        "models": [\n' + modelList + '\n'
-        + '        ]\n'
-        + '    }\n]';
-      out.textContent = json;
-    } else {
-      out.textContent = apis
-        .filter(a => document.getElementById('env-api-' + a).checked)
-        .flatMap(a => gen[a]).join('\n');
+  const vscodeBox = document.getElementById('env-vscode');
+  const vscodeBlock = document.getElementById('env-vscode-block');
+  const vscodeOut = document.getElementById('env-vscode-output');
+  const hint = document.getElementById('env-vscode-hint');
+  const keyId = {{ (created.id or 0)|tojson }};
+  const label = {{ created.label|tojson }};
+  // Capacités des modèles : LUES sur le serveur d'exécution (jamais devinées). État :
+  // 'idle' pas encore demandé · 'probing' en cours · 'ready' tout annoncé · 'offline' amont muet.
+  let capsState = 'idle';
+  let caps = [];
+
+  async function loadCaps() {
+    if (capsState !== 'idle') return;
+    capsState = 'probing'; renderVscode();
+    try {
+      const r = await fetch('/admin/keys/' + keyId + '/vscode-models');
+      const data = r.ok ? await r.json() : null;
+      caps = (data && Array.isArray(data.models)) ? data.models : [];
+      capsState = (data && data.online && caps.length && caps.every(m => m.known))
+        ? 'ready' : 'offline';
+    } catch (e) {
+      caps = []; capsState = 'offline';
     }
+    renderVscode();
   }
+
+  function vscodeJson() {
+    // `JSON.stringify` sur chaque valeur : le secret et les libellés sont échappés, jamais
+    // concaténés bruts (un guillemet dans un nom de clé casserait sinon le JSON produit).
+    const modelList = caps.map(function (m) {
+      return '            {\n'
+        + '                "id": ' + JSON.stringify(m.id) + ',\n'
+        + '                "name": ' + JSON.stringify(m.id) + ',\n'
+        + '                "url": ' + JSON.stringify(base + '/v1') + ',\n'
+        + '                "toolCalling": ' + (m.toolCalling ? 'true' : 'false') + ',\n'
+        + '                "vision": ' + (m.vision ? 'true' : 'false') + ',\n'
+        + '                "maxInputTokens": ' + m.maxInputTokens + ',\n'
+        + '                "maxOutputTokens": ' + m.maxOutputTokens + '\n'
+        + '            }';
+    }).join(',\n');
+    return '[\n    {\n'
+      + '        "name": ' + JSON.stringify(label + ' — passerelle locale') + ',\n'
+      + '        "vendor": "customendpoint",\n'
+      + '        "apiKey": ' + JSON.stringify(secret) + ',\n'
+      + '        "apiType": "chat-completions",\n'
+      + '        "models": [\n' + modelList + '\n'
+      + '        ]\n'
+      + '    }\n]';
+  }
+
+  function render() {                       // bloc « variables d'environnement » (indépendant)
+    out.textContent = apis
+      .filter(a => document.getElementById('env-api-' + a).checked)
+      .flatMap(a => gen[a]).join('\n');
+  }
+
+  function renderVscode() {                 // bloc « gabarit VS Code » (indépendant)
+    vscodeBlock.hidden = !vscodeBox.checked;
+    if (!vscodeBox.checked) return;
+    hint.textContent = hint.dataset[capsState === 'probing' ? 'probing'
+                                    : capsState === 'ready' ? 'ready' : 'offline'];
+    vscodeOut.textContent = capsState === 'probing' ? '' : vscodeJson();
+  }
+
   apis.forEach(a => document.getElementById('env-api-' + a).addEventListener('change', render));
-  document.getElementById('env-vscode').addEventListener('change', render);
-  const copyBtn = document.getElementById('env-copy');
-  copyBtn.addEventListener('click', async () => {
-    let ok = false;
-    try { await navigator.clipboard.writeText(out.textContent); ok = true; } catch (e) {}
-    if (!ok) {  // admin LAN servi en http : contexte non sécurisé (navigator.clipboard absent) →
-      // repli execCommand. La textarea DOIT vivre DANS le <dialog> ouvert (showModal) : hors du
-      // dialog, le fond est INERT → select()/execCommand échouent en silence. On la cale hors écran.
-      const ta = document.createElement('textarea');
-      ta.value = out.textContent;
-      ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
-      dlg.append(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
-      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-      ta.remove();
-    }
-    const lbl = document.getElementById('env-copy-label');
-    lbl.textContent = ok ? copyBtn.dataset.copied : copyBtn.dataset.failed;
-    setTimeout(() => { lbl.textContent = copyBtn.dataset.copy; }, 2000);
+  vscodeBox.addEventListener('change', () => {
+    if (vscodeBox.checked) loadCaps();      // sonde à la PREMIÈRE demande seulement
+    renderVscode();
   });
+
+  // Chaque zone copiable a SON bouton : les deux blocs se copient séparément.
+  function wireCopy(btnId, labelId, src) {
+    const btn = document.getElementById(btnId);
+    btn.addEventListener('click', async () => {
+      let ok = false;
+      try { await navigator.clipboard.writeText(src.textContent); ok = true; } catch (e) {}
+      if (!ok) {  // admin LAN servi en http : contexte non sécurisé (navigator.clipboard absent) →
+        // repli execCommand. La textarea DOIT vivre DANS le <dialog> ouvert (showModal) : hors du
+        // dialog, le fond est INERT → select()/execCommand échouent en silence. On la cale hors écran.
+        const ta = document.createElement('textarea');
+        ta.value = src.textContent;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+        dlg.append(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        ta.remove();
+      }
+      const lbl = document.getElementById(labelId);
+      lbl.textContent = ok ? btn.dataset.copied : btn.dataset.failed;
+      setTimeout(() => { lbl.textContent = btn.dataset.copy; }, 2000);
+    });
+  }
+  wireCopy('env-copy', 'env-copy-label', out);
+  wireCopy('env-vscode-copy', 'env-vscode-copy-label', vscodeOut);
   document.getElementById('env-close').addEventListener('click', () => dlg.close());
   document.getElementById('env-done').addEventListener('click', () => dlg.close());
   dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
   render();
+  renderVscode();
   dlg.showModal();
 })();
 </script>

@@ -352,7 +352,7 @@ async def create_key(request: Request):
     if not turl or turl == targets.PLACEHOLDER_URL:
         turl = config.PUBLIC_BASE_URL or turl
     request.session["created_key"] = {
-        "label": rec.label, "secret": secret, "target_url": turl,
+        "id": rec.id, "label": rec.label, "secret": secret, "target_url": turl,
         "models": rec.models, "image_models": rec.image_models}
     return RedirectResponse("/admin", status_code=303)
 
@@ -547,6 +547,33 @@ async def key_try_image(request: Request, key_id: int):
     return JSONResponse({"image": f"data:image/png;base64,{b64}", "model": model, "api": api})
 
 
+@app.get("/admin/keys/{key_id}/vscode-models", response_class=JSONResponse)
+async def key_vscode_models(request: Request, key_id: int):
+    """Capacités RÉELLES des modèles d'une clé, lues sur SON serveur d'exécution.
+
+    Alimente le gabarit « point de terminaison personnalisé » de VS Code affiché à la création/
+    réémission d'une clé : appel d'outils, vision et fenêtre de contexte ne sont pas devinés mais
+    interrogés à l'amont (`POST /api/show`), puis bornés par le plafond de contexte de la clé
+    (`context.io_budget`) — annoncer plus produirait des 413 côté client.
+
+    **Aucun secret** dans la réponse : le secret d'une clé n'est servi qu'une fois, par le flash
+    de session du panel, jamais par un endpoint interrogeable.
+    """
+    if (r := _guard(request)):
+        return r
+    rec = keys.get_key(key_id)
+    if rec is None:
+        return JSONResponse({"error": "clé introuvable", "online": False, "models": []},
+                            status_code=404)
+    online, caps, err = await servers.model_capabilities(
+        rec.server_id, list(rec.models) + list(rec.image_models))
+    out = []
+    for cap in caps:
+        max_in, max_out = context.io_budget(cap["contextLength"], rec.max_context_tokens)
+        out.append({**cap, "maxInputTokens": max_in, "maxOutputTokens": max_out})
+    return JSONResponse({"online": online, "error": err, "models": out})
+
+
 @app.post("/admin/keys/{key_id}/reissue")
 async def key_reissue(request: Request, key_id: int):
     """Réémet le secret d'une clé (rotation) : même clé/config/historique, nouveau secret. L'ancien
@@ -560,7 +587,9 @@ async def key_reissue(request: Request, key_id: int):
     turl = rec.target_base_url
     if not turl or turl == targets.PLACEHOLDER_URL:
         turl = config.PUBLIC_BASE_URL or turl
-    request.session["created_key"] = {"label": rec.label, "secret": secret, "target_url": turl}
+    request.session["created_key"] = {
+        "id": rec.id, "label": rec.label, "secret": secret, "target_url": turl,
+        "models": rec.models, "image_models": rec.image_models}
     return RedirectResponse("/admin", status_code=303)
 
 

@@ -69,6 +69,10 @@ dash:
     api_openai: OpenAI API
     api_anthropic: Anthropic API
     vscode: VS Code (pasirinktinis galinis taškas)
+    vscode_probing: 'Skaitomos tikrosios modelių galimybės iš vykdymo serverio…'
+    vscode_ready: 'Iš vykdymo serverio nuskaitytos galimybės: tikri įrankių iškvietimai, regėjimas ir konteksto langas.'
+    vscode_offline: 'Vykdymo serveris neskelbia galimybių: atsargios reikšmės (be įrankių ir be regėjimo).'
+    vscode_copy: 'Kopijuoti VS Code konfigūraciją'
     no_public_url: '`PUBLIC_BASE_URL` nesukonfigūruotas sietuve: prieš naudodami pakeiskite vietos rezervavimo ženklą tikruoju viešuoju URL.'
     copy_btn: Kopijuoti kintamuosius
     copied: Nukopijuota!

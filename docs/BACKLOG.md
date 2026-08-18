@@ -367,6 +367,48 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   depuis le menu ; 1280 px : rangée conservée, bouton masqué) ; **vision faite** (captures
   36-nav-mobile-closed, 37-nav-mobile-open).*
 
+## Phase 18 — Gabarit VS Code : secret réel & capacités lues sur l'amont (2026-08-18)
+
+- [x] **Le gabarit VS Code porte le secret RÉEL et les capacités RÉELLES des modèles.** Le bloc
+  « point de terminaison personnalisé » proposé par la modale de création/réémission renvoyait vers
+  une invite de saisie de l'éditeur (`${input:…}`) pour la clé, annonçait `toolCalling: true` /
+  `vision: false` **en dur pour tous les modèles**, et n'exposait aucune borne d'entrée/sortie.
+  Le gabarit était en outre affiché **à la place** des variables d'environnement (même `<pre>`,
+  même bouton) : il devient un **bloc séparé** (`#env-vscode-block`) avec sa propre zone copiable
+  (`env-vscode-output`) et son propre bouton (`env-vscode-copy`, i18n `dash.env.vscode_copy`), la
+  logique de copie étant factorisée en `wireCopy(bouton, libellé, source)` ; `apiType` aligné sur
+  `chat-completions` (voie OpenAI-compat réellement empruntée par l'éditeur).
+  Trois défauts corrigés d'un bloc : (1) `apiKey` = **secret réel** de la clé, échappé via
+  `JSON.stringify` ; (2) **la liste de modèles était toujours VIDE** — le gabarit lisait
+  `key_models`/`key_image_models`, que `admin.dashboard` n'a **jamais** fournis (vérifié sur tout
+  l'historique depuis `e26fe13`) ; la modale part désormais de l'id de clé posé dans le flash de
+  session et interroge l'amont ; (3) capacités **lues sur le serveur d'exécution** par
+  `servers.model_capabilities` (`POST {base}/api/show`, un appel par modèle en parallèle) : outils
+  et vision depuis `capabilities` (Ollama ≥ 0.6) avec repli sur `.Tools` dans le gabarit + famille
+  multimodale, fenêtre depuis `<arch>.context_length` sans liste d'architectures codée en dur.
+  Ajout de `maxInputTokens`/`maxOutputTokens` via `context.io_budget` = min(fenêtre modèle, plafond
+  clé) − réserve de sortie (¼, bornée 1k…32k) − marge du garde-fou 413 (`plafond / MARGIN`), pour
+  que la fenêtre annoncée **passe réellement**. Amont muet ⇒ `known=False`, valeurs prudentes et
+  message explicite dans la modale ; **aucun secret** dans la réponse de
+  `GET /admin/keys/{id}/vscode-models` (LAN-only, guard admin). Clé sans allowlist ⇒ catalogue du
+  serveur. `/api/show` implémenté dans le faux Ollama avec des fiches **volontairement
+  hétérogènes** (un modèle publiant `capabilities`, un autre forçant le repli, fenêtres 8k/256k/4k)
+  pour que le chemin de repli soit couvert et non simulé. Clés i18n `dash.env.vscode_probing`
+  /`_ready`/`_offline`/`_copy` sur les **24 locales**. — *tests : `tests/test_vscode_models.py` (19 :
+  `io_budget` — réserve de sortie, bornage par le plafond de clé, bornes 1k/32k, marge 413,
+  fenêtre amont inconnue ; lecture `_context_length`/`_read_capabilities` déclarée et par repli ;
+  `model_capabilities` — valeurs distinctes par modèle, catalogue sans allowlist, modèle absent
+  prudent, serveur désactivé ; endpoint — capacités composées, plafond de clé respecté, guard +
+  404, absence de secret ; gabarit rendu — plus de `${input:…}`, `apiType` attendu, id de clé
+  présent à la création ET à la réémission, présence des DEUX zones copiables) ; E2E
+  `e2e/tests/vscode_template.spec.ts` (3 : JSON parsé — `apiKey` == secret réel, capacités
+  différenciées entre `demo:latest` et `autre:latest`, bornes 6144/2048 et bornage par le plafond,
+  variables d'environnement toujours affichées à côté, bouton de copie propre au bloc ; sans
+  allowlist tout le catalogue décrit avec les 4 champs ; indépendance des deux blocs dans les deux
+  sens) ; **vision faite** (captures 40-vscode-template, 41-vscode-blocks). Docs : `docs/manual.md`
+  § « Gabarit VS Code » (tableau champ → origine de la valeur + 2 captures synchronisées),
+  `docs/DAT.md` (`servers.model_capabilities`, `context.io_budget`), JOURNAL.*
+
 ## Fiabilité des tests
 
 - [x] **`reconcile.spec` (base partagée) durci contre un échec intermittent (2026-07-28).**
