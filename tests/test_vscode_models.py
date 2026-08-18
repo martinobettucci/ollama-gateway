@@ -137,7 +137,8 @@ async def test_model_specs_without_allowlist_describes_the_catalog(probe_via_fak
     srv = servers.create_server("s", "http://fake")
     online, specs, _ = await servers.model_specs(srv.id)
     assert online is True
-    assert {s["id"] for s in specs} == {"demo:latest", "autre:latest", "x/fakeflux:1b"}
+    assert {s["id"] for s in specs} == {"demo:latest", "autre:latest", "x/fakeflux:1b",
+                                        "embed-mini:latest"}
 
 
 async def test_model_specs_falls_back_to_the_ollama_catalog(probe_via_fake):

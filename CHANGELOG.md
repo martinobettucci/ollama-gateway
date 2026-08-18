@@ -41,8 +41,13 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   jamais dépasser ce que la clé autorise**. Un client qui remplit la fenêtre annoncée ne se fera
   donc pas refuser sa requête.
 
-  Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais trente et un (vingt-sept
+  Fonctionnalité livrée à l'origine sans aucun test ; elle en a désormais trente-deux (vingt-huit
   automatisés, quatre de bout en bout), plus le manuel et ses trois captures.
+
+- **Correction — une petite fenêtre de contexte s'affichait « 0k ».** Dans le sélecteur de modèles,
+  la taille était toujours arrondie au millier : un modèle d'embedding, dont la fenêtre se compte
+  en centaines de tokens, s'affichait donc « 0k ». Sous mille tokens, le nombre exact est
+  désormais écrit.
 
 ## [Publié]
 

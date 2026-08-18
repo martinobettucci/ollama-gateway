@@ -32,12 +32,16 @@
 
   // Paramètres annoncés par l'amont, en une ligne lisible : « outils · vision · 128k ».
   // Rien d'annoncé ⇒ rien d'affiché, plutôt qu'une valeur inventée.
+  // Sous 1024 tokens on écrit le nombre EXACT : un modèle d'embedding a une fenêtre de quelques
+  // centaines de tokens, que l'arrondi au millier afficherait « 0k » (faux et déroutant).
+  const ctxLabel = (n) => (n < 1024 ? String(n) : Math.round(n / 1024) + 'k');
+
   function specText(spec) {
     if (!spec || !spec.known) return '';
     const bits = [];
     if (spec.toolCalling) bits.push(specLabels.tools);
     if (spec.vision) bits.push(specLabels.vision);
-    if (spec.contextLength) bits.push(Math.round(spec.contextLength / 1024) + 'k');
+    if (spec.contextLength) bits.push(ctxLabel(spec.contextLength));
     return bits.join(' · ');
   }
 

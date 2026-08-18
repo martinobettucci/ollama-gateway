@@ -159,6 +159,11 @@ test('sélecteur de modèles : les paramètres annoncés par l\'amont sont affic
   const autre = page.locator('[data-testid=model-checks] label', { hasText: 'autre:latest' });
   await expect(autre.locator('[data-testid=model-spec]')).toHaveText(/outils · 256k/);
   await expect(autre.locator('[data-testid=model-spec]')).not.toHaveText(/vision/);
+
+  // Fenêtre SOUS 1024 tokens (modèle d'embedding) : nombre exact, jamais arrondi à « 0k » —
+  // défaut constaté en vision sur la production, où `all-minilm` (256) s'affichait « 0k ».
+  const embed = page.locator('[data-testid=model-checks] label', { hasText: 'embed-mini:latest' });
+  await expect(embed.locator('[data-testid=model-spec]')).toHaveText('256');
   // Capture du MANUEL : cadrer le sélecteur lui-même, pas le haut du tableau de bord.
   await page.locator('[data-testid=model-checks]').scrollIntoViewIfNeeded();
   await page.screenshot({ path: `${OUT}/42-model-specs.jpg`, type: 'jpeg' });

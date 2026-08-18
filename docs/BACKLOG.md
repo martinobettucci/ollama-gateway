@@ -430,6 +430,15 @@ l'une après l'autre** (E2E vert à chaque étape avant la suivante).
   viennent les paramètres des modèles » avec le tableau des 3 types de serveur, 3 captures
   synchronisées), `docs/DAT.md` (`servers.model_specs`/`read_specs`, `context.io_budget`), JOURNAL.*
 
+  **Correctif issu de la vérification en vision sur la PRODUCTION.** Le sélecteur arrondissait
+  systématiquement la fenêtre au millier (`Math.round(n / 1024) + 'k'`) : `all-minilm` (256 tokens)
+  s'affichait donc **« 0k »**. Sous 1024, le nombre exact est écrit (`ctxLabel`). Le faux amont
+  gagne `embed-mini:latest` (fenêtre 256) pour couvrir le cas ; deux assertions figeaient le
+  catalogue de démonstration (`tests/test_proxy.py` ×2, `e2e/tests/admin.spec.ts` sur le nombre
+  d'options de « Essayer maintenant ») — réécrites pour exprimer leur intention (contenu attendu,
+  exclusion des modèles d'image) plutôt qu'un nombre figé. — *tests : E2E « sélecteur de modèles »
+  assertant `256` et non `0k`.*
+
   **Limite connue.** `ollama.cpp` configure la fenêtre **par modèle** (`runtime.context` du
   manifest, sa raison d'être) mais ne la publie pas dans `/api/show` : seule la fenêtre native du
   GGUF y figure, et c'est donc elle qui est annoncée (le plafond de la clé s'applique par-dessus).

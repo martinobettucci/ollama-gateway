@@ -31,7 +31,7 @@ _TINY_PNG = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk"
 
 # Catalogue MUTABLE : /api/pull y ajoute un modèle, /api/delete l'en retire → la gestion de
 # modèles du panel (LAN-only) est testable de bout en bout de façon déterministe.
-_DEFAULT_MODELS = ["demo:latest", "autre:latest", "x/fakeflux:1b"]
+_DEFAULT_MODELS = ["demo:latest", "autre:latest", "x/fakeflux:1b", "embed-mini:latest"]
 MODELS: list[str] = list(_DEFAULT_MODELS)
 
 
@@ -98,6 +98,13 @@ _SHOW: dict[str, dict] = {
     },
     # Ce modèle DÉCLARE ses bornes dans les paramètres du Modelfile (`num_ctx`, `num_predict`) :
     # elles doivent primer sur `flux.context_length` et sur le calcul de repli.
+    # Fenêtre de quelques centaines de tokens (cas réel d'un modèle d'embedding) : l'affichage
+    # ne doit pas l'arrondir à « 0k ».
+    "embed-mini:latest": {
+        "details": {"family": "bert", "families": ["bert"], "parameter_size": "23M"},
+        "model_info": {"general.architecture": "bert", "bert.context_length": 256},
+        "capabilities": ["embedding"],
+    },
     "x/fakeflux:1b": {
         "parameters": 'stop                           "<|end|>"\nnum_ctx                        2048\n'
                       "num_predict                    512",

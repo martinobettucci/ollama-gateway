@@ -109,7 +109,12 @@ test('essayer maintenant : chat de test d\'une clé → réponse réelle du serv
   await expect(dlg).toBeVisible();
 
   // Sélection d'un modèle (sondé sur le serveur) et de l'API OpenAI Chat Completions.
-  await expect(page.locator('[data-testid=try-model] option')).toHaveCount(2);  // demo + autre
+  // On vérifie l'INTENTION — la liste vient de la sonde et exclut les modèles d'image — plutôt
+  // qu'un nombre figé, qui casse dès que le catalogue de démonstration gagne un modèle.
+  const tryOpts = page.locator('[data-testid=try-model] option');
+  await expect(tryOpts.filter({ hasText: 'demo:latest' })).toHaveCount(1);
+  await expect(tryOpts.filter({ hasText: 'autre:latest' })).toHaveCount(1);
+  await expect(tryOpts.filter({ hasText: 'x/' })).toHaveCount(0);
   await page.locator('[data-testid=try-model]').selectOption('demo:latest');
   await page.locator('[data-testid=try-api]').selectOption('openai-chat');
 

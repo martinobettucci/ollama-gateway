@@ -221,7 +221,7 @@ async def test_unrestricted_key_sees_all_models(fake_upstream):
     async with proxy_client(fake_upstream) as c:
         r = await c.get("/api/tags", headers=_auth(key))
     names = {m.get("name") for m in r.json()["models"]}
-    assert names == {"demo:latest", "autre:latest", "x/fakeflux:1b"}
+    assert names == set(fake_ollama._DEFAULT_MODELS)
 
 
 async def test_disabled_server_returns_503(fake_upstream):
@@ -329,7 +329,7 @@ async def test_management_paths_forbidden_for_every_key(fake_upstream):
         assert r.status_code == 403, r.request.url
         assert "gestion" in r.text
     # Le catalogue du faux upstream n'a pas bougé : la commande n'a jamais atteint l'amont.
-    assert set(fake_ollama.MODELS) == {"demo:latest", "autre:latest", "x/fakeflux:1b"}
+    assert set(fake_ollama.MODELS) == set(fake_ollama._DEFAULT_MODELS)
     # Chaque refus est journalisé en 403.
     rows = _usage_rows()
     assert rows and all(r["status"] == 403 for r in rows)
