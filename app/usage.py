@@ -445,81 +445,88 @@ def server_ctx_buckets(server_id: int, conn: sqlite3.Connection | None = None) -
 
 # --- Temps réel : dernières 2 h par clé et modèle ---------------------------------------------
 
-def realtime_2h(conn: sqlite3.Connection | None = None) -> list[dict]:
-    """Données temps réel des dernières 2 h : histogrammes empilés par clé × type de modèle.
+# Largeur d'une tranche de l'histogramme temps réel, en minutes (doit diviser 60).
+REALTIME_BUCKET_MIN = 15
 
-    Retourne une liste de buckets (tranches de 15 min) avec pour chaque bucket :
-    - `ts` : horodatage du bucket
-    - `keys` : liste de {key_id, label, prefix, models: [{type, count, color}]}
+# Palette P2Enjoy par TYPE de modèle (couleur de la portion empilée).
+_TYPE_COLORS = {
+    "text": "#23468C",    # bleu
+    "image": "#238C33",   # vert
+    "vision": "#D9CF4A",  # jaune
+}
+_TYPE_FALLBACK = "#8A94A6"
+
+
+def model_type(model: str) -> str:
+    """Type d'un modèle d'après son nom : `image` (namespace `x/…` ou « image »), `vision`, sinon
+    `text`. Déduit du NOM car aucun type n'est stocké dans `usage_events`."""
+    m = (model or "").lower()
+    if m.startswith("x/") or "image" in m:
+        return "image"
+    if "vision" in m or "vlm" in m:
+        return "vision"
+    return "text"
+
+
+def type_color(mtype: str) -> str:
+    return _TYPE_COLORS.get(mtype, _TYPE_FALLBACK)
+
+
+def realtime_2h(conn: sqlite3.Connection | None = None) -> list[dict]:
+    """Activité des 2 dernières heures, en tranches de `REALTIME_BUCKET_MIN` minutes.
+
+    Renvoie une liste de tranches triées par horodatage :
+    `{ts, keys: [{key_id, label, prefix, models: [{model, type, count, color}]}]}`.
+
+    `ts` est en UTC, au format `YYYY-MM-DD HH:MM` avec les minutes calées sur la tranche
+    (`00`/`15`/`30`/`45`) — cohérent avec `usage_events.ts` (`datetime('now')`, UTC).
+
+    Chaque entrée porte le **nom du modèle** (le filtre de l'écran propose des noms de modèles)
+    ET son **type** (qui donne la couleur de la portion empilée).
     """
     own = conn is None
     conn = conn or db.connect()
     try:
-        # Récupérer les buckets de 15 min des dernières 2 h
+        # Calage sur la tranche : on remplace les minutes par le multiple inférieur de la largeur
+        # de tranche. `strftime('%M')` donne les minutes sur 2 chiffres → division entière.
+        bucket_expr = (
+            "strftime('%Y-%m-%d %H:', ts) || "
+            f"printf('%02d', (CAST(strftime('%M', ts) AS INTEGER) / {REALTIME_BUCKET_MIN})"
+            f" * {REALTIME_BUCKET_MIN})"
+        )
         rows = conn.execute(
-            "SELECT strftime('%Y-%m-%d %H:%M', ts, '-30 minutes') AS bucket, "
-            "key_id, model, api_family, COUNT(*) AS cnt "
-            "FROM usage_events WHERE ts >= datetime('now', '-2 hours') AND model <> '' "
-            "GROUP BY bucket, key_id, model "
-            "ORDER BY bucket, key_id"
+            f"SELECT {bucket_expr} AS bucket, e.key_id AS key_id, e.model AS model, "
+            "COUNT(*) AS cnt, k.label AS label, k.key_prefix AS prefix "
+            "FROM usage_events e LEFT JOIN api_keys k ON k.id = e.key_id "
+            "WHERE e.ts >= datetime('now', '-2 hours') AND e.model <> '' "
+            "GROUP BY bucket, e.key_id, e.model "
+            "ORDER BY bucket, e.key_id, e.model"
         ).fetchall()
 
-        # Regrouper par bucket puis par clé
-        buckets_map: dict[str, dict] = {}
-        keys_map: dict[int, dict] = {}
-
+        # bucket → key_id → agrégat de la clé
+        buckets: dict[str, dict[int, dict]] = {}
         for r in rows:
-            bkt = r["bucket"]
-            if bkt not in buckets_map:
-                buckets_map[bkt] = {"ts": bkt, "keys": {}}
-            kid = r["key_id"]
-            if kid not in buckets_map[bkt]["keys"]:
-                buckets_map[bkt]["keys"][kid] = {"models": []}
-            # Déterminer le type d'API et la couleur
-            model = r["model"] or ""
-            api_fam = r["api_family"] or ""
-            mtype, color = _model_type_color(model, api_fam)
-            buckets_map[bkt]["keys"][kid]["models"].append({
-                "type": mtype, "count": r["cnt"], "color": color
+            per_key = buckets.setdefault(r["bucket"], {})
+            entry = per_key.setdefault(r["key_id"], {
+                "key_id": r["key_id"],
+                # Clé supprimée depuis : `usage_events.key_id` est `ON DELETE SET NULL`, donc
+                # `key_id` vaut NULL et la jointure ne ramène aucun libellé. Repli explicite —
+                # jamais `None` ni « clé #None » : l'écran affiche ce libellé tel quel.
+                "label": (r["label"] or (f"clé #{r['key_id']}" if r["key_id"] is not None
+                                         else "clé supprimée")),
+                "prefix": r["prefix"] or "",
+                "models": [],
+            })
+            mtype = model_type(r["model"])
+            entry["models"].append({
+                "model": r["model"], "type": mtype,
+                "count": r["cnt"], "color": type_color(mtype),
             })
 
-        # Construire la liste finale triée
-        result = []
-        for bkt in sorted(buckets_map.keys()):
-            entry = {"ts": buckets_map[bkt]["ts"], "keys": []}
-            for kid in sorted(buckets_map[bkt]["keys"].keys()):
-                kdata = buckets_map[bkt]["keys"][kid]
-                # Fusionner les modèles de même type
-                fused: dict[str, int] = {}
-                colors: dict[str, str] = {}
-                for m in kdata["models"]:
-                    fused[m["type"]] = fused.get(m["type"], 0) + m["count"]
-                    colors[m["type"]] = m["color"]
-                entry["keys"].append({
-                    "key_id": kid,
-                    "models": [{"type": t, "count": c, "color": colors[t]} for t, c in fused.items()]
-                })
-            result.append(entry)
-        return result
+        return [
+            {"ts": bkt, "keys": [buckets[bkt][kid] for kid in sorted(buckets[bkt])]}
+            for bkt in sorted(buckets)
+        ]
     finally:
         if own:
             conn.close()
-
-
-def _model_type_color(model: str, api_family: str) -> tuple[str, str]:
-    """Retourne (type_label, color_hex) pour un modèle donné."""
-    # Déterminer le type de modèle
-    mtype = "text"
-    if "image" in model.lower() or "x/" in model.lower():
-        mtype = "image"
-    elif "vision" in model.lower() or "vlm" in model.lower():
-        mtype = "vision"
-
-    # Palette de couleurs par type
-    colors = {
-        "text": "#23468C",  # bleu P2Enjoy
-        "image": "#238C33",  # vert P2Enjoy
-        "vision": "#D9CF4A",  # jaune P2Enjoy
-    }
-
-    return mtype, colors.get(mtype, "#8A94A6")

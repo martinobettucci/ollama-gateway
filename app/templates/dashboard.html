@@ -409,8 +409,10 @@
     // Filtrer les données
     let filtered = rtData.map(b => {
       let keys = b.keys.filter(k => !fKey || k.key_id == fKey);
+      // Le filtre propose des NOMS de modèles (/admin/realtime-models) : on compare donc au nom,
+      // pas au type (qui ne sert qu'à la couleur de la portion empilée).
       if (fModel) keys = keys.map(k => ({
-        ...k, models: k.models.filter(m => m.type === fModel)
+        ...k, models: k.models.filter(m => m.model === fModel)
       })).filter(k => k.models.length > 0);
       return { ...b, keys };
     }).filter(b => b.keys.length > 0);
@@ -473,7 +475,12 @@
     let keySet = new Set();
     filtered.forEach(b => b.keys.forEach(k => keySet.add(k.key_id)));
     Array.from(keySet).slice(0, 10).forEach(kid => {
-      const klabel = filtered[0].keys.find(k => k.key_id == kid)?.label || `key-${kid}`;
+      // Chercher dans TOUTES les tranches : une clé peut n'apparaître qu'à partir de la 2e.
+      let klabel = `key-${kid}`;
+      for (const b of filtered) {
+        const hit = b.keys.find(k => k.key_id == kid);
+        if (hit) { klabel = hit.label || klabel; break; }
+      }
       // Couleur dérivée du hash de la clé
       let hash = 0;
       for (let i = 0; i < klabel.length; i++) hash = klabel.charCodeAt(i) + ((hash << 5) - hash);

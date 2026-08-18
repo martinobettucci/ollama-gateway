@@ -6,6 +6,16 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+- **Correction — la vue « temps réel » du tableau de bord ne fonctionnait pas du tout.** Le panneau
+  interrogeait le serveur toutes les 30 s et recevait une **erreur** à chaque fois : la requête
+  s'appuyait sur une donnée inexistante, et un second défaut indépendant l'aurait fait échouer même
+  une fois la première corrigée. Le graphique restait donc vide en permanence. Corrigé, et avec lui
+  trois défauts qui l'auraient laissé inutilisable : le **nom des clés** n'était jamais transmis
+  (infobulles et légende affichaient « undefined »), les **tranches horaires** n'étaient pas
+  calées sur 15 minutes comme annoncé, et le **filtre par modèle** ne pouvait jamais correspondre
+  (il comparait un nom de modèle à un type). La fonctionnalité était livrée sans aucun test : elle
+  en a désormais seize.
+
 - **Entrée LAN en clair, optionnelle (désactivée par défaut).** Il est désormais possible de servir
   le trafic **local** directement, sans le faire ressortir par l'entrée publique — l'aller-retour
   par l'extérieur est inutile, dépend du DNS public et échoue souvent (le retour « en épingle »

@@ -379,14 +379,11 @@ async def realtime_data(request: Request):
         return r
     conn = db.connect()
     try:
+        # `realtime_2h` porte déjà le libellé de chaque clé (jointure SQL), y compris le repli
+        # pour une clé supprimée : pas de ré-enrichissement ici (source unique de vérité).
         data = usage.realtime_2h(conn)
     finally:
         conn.close()
-    # Enrichir avec les labels de clés
-    keys_map = {k.id: k.label for k in keys.list_keys(conn)}
-    for bucket in data:
-        for entry in bucket["keys"]:
-            entry["label"] = keys_map.get(entry["key_id"], f"key-{entry['key_id']}")
     return JSONResponse(data)
 
 
