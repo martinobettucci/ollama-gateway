@@ -144,10 +144,21 @@ dash:
     origins_hint: Yksi IP tai CIDR riviä kohti; tyhjä = kaikki alkuperät.
     note: Muistiinpano
     submit: Luo avain
+  realtime:
+    title: Reaaliaikainen toiminta
+    refresh: Päivitä
+    loading: ladataan…
+    updated: päivitetty klo
+    no_data: Ei toimintaa viimeisen 2 tunnin aikana.
+    all_keys: Kaikki avaimet
+    all_models: Kaikki mallit
+    filter_key_aria: Suodata avaimen mukaan
+    filter_model_aria: Suodata mallin mukaan
 tgt:
   title: Julkiset kohteet
   intro: <strong>Kohde</strong> on yhdyskäytävän julkinen URL sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:8443</span>). Sitä käytetään liitetyn avaimen ympäristömuuttujien luomiseen — <strong>se ei muuta reititystä</strong> (upstreamin valitsee edelleen suorituspalvelin). Jokainen avain osoittaa kohteeseen; oletuskohdetta ei voi poistaa.
   keys_count: '{count} avain(ta)'
+  copy: Kopioi
   edit:
     name: Nimi
     url: Julkinen URL

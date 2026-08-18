@@ -144,10 +144,21 @@ dash:
     origins_hint: Jedan IP ili CIDR po retku; prazno = svi izvori.
     note: Bilješka
     submit: Stvori ključ
+  realtime:
+    title: Aktivnost u stvarnom vremenu
+    refresh: Osvježi
+    loading: učitavanje…
+    updated: ažurirano u
+    no_data: Nema aktivnosti u posljednja 2 sata.
+    all_keys: Svi ključevi
+    all_models: Svi modeli
+    filter_key_aria: Filtriraj po ključu
+    filter_model_aria: Filtriraj po modelu
 tgt:
   title: Javna odredišta
   intro: <strong>Odredište</strong> je javni URL pristupnika kako ga vidi klijent (npr. <span class="mono">https://llm.example:8443</span>). Služi za generiranje varijabli okruženja povezanog ključa — <strong>ne mijenja usmjeravanje</strong> (upstream i dalje odabire izvršni poslužitelj). Svaki ključ pokazuje na odredište; zadano odredište nije moguće izbrisati.
   keys_count: '{count} ključ(eva)'
+  copy: Kopiraj
   edit:
     name: Naziv
     url: Javni URL

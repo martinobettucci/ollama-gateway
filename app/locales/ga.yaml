@@ -144,10 +144,21 @@ dash:
     origins_hint: IP nó CIDR amháin in aghaidh na líne; folamh = gach bunús.
     note: Nóta
     submit: Cruthaigh an eochair
+  realtime:
+    title: Gníomhaíocht fíor-ama
+    refresh: Athnuaigh
+    loading: á lódáil…
+    updated: nuashonraithe ag
+    no_data: Gan aon ghníomhaíocht le 2 uair an chloig anuas.
+    all_keys: Gach eochair
+    all_models: Gach múnla
+    filter_key_aria: Scag de réir eochrach
+    filter_model_aria: Scag de réir múnla
 tgt:
   title: Spriocanna poiblí
   intro: Is é <strong>sprioc</strong> URL poiblí an gheata mar a fheiceann cliant é (m.sh. <span class="mono">https://llm.example:8443</span>). Úsáidtear é chun athróga timpeallachta na heochrach ceangailte a ghiniúint — <strong>ní athraíonn sé an ródú</strong> (roghnaíonn an freastalaí forghníomhaithe an upstream fós). Díríonn gach eochair ar sprioc; ní féidir an sprioc réamhshocraithe a scriosadh.
   keys_count: '{count} eochair'
+  copy: Cóipeáil
   edit:
     name: Ainm
     url: URL poiblí

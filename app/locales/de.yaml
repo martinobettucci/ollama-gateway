@@ -144,10 +144,21 @@ dash:
     origins_hint: Eine IP oder ein CIDR pro Zeile; leer = alle Ursprünge.
     note: Notiz
     submit: Schlüssel erstellen
+  realtime:
+    title: Aktivität in Echtzeit
+    refresh: Aktualisieren
+    loading: wird geladen…
+    updated: aktualisiert um
+    no_data: Keine Aktivität in den letzten 2 Stunden.
+    all_keys: Alle Schlüssel
+    all_models: Alle Modelle
+    filter_key_aria: Nach Schlüssel filtern
+    filter_model_aria: Nach Modell filtern
 tgt:
   title: Öffentliche Ziele
   intro: Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways, wie ein Client sie sieht (z. B. <span class="mono">https://llm.example:8443</span>). Es dient zum Erzeugen der Umgebungsvariablen des zugeordneten Schlüssels — <strong>es ändert nicht das Routing</strong> (das Upstream wird weiterhin vom Ausführungsserver gewählt). Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist unlöschbar.
   keys_count: '{count} Schlüssel'
+  copy: Kopieren
   edit:
     name: Name
     url: Öffentliche URL

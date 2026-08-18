@@ -144,10 +144,21 @@ dash:
     origins_hint: Una IP o un CIDR per riga; vuoto = tutte le origini.
     note: Nota
     submit: Crea la chiave
+  realtime:
+    title: Attività in tempo reale
+    refresh: Aggiorna
+    loading: caricamento…
+    updated: aggiornato alle
+    no_data: Nessuna attività nelle ultime 2 ore.
+    all_keys: Tutte le chiavi
+    all_models: Tutti i modelli
+    filter_key_aria: Filtra per chiave
+    filter_model_aria: Filtra per modello
 tgt:
   title: Destinazioni pubbliche
   intro: Una <strong>destinazione</strong> è l'URL pubblico del gateway così come lo vede un client (es. <span class="mono">https://llm.example:8443</span>). Serve a generare le variabili d'ambiente della chiave associata — <strong>non modifica il routing</strong> (l'upstream resta scelto dal server di esecuzione). Ogni chiave punta a una destinazione; la destinazione predefinita non è eliminabile.
   keys_count: '{count} chiave/i'
+  copy: Copia
   edit:
     name: Nome
     url: URL pubblico

@@ -144,10 +144,21 @@ dash:
     origins_hint: En IP eller ett CIDR per rad; tomt = alla ursprung.
     note: Anteckning
     submit: Skapa nyckeln
+  realtime:
+    title: Aktivitet i realtid
+    refresh: Uppdatera
+    loading: läser in…
+    updated: uppdaterad kl.
+    no_data: Ingen aktivitet de senaste 2 timmarna.
+    all_keys: Alla nycklar
+    all_models: Alla modeller
+    filter_key_aria: Filtrera efter nyckel
+    filter_model_aria: Filtrera efter modell
 tgt:
   title: Offentliga mål
   intro: Ett <strong>mål</strong> är gatewayens offentliga URL såsom en klient ser den (t.ex. <span class="mono">https://llm.example:8443</span>). Det används för att generera miljövariablerna för den kopplade nyckeln — <strong>det ändrar inte routningen</strong> (upstream väljs fortfarande av exekveringsservern). Varje nyckel pekar på ett mål; standardmålet kan inte tas bort.
   keys_count: '{count} nyckel/nycklar'
+  copy: Kopiera
   edit:
     name: Namn
     url: Offentlig URL

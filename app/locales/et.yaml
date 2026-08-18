@@ -144,10 +144,21 @@ dash:
     origins_hint: Üks IP või CIDR rea kohta; tühi = kõik päritolud.
     note: Märkus
     submit: Loo võti
+  realtime:
+    title: Reaalajas tegevus
+    refresh: Värskenda
+    loading: laadimine…
+    updated: uuendatud kell
+    no_data: Viimase 2 tunni jooksul tegevust pole.
+    all_keys: Kõik võtmed
+    all_models: Kõik mudelid
+    filter_key_aria: Filtreeri võtme järgi
+    filter_model_aria: Filtreeri mudeli järgi
 tgt:
   title: Avalikud sihtmärgid
   intro: <strong>Sihtmärk</strong> on lüüsi avalik URL nii, nagu klient seda näeb (nt <span class="mono">https://llm.example:8443</span>). Seda kasutatakse seotud võtme keskkonnamuutujate genereerimiseks — <strong>see ei muuda marsruutimist</strong> (upstream'i valib endiselt täitmisserver). Iga võti osutab sihtmärgile; vaikesihtmärki ei saa kustutada.
   keys_count: '{count} võti/võtit'
+  copy: Kopeeri
   edit:
     name: Nimi
     url: Avalik URL

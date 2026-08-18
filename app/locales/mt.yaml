@@ -144,10 +144,21 @@ dash:
     origins_hint: IP jew CIDR wieħed kull linja; vojt = l-oriġini kollha.
     note: Nota
     submit: Oħloq iċ-ċavetta
+  realtime:
+    title: Attività f'ħin reali
+    refresh: Aġġorna
+    loading: qed jitgħabba…
+    updated: aġġornat fis-
+    no_data: L-ebda attività fl-aħħar sagħtejn.
+    all_keys: Iċ-ċwievet kollha
+    all_models: Il-mudelli kollha
+    filter_key_aria: Iffiltra skont iċ-ċavetta
+    filter_model_aria: Iffiltra skont il-mudell
 tgt:
   title: Miri pubbliċi
   intro: <strong>Mira</strong> hija l-URL pubbliku tal-gateway kif jarah klijent (eż. <span class="mono">https://llm.example:8443</span>). Isservi biex jiġġenera l-varjabbli tal-ambjent taċ-ċavetta assoċjata — <strong>ma jbiddilx ir-rotting</strong> (l-upstream għadu jintgħażel mis-server tal-eżekuzzjoni). Kull ċavetta tindika mira; il-mira difolt ma tistax titħassar.
   keys_count: '{count} ċavetta/ċwievet'
+  copy: Ikkopja
   edit:
     name: Isem
     url: URL pubbliku

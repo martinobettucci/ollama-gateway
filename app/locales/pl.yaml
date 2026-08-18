@@ -144,10 +144,21 @@ dash:
     origins_hint: Jeden adres IP lub CIDR na wiersz; puste = wszystkie źródła.
     note: Notatka
     submit: Utwórz klucz
+  realtime:
+    title: Aktywność w czasie rzeczywistym
+    refresh: Odśwież
+    loading: wczytywanie…
+    updated: zaktualizowano o
+    no_data: Brak aktywności w ciągu ostatnich 2 godzin.
+    all_keys: Wszystkie klucze
+    all_models: Wszystkie modele
+    filter_key_aria: Filtruj według klucza
+    filter_model_aria: Filtruj według modelu
 tgt:
   title: Cele publiczne
   intro: <strong>Cel</strong> to publiczny adres URL bramy widziany przez klienta (np. <span class="mono">https://llm.example:8443</span>). Służy do generowania zmiennych środowiskowych powiązanego klucza — <strong>nie zmienia routingu</strong> (upstream nadal wybiera serwer wykonawczy). Każdy klucz wskazuje na cel; celu domyślnego nie można usunąć.
   keys_count: '{count} klucz(y)'
+  copy: Kopiuj
   edit:
     name: Nazwa
     url: Publiczny URL

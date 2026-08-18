@@ -22,7 +22,7 @@
   <div class="server-meta">
     <span class="mono" id="tgt-url-{{ tg.id }}">{{ tg.base_url }}</span>
     <button type="button" class="btn-sm btn-secondary" data-copy="{{ tg.base_url }}"
-            data-copied="{{ t('common.copied') }}" data-failed="{{ t('dash.env.copy_fail') }}"
+            data-copied="{{ t('dash.env.copied') }}" data-failed="{{ t('dash.env.copy_fail') }}"
             data-target-url="tgt-url-{{ tg.id }}" title="{{ t('tgt.copy') }}">
       {{ icon('copy', 14) }} {{ t('tgt.copy') }}</button>
     {% if tg.is_default %}<span class="badge accent">{{ t('common.default') }}</span>{% endif %}

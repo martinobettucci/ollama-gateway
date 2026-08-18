@@ -144,10 +144,21 @@ dash:
     origins_hint: Una IP o un CIDR por línea; vacío = todos los orígenes.
     note: Nota
     submit: Crear la clave
+  realtime:
+    title: Actividad en tiempo real
+    refresh: Actualizar
+    loading: cargando…
+    updated: actualizado a las
+    no_data: Sin actividad en las últimas 2 horas.
+    all_keys: Todas las claves
+    all_models: Todos los modelos
+    filter_key_aria: Filtrar por clave
+    filter_model_aria: Filtrar por modelo
 tgt:
   title: Destinos públicos
   intro: Un <strong>destino</strong> es la URL pública de la puerta de enlace tal como la ve un cliente (p. ej. <span class="mono">https://llm.example:8443</span>). Sirve para generar las variables de entorno de la clave asociada — <strong>no cambia el enrutamiento</strong> (el upstream lo sigue eligiendo el servidor de ejecución). Cada clave apunta a un destino; el destino predeterminado no se puede eliminar.
   keys_count: '{count} clave(s)'
+  copy: Copiar
   edit:
     name: Nombre
     url: URL pública

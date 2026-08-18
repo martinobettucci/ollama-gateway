@@ -144,10 +144,21 @@ dash:
     origins_hint: Eén IP of CIDR per regel; leeg = alle oorsprongen.
     note: Notitie
     submit: Sleutel aanmaken
+  realtime:
+    title: Realtime-activiteit
+    refresh: Vernieuwen
+    loading: laden…
+    updated: bijgewerkt om
+    no_data: Geen activiteit in de afgelopen 2 uur.
+    all_keys: Alle sleutels
+    all_models: Alle modellen
+    filter_key_aria: Filteren op sleutel
+    filter_model_aria: Filteren op model
 tgt:
   title: Openbare bestemmingen
   intro: Een <strong>bestemming</strong> is de openbare URL van de gateway zoals een client die ziet (bijv. <span class="mono">https://llm.example:8443</span>). Ze dient om de omgevingsvariabelen van de gekoppelde sleutel te genereren — <strong>ze wijzigt de routering niet</strong> (de upstream wordt nog steeds door de uitvoeringsserver gekozen). Elke sleutel wijst naar een bestemming; de standaardbestemming kan niet worden verwijderd.
   keys_count: '{count} sleutel(s)'
+  copy: Kopiëren
   edit:
     name: Naam
     url: Openbare URL

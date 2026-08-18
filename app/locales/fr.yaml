@@ -146,10 +146,21 @@ dash:
     origins_hint: Une IP ou un CIDR par ligne ; vide = toutes les origines.
     note: Note
     submit: Créer la clé
+  realtime:
+    title: Activité en temps réel
+    refresh: Rafraîchir
+    loading: chargement…
+    updated: mis à jour à
+    no_data: Aucune activité sur les 2 dernières heures.
+    all_keys: Toutes les clés
+    all_models: Tous les modèles
+    filter_key_aria: Filtrer par clé
+    filter_model_aria: Filtrer par modèle
 tgt:
   title: Cibles publiques
   intro: Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:8443</span>). Elle sert à générer les variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong> (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible par défaut est indélébile.
   keys_count: '{count} clé(s)'
+  copy: Copier
   edit:
     name: Nom
     url: URL publique

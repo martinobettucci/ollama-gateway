@@ -144,10 +144,21 @@ dash:
     origins_hint: Vienas IP arba CIDR eilutėje; tuščia = visos kilmės.
     note: Pastaba
     submit: Sukurti raktą
+  realtime:
+    title: Veikla realiuoju laiku
+    refresh: Atnaujinti
+    loading: įkeliama…
+    updated: atnaujinta
+    no_data: Per pastarąsias 2 valandas veiklos nėra.
+    all_keys: Visi raktai
+    all_models: Visi modeliai
+    filter_key_aria: Filtruoti pagal raktą
+    filter_model_aria: Filtruoti pagal modelį
 tgt:
   title: Viešieji tikslai
   intro: <strong>Tikslas</strong> yra viešasis sietuvo URL, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:8443</span>). Jis naudojamas susieto rakto aplinkos kintamiesiems generuoti — <strong>jis nekeičia maršruto</strong> (upstream vis tiek pasirenka vykdymo serveris). Kiekvienas raktas nurodo tikslą; numatytojo tikslo negalima ištrinti.
   keys_count: '{count} raktas(-ai)'
+  copy: Kopijuoti
   edit:
     name: Pavadinimas
     url: Viešasis URL

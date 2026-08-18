@@ -161,3 +161,50 @@ def test_negotiate_prefers_session_then_cookie_then_header():
     assert i18n.negotiate(Req(headers={"accept-language": "pt-PT,pt;q=0.9,en;q=0.8"})) == "pt"
     # rien de reconnaissable → défaut fr
     assert i18n.negotiate(Req(headers={"accept-language": "zz"})) == "fr"
+
+
+# --- Couverture des clés RÉFÉRENCÉES PAR LES GABARITS -------------------------------------------
+# Angle mort comblé : les tests ci-dessus comparent les locales ENTRE ELLES — une clé absente des
+# 24 catalogues à la fois y passe donc inaperçue, et `translate()` repliant sur la clé brute,
+# l'écran affiche littéralement « dash.realtime.title ». C'est ce qui est arrivé au bouton
+# « copier » d'une cible et à toute la vue temps réel. Ce test lit les gabarits et exige que chaque
+# clé qu'ils demandent existe réellement dans le catalogue de référence.
+
+TKEY = re.compile(r"""(?<![A-Za-z0-9_])t\(\s*['"]([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)['"]\s*[,)]""")
+
+
+def _template_keys() -> dict[str, set[str]]:
+    """Clés i18n littérales référencées par gabarit (`t('a.b')`). Les clés CONSTRUITES
+    dynamiquement (`t('api.fam.' ~ x)`) sont hors de portée d'une analyse statique : le motif
+    exige une parenthèse/virgule fermante juste après le littéral, ce qui les exclut."""
+    import pathlib
+    out: dict[str, set[str]] = {}
+    for f in sorted(pathlib.Path("app/templates").glob("*.html")):
+        found = set(TKEY.findall(f.read_text(encoding="utf-8")))
+        if found:
+            out[f.name] = found
+    return out
+
+
+def test_templates_only_reference_existing_keys():
+    """Toute clé littérale demandée par un gabarit doit exister (sinon l'UI affiche la clé brute)."""
+    i18n.load_catalog()
+    missing = {}
+    for fname, ks in _template_keys().items():
+        for k in sorted(ks):
+            if i18n.translate(k, i18n.DEFAULT_LANG) == k:
+                missing.setdefault(k, []).append(fname)
+    assert not missing, (
+        "clé(s) i18n référencées par un gabarit mais absentes du catalogue "
+        f"{i18n.DEFAULT_LANG} : "
+        + ", ".join(f"{k} ({', '.join(v)})" for k, v in sorted(missing.items())))
+
+
+def test_template_key_scan_actually_finds_keys():
+    """Garde-fou du garde-fou : si le motif cessait de reconnaître les appels `t(...)`, le test
+    ci-dessus deviendrait vert en n'inspectant plus rien. On exige donc une récolte plausible."""
+    found = _template_keys()
+    assert len(found) >= 5, f"trop peu de gabarits reconnus : {sorted(found)}"
+    assert sum(len(v) for v in found.values()) >= 100
+    assert "dash.realtime.title" in found.get("dashboard.html", set())
+    assert "tgt.copy" in found.get("targets.html", set())

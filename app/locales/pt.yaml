@@ -144,10 +144,21 @@ dash:
     origins_hint: Uma IP ou um CIDR por linha; vazio = todas as origens.
     note: Nota
     submit: Criar a chave
+  realtime:
+    title: Atividade em tempo real
+    refresh: Atualizar
+    loading: a carregar…
+    updated: atualizado às
+    no_data: Sem atividade nas últimas 2 horas.
+    all_keys: Todas as chaves
+    all_models: Todos os modelos
+    filter_key_aria: Filtrar por chave
+    filter_model_aria: Filtrar por modelo
 tgt:
   title: Destinos públicos
   intro: Um <strong>destino</strong> é o URL público do gateway tal como um cliente o vê (ex. <span class="mono">https://llm.example:8443</span>). Serve para gerar as variáveis de ambiente da chave associada — <strong>não altera o encaminhamento</strong> (o upstream continua a ser escolhido pelo servidor de execução). Cada chave aponta para um destino; o destino predefinido não pode ser eliminado.
   keys_count: '{count} chave(s)'
+  copy: Copiar
   edit:
     name: Nome
     url: URL público

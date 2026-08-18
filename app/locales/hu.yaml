@@ -144,10 +144,21 @@ dash:
     origins_hint: Soronként egy IP vagy CIDR; üres = összes eredet.
     note: Megjegyzés
     submit: Kulcs létrehozása
+  realtime:
+    title: Valós idejű tevékenység
+    refresh: Frissítés
+    loading: betöltés…
+    updated: 'frissítve ekkor:'
+    no_data: Nincs tevékenység az elmúlt 2 órában.
+    all_keys: Összes kulcs
+    all_models: Összes modell
+    filter_key_aria: Szűrés kulcs szerint
+    filter_model_aria: Szűrés modell szerint
 tgt:
   title: Nyilvános célok
   intro: A <strong>cél</strong> az átjáró nyilvános URL-je úgy, ahogy a kliens látja (pl. <span class="mono">https://llm.example:8443</span>). A csatolt kulcs környezeti változóinak generálására szolgál — <strong>nem változtatja meg az útválasztást</strong> (az upstreamet továbbra is a végrehajtó kiszolgáló választja). Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.
   keys_count: '{count} kulcs'
+  copy: Másolás
   edit:
     name: Név
     url: Nyilvános URL

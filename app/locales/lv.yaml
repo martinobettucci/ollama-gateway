@@ -144,10 +144,21 @@ dash:
     origins_hint: Viena IP vai CIDR rindā; tukšs = visas izcelsmes.
     note: Piezīme
     submit: Izveidot atslēgu
+  realtime:
+    title: Darbība reāllaikā
+    refresh: Atsvaidzināt
+    loading: ielādē…
+    updated: atjaunināts plkst.
+    no_data: Pēdējās 2 stundās nav darbību.
+    all_keys: Visas atslēgas
+    all_models: Visi modeļi
+    filter_key_aria: Filtrēt pēc atslēgas
+    filter_model_aria: Filtrēt pēc modeļa
 tgt:
   title: Publiskie mērķi
   intro: <strong>Mērķis</strong> ir vārtejas publiskais URL tā, kā to redz klients (piem., <span class="mono">https://llm.example:8443</span>). To izmanto saistītās atslēgas vides mainīgo ģenerēšanai — <strong>tas nemaina maršrutēšanu</strong> (upstream joprojām izvēlas izpildes serveris). Katra atslēga norāda uz mērķi; noklusējuma mērķi nevar dzēst.
   keys_count: '{count} atslēga(-as)'
+  copy: Kopēt
   edit:
     name: Nosaukums
     url: Publiskais URL

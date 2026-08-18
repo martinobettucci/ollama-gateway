@@ -144,10 +144,21 @@ dash:
     origins_hint: One IP or CIDR per line; empty = all origins.
     note: Note
     submit: Create the key
+  realtime:
+    title: Real-time activity
+    refresh: Refresh
+    loading: loading…
+    updated: updated at
+    no_data: No activity in the last 2 hours.
+    all_keys: All keys
+    all_models: All models
+    filter_key_aria: Filter by key
+    filter_model_aria: Filter by model
 tgt:
   title: Public targets
   intro: A <strong>target</strong> is the gateway's public URL as a client sees it (e.g. <span class="mono">https://llm.example:8443</span>). It is used to generate the environment variables of the attached key — <strong>it does not change routing</strong> (the upstream is still chosen by the execution server). Each key points to a target; the default target cannot be deleted.
   keys_count: '{count} key(s)'
+  copy: Copy
   edit:
     name: Name
     url: Public URL

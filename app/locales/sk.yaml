@@ -144,10 +144,21 @@ dash:
     origins_hint: Jedna IP alebo CIDR na riadok; prázdne = všetky pôvody.
     note: Poznámka
     submit: Vytvoriť kľúč
+  realtime:
+    title: Aktivita v reálnom čase
+    refresh: Obnoviť
+    loading: načítava sa…
+    updated: aktualizované o
+    no_data: Za posledné 2 hodiny žiadna aktivita.
+    all_keys: Všetky kľúče
+    all_models: Všetky modely
+    filter_key_aria: Filtrovať podľa kľúča
+    filter_model_aria: Filtrovať podľa modelu
 tgt:
   title: Verejné ciele
   intro: <strong>Cieľ</strong> je verejná URL brány, ako ju vidí klient (napr. <span class="mono">https://llm.example:8443</span>). Slúži na generovanie premenných prostredia pripojeného kľúča — <strong>nemení smerovanie</strong> (upstream stále vyberá vykonávací server). Každý kľúč ukazuje na cieľ; predvolený cieľ nie je možné odstrániť.
   keys_count: '{count} kľúč(ov)'
+  copy: Kopírovať
   edit:
     name: Názov
     url: Verejná URL

@@ -144,10 +144,21 @@ dash:
     origins_hint: En IP ali CIDR na vrstico; prazno = vsi izvori.
     note: Opomba
     submit: Ustvari ključ
+  realtime:
+    title: Dejavnost v realnem času
+    refresh: Osveži
+    loading: nalaganje…
+    updated: posodobljeno ob
+    no_data: V zadnjih 2 urah ni dejavnosti.
+    all_keys: Vsi ključi
+    all_models: Vsi modeli
+    filter_key_aria: Filtriraj po ključu
+    filter_model_aria: Filtriraj po modelu
 tgt:
   title: Javni cilji
   intro: <strong>Cilj</strong> je javni URL prehoda, kot ga vidi odjemalec (npr. <span class="mono">https://llm.example:8443</span>). Uporablja se za ustvarjanje okoljskih spremenljivk povezanega ključa — <strong>ne spremeni usmerjanja</strong> (upstream še vedno izbere izvajalni strežnik). Vsak ključ kaže na cilj; privzetega cilja ni mogoče izbrisati.
   keys_count: '{count} ključ(ev)'
+  copy: Kopiraj
   edit:
     name: Ime
     url: Javni URL

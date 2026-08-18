@@ -144,10 +144,21 @@ dash:
     origins_hint: Un IP sau un CIDR pe linie; gol = toate originile.
     note: Notă
     submit: Creează cheia
+  realtime:
+    title: Activitate în timp real
+    refresh: Reîmprospătează
+    loading: se încarcă…
+    updated: actualizat la
+    no_data: Nicio activitate în ultimele 2 ore.
+    all_keys: Toate cheile
+    all_models: Toate modelele
+    filter_key_aria: Filtrează după cheie
+    filter_model_aria: Filtrează după model
 tgt:
   title: Ținte publice
   intro: O <strong>țintă</strong> este URL-ul public al gateway-ului așa cum îl vede un client (ex. <span class="mono">https://llm.example:8443</span>). Servește la generarea variabilelor de mediu ale cheii asociate — <strong>nu modifică rutarea</strong> (upstream-ul este ales în continuare de serverul de execuție). Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.
   keys_count: '{count} cheie/chei'
+  copy: Copiază
   edit:
     name: Nume
     url: URL public
