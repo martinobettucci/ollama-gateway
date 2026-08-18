@@ -71,6 +71,11 @@
 # Désactivé par défaut : sans `GATEWAY_LAN_BIND`, l'écoute retombe sur la loopback (inerte).
 # L'activer = poser GATEWAY_LAN_BIND (IP LAN de l'hôte) et GATEWAY_LAN_HTTP_PORT dans .env.prod.
 http://{$GATEWAY_LAN_BIND:127.0.0.1}:{$GATEWAY_LAN_HTTP_PORT:8790} {
+	# `bind` est INDISPENSABLE : l'hôte de l'adresse de site ne sert qu'au FILTRAGE du `Host`,
+	# pas au choix de l'interface. Sans lui, Caddy écoute sur `*` — donc aussi sur l'IPv6 globale,
+	# exactement ce que cette entrée doit éviter. Avec lui, le socket n'existe que sur l'IP LAN.
+	bind {$GATEWAY_LAN_BIND:127.0.0.1}
+
 	# Pas de HSTS ici : cet en-tête n'a de sens que sur une origine TLS.
 	header {
 		X-Content-Type-Options "nosniff"
