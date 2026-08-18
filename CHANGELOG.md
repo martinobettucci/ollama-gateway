@@ -6,6 +6,24 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+_Rien à publier pour le moment…_
+
+## [Publié]
+
+### Déployé en production — 2026-08-18 (migrations ≤ 0013)
+
+Déploiement effectué et vérifié en production : `git pull`, reconstruction de l'image applicative
+et recréation des services proxy + admin ; l'edge TLS n'était pas concerné et n'a pas été
+reconstruit. Aucune migration à appliquer (base déjà à jour), données préservées.
+
+Le **contrôle de cible** (changement de comportement) a été validé AVANT bascule contre la
+configuration réelle : l'hôte effectivement emprunté par le trafic des 30 derniers jours correspond
+à la cible rattachée à chaque clé — aucune requête légitime observée n'est refusée. Contre-épreuve
+faite : un hôte étranger est bien refusé.
+
+Preuves live : proxy `ok`, TLS public `200`, inférence non authentifiée `401`, admin `303`,
+vue temps réel de nouveau fonctionnelle (plus d'erreur serveur), aucune erreur dans les journaux.
+
 - **Correction — la vue « temps réel » du tableau de bord ne fonctionnait pas du tout.** Le panneau
   interrogeait le serveur toutes les 30 s et recevait une **erreur** à chaque fois : la requête
   s'appuyait sur une donnée inexistante, et un second défaut indépendant l'aurait fait échouer même
@@ -43,8 +61,6 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   ajoutés aux catalogues. Onze libellés ajoutés dans les 24 langues. Un contrôle automatique
   vérifie désormais que tout libellé demandé par une page existe réellement — ce type d'oubli ne
   peut plus passer inaperçu.
-
-## [Publié]
 
 ### Déployé en production — 2026-08-17 (migrations ≤ 0013)
 
