@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Suodata mallin mukaan
 tgt:
   title: Julkiset kohteet
-  intro: <strong>Kohde</strong> on yhdyskäytävän julkinen URL sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:8443</span>). Sitä käytetään liitetyn avaimen ympäristömuuttujien luomiseen — <strong>se ei muuta reititystä</strong> (upstreamin valitsee edelleen suorituspalvelin). Jokainen avain osoittaa kohteeseen; oletuskohdetta ei voi poistaa.
+  intro: '<strong>Kohde</strong> on yhdyskäytävän julkinen URL-osoite sellaisena kuin asiakas sen näkee (esim. <span class="mono">https://llm.example:8443</span>). Se luo liitetyn avaimen ympäristömuuttujat ja <strong>rajoittaa sisäänpääsyä: avain toimii vain oman kohteensa kautta</strong> (isäntä ja portti vertaillaan, muuten pyyntö hylätään). Suoritinpalvelin valitsee edelleen taustapalvelun. Kukin avain osoittaa yhteen kohteeseen; oletuskohdetta ei voi poistaa.'
   keys_count: '{count} avain(ta)'
   copy: Kopioi
   edit:

@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtreeri mudeli järgi
 tgt:
   title: Avalikud sihtmärgid
-  intro: <strong>Sihtmärk</strong> on lüüsi avalik URL nii, nagu klient seda näeb (nt <span class="mono">https://llm.example:8443</span>). Seda kasutatakse seotud võtme keskkonnamuutujate genereerimiseks — <strong>see ei muuda marsruutimist</strong> (upstream'i valib endiselt täitmisserver). Iga võti osutab sihtmärgile; vaikesihtmärki ei saa kustutada.
+  intro: '<strong>Sihtkoht</strong> on lüüsi avalik URL nii, nagu klient seda näeb (nt <span class="mono">https://llm.example:8443</span>). See loob seotud võtme keskkonnamuutujad ja <strong>piirab sissepääsu: võti toimib ainult oma sihtkoha kaudu</strong> (võrreldakse hosti ja porti, vastasel juhul lükatakse päring tagasi). Ülesvoolu allika valib endiselt täitmisserver. Iga võti osutab ühele sihtkohale; vaikesihtkohta ei saa kustutada.'
   keys_count: '{count} võti/võtit'
   copy: Kopeeri
   edit:

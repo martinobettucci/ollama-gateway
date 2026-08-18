@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtrează după model
 tgt:
   title: Ținte publice
-  intro: O <strong>țintă</strong> este URL-ul public al gateway-ului așa cum îl vede un client (ex. <span class="mono">https://llm.example:8443</span>). Servește la generarea variabilelor de mediu ale cheii asociate — <strong>nu modifică rutarea</strong> (upstream-ul este ales în continuare de serverul de execuție). Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.
+  intro: 'O <strong>țintă</strong> este adresa URL publică a gateway-ului așa cum o vede un client (de ex. <span class="mono">https://llm.example:8443</span>). Generează variabilele de mediu ale cheii asociate și <strong>restricționează intrarea: o cheie funcționează doar prin propria țintă</strong> (se compară gazda și portul, altfel cererea este refuzată). Serverul de execuție alege în continuare sursa din amonte. Fiecare cheie indică o țintă; ținta implicită nu poate fi ștearsă.'
   keys_count: '{count} cheie/chei'
   copy: Copiază
   edit:

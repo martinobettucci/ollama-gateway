@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtrér efter model
 tgt:
   title: Offentlige mål
-  intro: Et <strong>mål</strong> er gatewayens offentlige URL, som en klient ser den (f.eks. <span class="mono">https://llm.example:8443</span>). Det bruges til at generere miljøvariablerne for den tilknyttede nøgle — <strong>det ændrer ikke routingen</strong> (upstream vælges stadig af udførelsesserveren). Hver nøgle peger på et mål; standardmålet kan ikke slettes.
+  intro: 'Et <strong>mål</strong> er gatewayens offentlige URL, som en klient ser den (f.eks. <span class="mono">https://llm.example:8443</span>). Det genererer miljøvariablerne for den tilknyttede nøgle og <strong>begrænser adgangen: en nøgle virker kun via sit eget mål</strong> (vært og port sammenlignes, ellers afvises anmodningen). Upstream vælges fortsat af udførelsesserveren. Hver nøgle peger på ét mål; standardmålet kan ikke slettes.'
   keys_count: '{count} nøgle(r)'
   copy: Kopiér
   edit:

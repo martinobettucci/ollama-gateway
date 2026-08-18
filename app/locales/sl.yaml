@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtriraj po modelu
 tgt:
   title: Javni cilji
-  intro: <strong>Cilj</strong> je javni URL prehoda, kot ga vidi odjemalec (npr. <span class="mono">https://llm.example:8443</span>). Uporablja se za ustvarjanje okoljskih spremenljivk povezanega ključa — <strong>ne spremeni usmerjanja</strong> (upstream še vedno izbere izvajalni strežnik). Vsak ključ kaže na cilj; privzetega cilja ni mogoče izbrisati.
+  intro: '<strong>Cilj</strong> je javni URL prehoda, kot ga vidi odjemalec (npr. <span class="mono">https://llm.example:8443</span>). Ustvarja okoljske spremenljivke priloženega ključa in <strong>omejuje vstop: ključ deluje samo prek svojega cilja</strong> (primerjata se gostitelj in vrata, sicer je zahteva zavrnjena). Nadrejeni strežnik še vedno izbira izvajalni strežnik. Vsak ključ kaže na en cilj; privzetega cilja ni mogoče izbrisati.'
   keys_count: '{count} ključ(ev)'
   copy: Kopiraj
   edit:

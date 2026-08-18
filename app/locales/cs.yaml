@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtrovat podle modelu
 tgt:
   title: Veřejné cíle
-  intro: <strong>Cíl</strong> je veřejná URL brány, jak ji vidí klient (např. <span class="mono">https://llm.example:8443</span>). Slouží ke generování proměnných prostředí připojeného klíče — <strong>nemění směrování</strong> (upstream stále vybírá vykonávací server). Každý klíč ukazuje na cíl; výchozí cíl nelze smazat.
+  intro: '<strong>Cíl</strong> je veřejná URL brány tak, jak ji vidí klient (např. <span class="mono">https://llm.example:8443</span>). Generuje proměnné prostředí připojeného klíče a <strong>omezuje vstup: klíč funguje pouze přes svůj vlastní cíl</strong> (porovnává se hostitel i port, jinak je požadavek odmítnut). Nadřazený server stále vybírá výkonný server. Každý klíč ukazuje na jeden cíl; výchozí cíl nelze smazat.'
   keys_count: '{count} klíč(ů)'
   copy: Kopírovat
   edit:

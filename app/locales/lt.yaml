@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtruoti pagal modelį
 tgt:
   title: Viešieji tikslai
-  intro: <strong>Tikslas</strong> yra viešasis sietuvo URL, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:8443</span>). Jis naudojamas susieto rakto aplinkos kintamiesiems generuoti — <strong>jis nekeičia maršruto</strong> (upstream vis tiek pasirenka vykdymo serveris). Kiekvienas raktas nurodo tikslą; numatytojo tikslo negalima ištrinti.
+  intro: '<strong>Paskirtis</strong> yra viešasis šliuzo URL adresas, kokį jį mato klientas (pvz., <span class="mono">https://llm.example:8443</span>). Ji generuoja susieto rakto aplinkos kintamuosius ir <strong>riboja įėjimą: raktas veikia tik per savo paskirtį</strong> (lyginami pagrindinis kompiuteris ir prievadas, kitu atveju užklausa atmetama). Pirminį šaltinį ir toliau parenka vykdymo serveris. Kiekvienas raktas nurodo vieną paskirtį; numatytosios paskirties ištrinti negalima.'
   keys_count: '{count} raktas(-ai)'
   copy: Kopijuoti
   edit:

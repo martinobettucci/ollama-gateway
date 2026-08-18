@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtrar por modelo
 tgt:
   title: Destinos públicos
-  intro: Um <strong>destino</strong> é o URL público do gateway tal como um cliente o vê (ex. <span class="mono">https://llm.example:8443</span>). Serve para gerar as variáveis de ambiente da chave associada — <strong>não altera o encaminhamento</strong> (o upstream continua a ser escolhido pelo servidor de execução). Cada chave aponta para um destino; o destino predefinido não pode ser eliminado.
+  intro: 'Um <strong>destino</strong> é o URL público da gateway tal como um cliente o vê (p. ex. <span class="mono">https://llm.example:8443</span>). Gera as variáveis de ambiente da chave associada e <strong>restringe a entrada: uma chave só funciona através do seu próprio destino</strong> (host e porta comparados, caso contrário recusa). O upstream continua a ser escolhido pelo servidor de execução. Cada chave aponta para um destino; o destino predefinido não pode ser eliminado.'
   keys_count: '{count} chave(s)'
   copy: Copiar
   edit:

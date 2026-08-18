@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filter by model
 tgt:
   title: Public targets
-  intro: A <strong>target</strong> is the gateway's public URL as a client sees it (e.g. <span class="mono">https://llm.example:8443</span>). It is used to generate the environment variables of the attached key — <strong>it does not change routing</strong> (the upstream is still chosen by the execution server). Each key points to a target; the default target cannot be deleted.
+  intro: 'A <strong>target</strong> is the gateway''s public URL as a client sees it (e.g. <span class="mono">https://llm.example:8443</span>). It generates the attached key''s environment variables and <strong>constrains entry: a key only works through its own target</strong> (host and port are compared, otherwise refused). The upstream is still chosen by the execution server. Each key points to one target; the default target cannot be deleted.'
   keys_count: '{count} key(s)'
   copy: Copy
   edit:

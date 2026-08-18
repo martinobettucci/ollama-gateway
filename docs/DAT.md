@@ -136,7 +136,13 @@ car Ollama est en loopback natif (hors Docker).
   d'accessibilité des chemins (`servers.run_compat`, catalogue `apis.CATALOG`).
 - **Cibles publiques (migration 0006).** `targets(id, name, base_url, is_default, created_at)` — URL
   publiques vues des clients ; `api_keys.target_id` (FK, ON DELETE SET NULL) — cible rattachée,
-  utilisée **uniquement** pour générer les variables d'environnement (n'affecte pas le routage).
+  utilisée pour générer les variables d'environnement **et, depuis 2026-08-18, pour CONTRAINDRE
+  l'entrée** : le proxy refuse (403) une requête qui n'est pas arrivée par la cible de la clé
+  (`targets.host_allowed`, comparaison stricte hôte **+ port**). Elle ne choisit toujours pas
+  l'amont (rôle du serveur d'exécution). L'hôte retenu vient de `X-Forwarded-Host` quand le pair est
+  de confiance (`proxy.request_host`, même discipline anti-usurpation que `client_ip`), sinon de
+  `Host`. Permissif **par absence de contrainte** seulement (pas de cible, cible restée au
+  placeholder, URL illisible) → une installation neuve n'est jamais verrouillée.
   Défaut indélébile seedé de `PUBLIC_BASE_URL` (auto-réparation du placeholder). `app/targets.py`.
 - **Expiration / plafonds de vie (migration 0007).** `api_keys.total_token_cap` /
   `total_request_cap` / `expires_at` / `idle_expiry_days` (NULL = aucun) — plafonds **absolus** et

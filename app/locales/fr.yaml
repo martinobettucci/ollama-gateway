@@ -158,7 +158,7 @@ dash:
     filter_model_aria: Filtrer par modèle
 tgt:
   title: Cibles publiques
-  intro: Une <strong>cible</strong> est l'URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:8443</span>). Elle sert à générer les variables d'environnement de la clé rattachée — <strong>elle ne change pas le routage</strong> (l'amont reste choisi par le serveur d'exécution). Chaque clé pointe vers une cible ; la cible par défaut est indélébile.
+  intro: 'Une <strong>cible</strong> est l''URL publique de la passerelle telle que la voit un client (ex. <span class="mono">https://llm.example:8443</span>). Elle sert à générer les variables d''environnement de la clé rattachée et <strong>contraint l''entrée : une clé n''est utilisable que par sa cible</strong> (hôte et port comparés, sinon refus). L''amont reste choisi par le serveur d''exécution. Chaque clé pointe vers une cible ; la cible par défaut est indélébile.'
   keys_count: '{count} clé(s)'
   copy: Copier
   edit:

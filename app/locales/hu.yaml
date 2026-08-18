@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Szűrés modell szerint
 tgt:
   title: Nyilvános célok
-  intro: A <strong>cél</strong> az átjáró nyilvános URL-je úgy, ahogy a kliens látja (pl. <span class="mono">https://llm.example:8443</span>). A csatolt kulcs környezeti változóinak generálására szolgál — <strong>nem változtatja meg az útválasztást</strong> (az upstreamet továbbra is a végrehajtó kiszolgáló választja). Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.
+  intro: 'A <strong>cél</strong> az átjáró nyilvános URL-címe, ahogyan azt az ügyfél látja (pl. <span class="mono">https://llm.example:8443</span>). Létrehozza a hozzárendelt kulcs környezeti változóit, és <strong>korlátozza a belépést: egy kulcs csak a saját célján keresztül működik</strong> (a gazdagép és a port összehasonlításra kerül, különben elutasítás). A feldolgozó kiszolgáló továbbra is kiválasztja a felsőbb szintű forrást. Minden kulcs egy célra mutat; az alapértelmezett cél nem törölhető.'
   keys_count: '{count} kulcs'
   copy: Másolás
   edit:

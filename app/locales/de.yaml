@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Nach Modell filtern
 tgt:
   title: Öffentliche Ziele
-  intro: Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways, wie ein Client sie sieht (z. B. <span class="mono">https://llm.example:8443</span>). Es dient zum Erzeugen der Umgebungsvariablen des zugeordneten Schlüssels — <strong>es ändert nicht das Routing</strong> (das Upstream wird weiterhin vom Ausführungsserver gewählt). Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist unlöschbar.
+  intro: 'Ein <strong>Ziel</strong> ist die öffentliche URL des Gateways aus Sicht eines Clients (z. B. <span class="mono">https://llm.example:8443</span>). Es erzeugt die Umgebungsvariablen des zugeordneten Schlüssels und <strong>beschränkt den Zugang: ein Schlüssel funktioniert nur über sein eigenes Ziel</strong> (Host und Port werden verglichen, sonst Ablehnung). Der Upstream wird weiterhin vom Ausführungsserver bestimmt. Jeder Schlüssel verweist auf ein Ziel; das Standardziel ist nicht löschbar.'
   keys_count: '{count} Schlüssel'
   copy: Kopieren
   edit:

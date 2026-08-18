@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filtriraj po modelu
 tgt:
   title: Javna odredišta
-  intro: <strong>Odredište</strong> je javni URL pristupnika kako ga vidi klijent (npr. <span class="mono">https://llm.example:8443</span>). Služi za generiranje varijabli okruženja povezanog ključa — <strong>ne mijenja usmjeravanje</strong> (upstream i dalje odabire izvršni poslužitelj). Svaki ključ pokazuje na odredište; zadano odredište nije moguće izbrisati.
+  intro: '<strong>Odredište</strong> je javni URL pristupnika onakav kakvim ga vidi klijent (npr. <span class="mono">https://llm.example:8443</span>). Generira varijable okruženja pridruženog ključa i <strong>ograničava ulaz: ključ radi samo preko vlastitog odredišta</strong> (uspoređuju se glavno računalo i vrata, inače se zahtjev odbija). Poslužitelj izvršavanja i dalje bira nadređeni izvor. Svaki ključ pokazuje na jedno odredište; zadano odredište nije moguće izbrisati.'
   keys_count: '{count} ključ(eva)'
   copy: Kopiraj
   edit:

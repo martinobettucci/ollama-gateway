@@ -17,7 +17,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, Response, Streami
 from starlette.background import BackgroundTask
 
 from . import (apis, auth, bans, config, context, db, keys, quotas, reqlog,
-               servers, usage)
+               servers, targets, usage)
 
 # En-têtes hop-by-hop / recalculés à ne pas recopier tels quels. x-api-key porte la clé
 # cliente (SDK Anthropic) : strippé comme Authorization, jamais transmis à l'amont.
@@ -101,6 +101,32 @@ def client_ip(request: Request) -> str:
         if not _peer_trusted(candidate):
             return candidate
     return parts[0] if parts else peer
+
+
+def request_host(request: Request) -> str:
+    """Hôte (`host[:port]`) par lequel le CLIENT a joint la passerelle.
+
+    Même discipline que `client_ip` : `X-Forwarded-Host` n'est lu que si le pair immédiat est de
+    confiance (Caddy) — sinon un client pourrait se déclarer arrivé par la cible de son choix et
+    contourner le contrôle de passerelle. Caddy transmet par ailleurs le `Host` d'origine, qui sert
+    de repli. On retient la valeur la plus à GAUCHE de `X-Forwarded-Host` : c'est celle posée par
+    l'edge le plus proche du client (les suivantes seraient ajoutées par des relais en amont)."""
+    peer = request.client.host if request.client else ""
+    if _peer_trusted(peer):
+        xfh = request.headers.get("x-forwarded-host", "")
+        first = xfh.split(",")[0].strip()
+        if first:
+            return first
+    return request.headers.get("host", "")
+
+
+def forwarded_proto(request: Request) -> str:
+    """Schéma employé par le client (`https`/`http`), pour déduire le port implicite d'un `Host:`
+    sans port. Lu de `X-Forwarded-Proto` uniquement derrière un pair de confiance."""
+    peer = request.client.host if request.client else ""
+    if _peer_trusted(peer):
+        return request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
+    return request.url.scheme
 
 
 class _TokenSniffer:
@@ -288,6 +314,18 @@ async def proxy(request: Request, full_path: str):
         _content_log(403, req_model)
         return JSONResponse(
             {"error": f"API non autorisée pour cette clé: {cap or path}"}, status_code=403)
+
+    # --- Contrôle de la CIBLE (« passerelle ») rattachée à la clé ---
+    # Une clé émise pour une passerelle ne doit servir QUE par cette passerelle : on compare l'hôte
+    # (et le port) par lequel la requête est réellement arrivée à l'URL de la cible rattachée. Sans
+    # ce contrôle, `target_id` n'était qu'un libellé documentaire (génération des variables
+    # d'environnement) et n'importe quelle URL menant au proxy servait n'importe quelle clé.
+    if not targets.host_allowed(rec.target_base_url, request_host(request),
+                                forwarded_proto(request)):
+        _log(rec.id, ip, method, path, req_model, 403, t0, bytes_in=len(body), server_id=srv.id)
+        _content_log(403, req_model)
+        return JSONResponse(
+            {"error": "cette clé n'est pas autorisée sur cette passerelle"}, status_code=403)
 
     # --- Limite de CONTEXTE de la clé (garde-fou d'entrée) ---
     # On compte les tokens du corps (tiktoken + marge de 15 %, cf. app/context.py) AVANT de relayer :

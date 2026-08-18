@@ -6,7 +6,23 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
-_Rien à publier pour le moment…_
+- **Une clé n'est plus utilisable que par SA passerelle (changement de comportement).** La cible
+  rattachée à une clé n'était qu'un libellé documentaire (elle servait à générer les variables
+  d'environnement) : n'importe quelle URL menant à la passerelle servait n'importe quelle clé.
+  Désormais la passerelle **compare l'hôte et le port réellement empruntés** à l'URL de la cible de
+  la clé et **refuse la requête (`403`)** en cas d'écart — une clé émise pour une entrée ne peut
+  plus être rejouée à travers une autre, même si les deux mènent au même serveur d'exécution.
+  À noter : **le port compte** (`…example` et `…example:8443` sont deux passerelles distinctes),
+  de même qu'un accès par nom de domaine *vs* par adresse IP. Si un client doit entrer par
+  plusieurs URL, créer **une cible par URL**. Aucune contrainte n'est appliquée tant que la cible
+  d'une clé n'est pas configurée : une installation neuve n'est jamais verrouillée.
+
+- **Correction — libellés absents sur le bouton « copier » d'une cible et sur toute la vue temps
+  réel.** Ces deux écrans affichaient l'identifiant technique du libellé au lieu du texte (par ex.
+  « tgt.copy »), dans **toutes** les langues : les textes correspondants n'avaient jamais été
+  ajoutés aux catalogues. Onze libellés ajoutés dans les 24 langues. Un contrôle automatique
+  vérifie désormais que tout libellé demandé par une page existe réellement — ce type d'oubli ne
+  peut plus passer inaperçu.
 
 ## [Publié]
 

@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Scag de réir múnla
 tgt:
   title: Spriocanna poiblí
-  intro: Is é <strong>sprioc</strong> URL poiblí an gheata mar a fheiceann cliant é (m.sh. <span class="mono">https://llm.example:8443</span>). Úsáidtear é chun athróga timpeallachta na heochrach ceangailte a ghiniúint — <strong>ní athraíonn sé an ródú</strong> (roghnaíonn an freastalaí forghníomhaithe an upstream fós). Díríonn gach eochair ar sprioc; ní féidir an sprioc réamhshocraithe a scriosadh.
+  intro: 'Is é <strong>sprioc</strong> URL poiblí na geata mar a fheiceann cliant é (m.sh. <span class="mono">https://llm.example:8443</span>). Gineann sé athróga timpeallachta na heochrach ceangailte agus <strong>cuireann sé srian ar an mbealach isteach: ní oibríonn eochair ach trína sprioc féin</strong> (déantar an t-óstach agus an port a chur i gcomparáid, nó diúltaítear don iarratas). Roghnaíonn an freastalaí forghníomhaithe an fhoinse fós. Díríonn gach eochair ar sprioc amháin; ní féidir an sprioc réamhshocraithe a scriosadh.'
   keys_count: '{count} eochair'
   copy: Cóipeáil
   edit:

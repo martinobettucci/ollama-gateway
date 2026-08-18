@@ -156,7 +156,7 @@ dash:
     filter_model_aria: Filteren op model
 tgt:
   title: Openbare bestemmingen
-  intro: Een <strong>bestemming</strong> is de openbare URL van de gateway zoals een client die ziet (bijv. <span class="mono">https://llm.example:8443</span>). Ze dient om de omgevingsvariabelen van de gekoppelde sleutel te genereren — <strong>ze wijzigt de routering niet</strong> (de upstream wordt nog steeds door de uitvoeringsserver gekozen). Elke sleutel wijst naar een bestemming; de standaardbestemming kan niet worden verwijderd.
+  intro: 'Een <strong>doel</strong> is de publieke URL van de gateway zoals een client die ziet (bijv. <span class="mono">https://llm.example:8443</span>). Het genereert de omgevingsvariabelen van de gekoppelde sleutel en <strong>beperkt de toegang: een sleutel werkt alleen via zijn eigen doel</strong> (host en poort worden vergeleken, anders geweigerd). De upstream wordt nog steeds gekozen door de uitvoeringsserver. Elke sleutel wijst naar één doel; het standaarddoel kan niet worden verwijderd.'
   keys_count: '{count} sleutel(s)'
   copy: Kopiëren
   edit:

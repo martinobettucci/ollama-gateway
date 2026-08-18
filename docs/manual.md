@@ -115,9 +115,21 @@ fois (les modèles triés du plus récemment utilisé au plus ancien).
 Une **cible** est l'**URL publique** de la passerelle telle que la voit un client (par exemple
 `https://passerelle.example:port`). Chaque clé pointe vers une cible : c'est cette URL qui est
 injectée dans les **variables d'environnement** générées à la création de la clé
-(`OLLAMA_HOST` / `OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL`). Une cible **ne change pas le routage**
-(l'amont reste choisi par le serveur d'exécution) — elle décrit seulement « où le client se
-connecte ». Utile quand plusieurs noms/entrées publics mènent à la même passerelle.
+(`OLLAMA_HOST` / `OPENAI_BASE_URL` / `ANTHROPIC_BASE_URL`). Une cible **ne choisit pas l'amont**
+(celui-ci reste déterminé par le serveur d'exécution rattaché à la clé) : elle décrit « par où le
+client entre ». Utile quand plusieurs noms/entrées publics mènent à la même passerelle.
+
+> **La cible est contraignante.** Une clé n'est utilisable que **par la passerelle qui lui est
+> rattachée** : la passerelle compare l'hôte (**et le port**) réellement emprunté à l'URL de la
+> cible, et **refuse la requête (`403`)** sinon. Une clé émise pour une entrée ne peut donc pas
+> être rejouée à travers une autre — même si les deux mènent au même serveur d'exécution.
+>
+> Conséquences pratiques : `https://passerelle.example` et `https://passerelle.example:8443` sont
+> deux passerelles **différentes** (le port compte), tout comme un accès par nom de domaine et un
+> accès par adresse IP. Si un client doit pouvoir entrer par plusieurs URL, créez **une cible par
+> URL** et une clé par cible. Tant que la cible d'une clé n'est pas configurée (valeur par défaut
+> non renseignée), aucune contrainte n'est appliquée : une installation neuve n'est jamais
+> verrouillée par ce contrôle.
 
 ![Gestion des cibles publiques](../app/static/manual/14-targets.jpg)
 
