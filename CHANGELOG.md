@@ -6,6 +6,26 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
 
 ## [Non publié]
 
+_Rien à publier pour le moment…_
+
+## [Publié]
+
+### Déployé en production — 2026-08-18 (migrations ≤ 0013)
+
+Déploiement effectué et vérifié en production : `git pull`, reconstruction de l'image applicative
+et recréation des services proxy + admin. L'edge TLS n'était pas concerné et n'a pas été
+reconstruit. Aucune migration à appliquer (base déjà à jour), données préservées.
+
+Le balayage de sécurité pré-déploiement est passé **propre** (secrets, CVE des dépendances, SAST,
+suite de tests) — rejoué après le correctif d'affichage, avant la seconde bascule.
+
+Preuves live : proxy `ok`, TLS public `200`, inférence non authentifiée `401`, admin `303`, aucune
+erreur dans les journaux. Preuve fonctionnelle du nouveau code : le panneau de production décrit
+ses **14 modèles réels** avec les paramètres lus sur le serveur d'exécution, tous différenciés
+(un modèle à 1024k, plusieurs à 256k, un modèle d'embedding à 256 tokens ; outils et vision
+distincts d'un modèle à l'autre). Vérifié **en vision** — c'est d'ailleurs cette vérification qui
+a fait apparaître l'affichage « 0k », corrigé et redéployé avant publication.
+
 - **Le gabarit VS Code contient enfin la clé et les vraies caractéristiques des modèles.** Le bloc
   de configuration proposé à la création (ou à la réémission) d'une clé demandait de ressaisir la
   clé à la main, via un renvoi vers une invite de l'éditeur : il porte désormais le **secret réel**,
@@ -48,8 +68,6 @@ Surface publique ⇒ **zéro secret** (clés, tokens, hôtes/IP internes).
   la taille était toujours arrondie au millier : un modèle d'embedding, dont la fenêtre se compte
   en centaines de tokens, s'affichait donc « 0k ». Sous mille tokens, le nombre exact est
   désormais écrit.
-
-## [Publié]
 
 ### Déployé en production — 2026-08-18 (migrations ≤ 0013)
 

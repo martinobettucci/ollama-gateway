@@ -3,6 +3,33 @@
 Journal chronologique des décisions (le plus récent en premier). Complète `CHANGELOG.md`
 (quoi) par le **pourquoi**.
 
+## 2026-08-18 — Déploiement prod : la vérification en vision a payé
+
+- **Le balayage tourne sur le poste de DEV, le déploiement sur la prod.** Rappel appliqué sans le
+  réapprendre cette fois (cf. entrée du 2026-08-17) : `./scripts/security-sweep.sh` en local
+  (5 PASS), puis sur l'hôte `git pull` + `docker build --network=host` + `docker compose up -d`
+  **sans** `--build`. L'edge TLS n'a pas été reconstruit : ses sources n'ont pas bougé, et son
+  build échoue de toute façon sur la DNS de BuildKit.
+- **Le dépôt de prod n'appartient pas au compte d'administration courant.** Il vit sous un autre
+  utilisateur ; `sudo` demande un mot de passe, mais une connexion directe sous le compte
+  propriétaire fonctionne et suffit (il est membre du groupe docker, donc atteint le daemon
+  système sans élévation). À savoir avant de conclure trop vite à un blocage.
+- **La vérification en vision a trouvé ce que les tests ne pouvaient pas trouver.** Toutes les
+  suites étaient vertes, les preuves live aussi ; la capture du panneau de production a montré
+  `all-minilm:latest → 0k`. Un modèle d'embedding a une fenêtre de quelques centaines de tokens,
+  que l'arrondi au millier écrasait. **Aucun test ne pouvait le voir** : le catalogue de
+  démonstration n'avait aucun modèle sous 1024 tokens — le défaut n'existait que face aux données
+  réelles. Correctif, modèle de démonstration ajouté pour couvrir le cas, balayage rejoué,
+  redéploiement, re-vérification en vision. C'est exactement l'usage prévu par la règle.
+- **Trois assertions figeaient le catalogue de démonstration.** Ajouter un modèle au faux amont a
+  cassé deux tests unitaires et un E2E qui comptaient les modèles au lieu de vérifier ce qui
+  compte. Réécrites pour exprimer leur intention (jeu de modèles attendu, exclusion des modèles
+  d'image). Un test qui casse quand on enrichit une donnée de démonstration teste la donnée, pas
+  le comportement.
+- **Publication du changelog seulement après la seconde bascule.** Le chapitre `[Non publié]` n'a
+  été déplacé sous `[Publié]` qu'une fois la prod vérifiée sur le code FINAL, correctif compris —
+  publier après le premier déploiement aurait déclaré publié un affichage qu'on savait faux.
+
 ## 2026-08-18 — Gabarit VS Code : ne rien deviner, tout demander à l'amont
 
 - **Le point de départ était une demande simple, le fond était plus grave.** La demande portait sur
